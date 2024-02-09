@@ -1,8 +1,8 @@
 // TODO
+// Get date added to json
+// Get help menu updated :'((
 // Decide on CLI vs GUI
-// Clear clipboard method
 // Multi-module structure format
-//
 
 package main
 
@@ -47,61 +47,33 @@ func (e Entry) Description() string {
 type keyMap struct {
 	Enter     key.Binding
 	Backspace key.Binding
-	Up        key.Binding
-	Down      key.Binding
-	Left      key.Binding
-	Right     key.Binding
-	Help      key.Binding
-	Quit      key.Binding
 }
 
-var keys = keyMap{
-	Enter: key.NewBinding(
-		key.WithKeys("enter", " "),
-		key.WithHelp("⏎ return", "Copy to clipboard"),
-	),
-	Backspace: key.NewBinding(
-		key.WithKeys("backspace", "delete"),
-		key.WithHelp("⌫ backspace", "Delete from clipboard"),
-	),
-	Up: key.NewBinding(
-		key.WithKeys("up", "k"),
-		key.WithHelp("↑/k", "move up"),
-	),
-	Down: key.NewBinding(
-		key.WithKeys("down", "j"),
-		key.WithHelp("↓/j", "move down"),
-	),
-	Left: key.NewBinding(
-		key.WithKeys("left", "h"),
-		key.WithHelp("←/h", "move left"),
-	),
-	Right: key.NewBinding(
-		key.WithKeys("right", "l"),
-		key.WithHelp("→/l", "move right"),
-	),
-	Help: key.NewBinding(
-		key.WithKeys("?"),
-		key.WithHelp("?", "toggle help"),
-	),
-	Quit: key.NewBinding(
-		key.WithKeys("q", "esc", "ctrl+c"),
-		key.WithHelp("q", "quit"),
-	),
+func listKeyMap() *keyMap {
+	return &keyMap{
+		Enter: key.NewBinding(
+			key.WithKeys("enter", " "),
+			key.WithHelp("⏎ return", "Copy to clipboard"),
+		),
+		Backspace: key.NewBinding(
+			key.WithKeys("backspace", "delete"),
+			key.WithHelp("⌫ backspace", "Delete from clipboard"),
+		),
+	}
 }
 
 // ShortHelp returns keybindings to be shown in the mini help view. It's part
 // of the key.Map interface.
-func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help, k.Quit}
+func (m Model) ShortHelp() []key.Binding {
+	return []key.Binding{m.keys.Backspace, m.keys.Enter}
 }
 
 // FullHelp returns keybindings for the expanded help view. It's part of the
 // key.Map interface.
-func (k keyMap) FullHelp() [][]key.Binding {
+func (m Model) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Left, k.Right}, // first column
-		{k.Help, k.Quit},                // second column
+		{m.keys.Backspace, m.keys.Enter}, // First column
+		// Second column
 	}
 }
 
@@ -109,12 +81,15 @@ func (k keyMap) FullHelp() [][]key.Binding {
 type Model struct {
 	list list.Model
 	help help.Model
-	keys keyMap
+	keys *keyMap
 	err  error
 }
 
 func New() *Model {
-	return &Model{}
+	return &Model{
+		keys: listKeyMap(),
+		help: help.New(),
+	}
 }
 
 func (m *Model) initList(width, height int) { // window size
@@ -134,6 +109,7 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.initList(msg.Width, msg.Height)
@@ -142,12 +118,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		itemName := m.list.SelectedItem().FilterValue()
 
-		//switch msg.String() {
-		switch {
-		case key.Matches(msg, m.keys.Quit):
+		switch msg.String() {
+		case "ctrl+c", "q":
 			return m, tea.Quit
 
-		case key.Matches(msg, m.keys.Enter):
+		case "enter", " ":
 			err := clipboard.WriteAll(itemName)
 			if err != nil {
 				panic(err)
@@ -155,7 +130,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			statusCmd := m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + itemName))
 			return m, statusCmd
 
-		case key.Matches(msg, m.keys.Backspace):
+		case "backspace", "delete":
 			index := m.list.Index()
 			m.list.RemoveItem(index)
 
@@ -171,7 +146,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return m.list.View()
+
+	return m.list.View() //+ m.help.FullHelpView(m.FullHelp())
 }
 
 type ClipboardData struct {
