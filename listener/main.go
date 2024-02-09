@@ -23,7 +23,7 @@ func main() {
 
 	// Load existing data from file, if any
 	var data Data
-	err := loadDataFromFile("history.json", &data)
+	err := loadDataFromFile("../history.json", &data)
 	if err != nil {
 		fmt.Println("Error loading data from file:", err)
 	}
@@ -47,7 +47,7 @@ func main() {
 				fmt.Println("Added to clipboard history:", text)
 
 				// Save data to file
-				err := saveDataToFile("history.json", data)
+				err := saveDataToFile("../history.json", data)
 				if err != nil {
 					fmt.Println("Error saving data to file:", err)
 				}

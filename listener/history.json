@@ -1,9 +1,5 @@
 {
     "clipboardHistory": [
-        "\t file.Close()\n",
-        "defer",
-        "Sleep",
-        "true",
         "string",
         "NewEncoder",
         "keyboard",
@@ -19,6 +15,10 @@
         "Temperature",
         "Wind speed:",
         "Feels lik",
-        "\"github.com/charmbracelet/bubbles/list\""
+        "\"github.com/charmbracelet/bubbles/list\"",
+        "https://gioui.org/doc/learn/get-started",
+        "https://meet.google.com/zee-gsec-uqj?authuser=0",
+        "file:///home/michael/personal-projects/clipboard-manager/listener/history.json",
+        "golang"
     ]
 }
