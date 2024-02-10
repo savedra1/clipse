@@ -1,160 +1,283 @@
-// TODO
-// Get date added to json
-// Get help menu updated :'((
-// Decide on CLI vs GUI
-// Multi-module structure format
-
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
+	"time"
+	"encoding/json"
 
-	"github.com/atotto/clipboard"
-	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/atotto/clipboard"
+
 )
 
 var (
+	appStyle = lipgloss.NewStyle().Padding(1, 2)
+
+	titleStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#8FBCBB")).
+			Background(lipgloss.Color("#8FBCBB")).
+			Padding(0, 1)
+
 	statusMessageStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-		Render
+				Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
+				Render
 )
 
-// Create format for each history item
-type Entry struct {
+type item struct {
 	title       string
 	description string
 }
 
-// Function to effect the Item struct directly
-func (e Entry) FilterValue() string {
-	return e.title
+func (i item) Title() string       { return i.title }
+func (i item) Description() string { return i.description }
+func (i item) FilterValue() string { return i.title }
+
+type listKeyMap struct {
+	toggleSpinner    key.Binding
+	toggleTitleBar   key.Binding
+	toggleStatusBar  key.Binding
+	togglePagination key.Binding
+	toggleHelpMenu   key.Binding
 }
 
-func (e Entry) Title() string {
-	return e.title
-}
+func newListKeyMap() *listKeyMap {
+	return &listKeyMap{
 
-func (e Entry) Description() string {
-	return e.description
-}
-
-type keyMap struct {
-	Enter     key.Binding
-	Backspace key.Binding
-}
-
-func listKeyMap() *keyMap {
-	return &keyMap{
-		Enter: key.NewBinding(
-			key.WithKeys("enter", " "),
-			key.WithHelp("⏎ return", "Copy to clipboard"),
+		toggleSpinner: key.NewBinding(
+			key.WithKeys("s"),
+			key.WithHelp("s", "toggle spinner"),
 		),
-		Backspace: key.NewBinding(
-			key.WithKeys("backspace", "delete"),
-			key.WithHelp("⌫ backspace", "Delete from clipboard"),
+		toggleTitleBar: key.NewBinding(
+			key.WithKeys("T"),
+			key.WithHelp("T", "toggle title"),
+		),
+		toggleStatusBar: key.NewBinding(
+			key.WithKeys("S"),
+			key.WithHelp("S", "toggle status"),
+		),
+		togglePagination: key.NewBinding(
+			key.WithKeys("P"),
+			key.WithHelp("P", "toggle pagination"),
+		),
+		toggleHelpMenu: key.NewBinding(
+			key.WithKeys("H"),
+			key.WithHelp("H", "toggle help"),
 		),
 	}
 }
 
-// ShortHelp returns keybindings to be shown in the mini help view. It's part
-// of the key.Map interface.
-func (m Model) ShortHelp() []key.Binding {
-	return []key.Binding{m.keys.Backspace, m.keys.Enter}
+type model struct {
+	list          list.Model
+	//itemGenerator *randomItemGenerator
+	keys          *listKeyMap
+	delegateKeys  *delegateKeyMap
 }
 
-// FullHelp returns keybindings for the expanded help view. It's part of the
-// key.Map interface.
-func (m Model) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{m.keys.Backspace, m.keys.Enter}, // First column
-		// Second column
-	}
-}
+func newModel() model {
+	var (
+		//itemGenerator randomItemGenerator
+		delegateKeys  = newDelegateKeyMap()
+		listKeys      = newListKeyMap()
+	)
 
-// MAIN MODEL
-type Model struct {
-	list list.Model
-	help help.Model
-	keys *keyMap
-	err  error
-}
-
-func New() *Model {
-	return &Model{
-		keys: listKeyMap(),
-		help: help.New(),
-	}
-}
-
-func (m *Model) initList(width, height int) { // window size
+	// Make initial list of items
+	clipboardItems := getjsonData()
 	var entryItems []list.Item
-	clipboardHistory := getjsonData()
-	for _, entry := range clipboardHistory {
-		entryItems = append(entryItems, Entry{title: entry, description: "Added to clipboard 22:05|08/02/24"})
+	for _, entry := range clipboardItems {
+		item := item{
+            title:       entry.Value,
+            description: "Copied to clipboard: " + entry.Recorded,
+        }
+		entryItems = append(entryItems, item)
 	}
 
-	m.list = list.New(entryItems, list.NewDefaultDelegate(), width, height)
-	m.list.Title = "Clipboard History"
 
-}
-
-func (m Model) Init() tea.Cmd {
-	return nil
-}
-
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		m.initList(msg.Width, msg.Height)
-		m.help.Width = msg.Width
-
-	case tea.KeyMsg:
-		itemName := m.list.SelectedItem().FilterValue()
-
-		switch msg.String() {
-		case "ctrl+c", "q":
-			return m, tea.Quit
-
-		case "enter", " ":
-			err := clipboard.WriteAll(itemName)
-			if err != nil {
-				panic(err)
-			}
-			statusCmd := m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + itemName))
-			return m, statusCmd
-
-		case "backspace", "delete":
-			index := m.list.Index()
-			m.list.RemoveItem(index)
-
-			statusCmd := m.list.NewStatusMessage(statusMessageStyle("Deleted: " + itemName))
-			deleteJsonItem(itemName)
-			return m, statusCmd
+	// Setup list
+	delegate := newItemDelegate(delegateKeys)
+	clipboardList := list.New(entryItems, delegate, 0, 0)
+	clipboardList.Title = "Clipboard History"
+	clipboardList.Styles.Title = titleStyle
+	clipboardList.AdditionalFullHelpKeys = func() []key.Binding {
+		return []key.Binding{
+			listKeys.toggleSpinner,
+			listKeys.toggleTitleBar,
+			listKeys.toggleStatusBar,
+			listKeys.togglePagination,
+			listKeys.toggleHelpMenu,
 		}
 	}
 
-	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
-	return m, cmd
+	return model{
+		list:          clipboardList,
+		keys:          listKeys,
+		delegateKeys:  delegateKeys,
+	}
 }
 
-func (m Model) View() string {
-
-	return m.list.View() //+ m.help.FullHelpView(m.FullHelp())
+func (m model) Init() tea.Cmd {
+	return tea.EnterAltScreen
 }
 
-type ClipboardData struct {
-	ClipboardHistory []string `json:"clipboardHistory"`
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		h, v := appStyle.GetFrameSize()
+		m.list.SetSize(msg.Width-h, msg.Height-v)
+
+	case tea.KeyMsg:
+		// Don't match any of the keys below if we're actively filtering.
+		if m.list.FilterState() == list.Filtering {
+			break
+		}
+
+		switch {
+		case key.Matches(msg, m.keys.toggleSpinner):
+			cmd := m.list.ToggleSpinner()
+			return m, cmd
+
+		case key.Matches(msg, m.keys.toggleTitleBar):
+			v := !m.list.ShowTitle()
+			m.list.SetShowTitle(v)
+			m.list.SetShowFilter(v)
+			m.list.SetFilteringEnabled(v)
+			return m, nil
+
+		case key.Matches(msg, m.keys.toggleStatusBar):
+			m.list.SetShowStatusBar(!m.list.ShowStatusBar())
+			return m, nil
+
+		case key.Matches(msg, m.keys.togglePagination):
+			m.list.SetShowPagination(!m.list.ShowPagination())
+			return m, nil
+
+		case key.Matches(msg, m.keys.toggleHelpMenu):
+			m.list.SetShowHelp(!m.list.ShowHelp())
+			return m, nil
+
+		}
+	}
+
+	// This will also call our delegate's update function.
+	newListModel, cmd := m.list.Update(msg)
+	m.list = newListModel
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
 }
 
-func getjsonData() []string {
+func (m model) View() string {
+	return appStyle.Render(m.list.View())
+}
+
+
+// NEW ITEM DELEGATE SECTION
+func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
+	d := list.NewDefaultDelegate()
+
+	d.UpdateFunc = func(msg tea.Msg, m *list.Model) tea.Cmd {
+		var title string
+
+		if i, ok := m.SelectedItem().(item); ok {
+			title = i.Title()
+		} else {
+			return nil
+		}
+
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch {
+			case key.Matches(msg, keys.choose):
+				err := clipboard.WriteAll(title)
+				if err != nil {
+					panic(err)
+				}
+				return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))
+
+			case key.Matches(msg, keys.remove):
+				index := m.Index()
+				m.RemoveItem(index)
+				if len(m.Items()) == 0 {
+					keys.remove.SetEnabled(false)
+				}
+				err := deleteJsonItem(title)
+				if err != nil {
+					os.Exit(1)
+				}
+				return m.NewStatusMessage(statusMessageStyle("Deleted: " + title))
+			}
+		}
+
+		return nil
+	}
+
+	help := []key.Binding{keys.choose, keys.remove}
+
+	d.ShortHelpFunc = func() []key.Binding {
+		return help
+	}
+
+	d.FullHelpFunc = func() [][]key.Binding {
+		return [][]key.Binding{help}
+	}
+
+	return d
+}
+
+type delegateKeyMap struct {
+	choose key.Binding
+	remove key.Binding
+}
+
+// Additional short help entries. This satisfies the help.KeyMap interface and
+// is entirely optional.
+func (d delegateKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{
+		d.choose,
+		d.remove,
+	}
+}
+
+// Additional full help entries. This satisfies the help.KeyMap interface and
+// is entirely optional.
+func (d delegateKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{
+			d.choose,
+			d.remove,
+		},
+	}
+}
+
+func newDelegateKeyMap() *delegateKeyMap {
+	return &delegateKeyMap{
+		choose: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("enter", "copy"),
+		),
+		remove: key.NewBinding(
+			key.WithKeys("x", "backspace"),
+			key.WithHelp("x", "delete"),
+		),
+	}
+}
+
+type ClipboardEntry struct {
+    Value   string `json:"value"`
+    Recorded string `json:"recorded"`
+}
+
+type ClipboardHistory struct {
+    ClipboardHistory []ClipboardEntry `json:"clipboardHistory"`
+}
+
+func getjsonData() []ClipboardEntry {
 	file, err := os.Open("../history.json")
 	if err != nil {
 		fmt.Println("error opening file:", err)
@@ -162,7 +285,7 @@ func getjsonData() []string {
 	}
 
 	// Decode JSON from the file
-	var data ClipboardData
+	var data ClipboardHistory
 	if err := json.NewDecoder(file).Decode(&data); err != nil {
 		fmt.Println("Error decoding JSON:", err)
 		os.Exit(1)
@@ -176,49 +299,44 @@ func getjsonData() []string {
 }
 
 func deleteJsonItem(item string) error {
-	filePath := "../history.json"
-	fileContent, err := os.ReadFile(filePath)
-	if err != nil {
-		return fmt.Errorf("error reading file: %w", err)
-	}
+    filePath := "../history.json"
+    fileContent, err := os.ReadFile(filePath)
+    if err != nil {
+        return fmt.Errorf("error reading file: %w", err)
+    }
 
-	var data ClipboardData
-	if err := json.Unmarshal(fileContent, &data); err != nil {
-		return fmt.Errorf("error unmarshalling JSON: %w", err)
-	}
+    var data ClipboardHistory
+    if err := json.Unmarshal(fileContent, &data); err != nil {
+        return fmt.Errorf("error unmarshalling JSON: %w", err)
+    }
 
-	var updatedClipboardHistory []string
-	for _, entry := range data.ClipboardHistory {
-		if entry != item {
-			updatedClipboardHistory = append(updatedClipboardHistory, entry)
-		}
-	}
+    var updatedClipboardHistory []ClipboardEntry
+    for _, entry := range data.ClipboardHistory {
+        if entry.Value != item {
+            updatedClipboardHistory = append(updatedClipboardHistory, entry)
+        }
+    }
 
-	updatedData := ClipboardData{
-		ClipboardHistory: updatedClipboardHistory,
-	}
-	updatedJSON, err := json.Marshal(updatedData)
-	if err != nil {
-		return fmt.Errorf("error marshalling JSON: %w", err)
-	}
+    updatedData := ClipboardHistory{
+        ClipboardHistory: updatedClipboardHistory,
+    }
+    updatedJSON, err := json.Marshal(updatedData)
+    if err != nil {
+        return fmt.Errorf("error marshalling JSON: %w", err)
+    }
 
-	// Write the updated JSON back to the file
-	if err := os.WriteFile(filePath, updatedJSON, 0644); err != nil {
-		return fmt.Errorf("error writing file: %w", err)
-	}
+    // Write the updated JSON back to the file
+    if err := os.WriteFile(filePath, updatedJSON, 0644); err != nil {
+        return fmt.Errorf("error writing file: %w", err)
+    }
 
-	return nil
+    return nil
 }
 
-// MENU
-
 func main() {
-	m := New()
-	p := tea.NewProgram(m)
-
-	err, _ := p.Run()
-	if err != nil {
+	rand.Seed(time.Now().UTC().UnixNano())
+	if _, err := tea.NewProgram(newModel()).Run(); err != nil {
+		fmt.Println("Error opening clipboard:", err)
 		os.Exit(1)
-
 	}
 }

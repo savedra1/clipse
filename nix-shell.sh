@@ -1,1 +1,0 @@
-nix --extra-experimental-features "nix-command flakes" develop sourcehut:~eliasnaur/gio
