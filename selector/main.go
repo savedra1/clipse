@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 	"encoding/json"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -30,10 +31,12 @@ var (
 
 type item struct {
 	title       string
+	titleFull   string
 	description string
 }
 
-func (i item) Title() string       { return i.title }
+func (i item) Title()       string { return i.title }
+func (i item) TitleFull()  string { return i.titleFull }
 func (i item) Description() string { return i.description }
 func (i item) FilterValue() string { return i.title }
 
@@ -73,14 +76,12 @@ func newListKeyMap() *listKeyMap {
 
 type model struct {
 	list          list.Model
-	//itemGenerator *randomItemGenerator
 	keys          *listKeyMap
 	delegateKeys  *delegateKeyMap
 }
 
 func newModel() model {
 	var (
-		//itemGenerator randomItemGenerator
 		delegateKeys  = newDelegateKeyMap()
 		listKeys      = newListKeyMap()
 	)
@@ -89,8 +90,10 @@ func newModel() model {
 	clipboardItems := getjsonData()
 	var entryItems []list.Item
 	for _, entry := range clipboardItems {
+		shortenedVal := shorten(entry.Value)
 		item := item{
-            title:       entry.Value,
+            title:       shortenedVal,
+			titleFull: entry.Value,
             description: "Copied to clipboard: " + entry.Recorded,
         }
 		entryItems = append(entryItems, item)
@@ -176,16 +179,25 @@ func (m model) View() string {
 	return appStyle.Render(m.list.View())
 }
 
+func shorten(s string) string {
+    maxLen := 30 // Define your max length here
+    if len(s) <= maxLen {
+        return strings.ReplaceAll(s, "\n", " ")
+    }
+    return strings.ReplaceAll(s[:maxLen-3], "\n", " ") + "..."
+}
 
 // NEW ITEM DELEGATE SECTION
 func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 	d := list.NewDefaultDelegate()
 
 	d.UpdateFunc = func(msg tea.Msg, m *list.Model) tea.Cmd {
-		var title string
+		var title     string
+		var fullValue string
 
 		if i, ok := m.SelectedItem().(item); ok {
 			title = i.Title()
+			fullValue = i.TitleFull()
 		} else {
 			return nil
 		}
@@ -194,7 +206,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 		case tea.KeyMsg:
 			switch {
 			case key.Matches(msg, keys.choose):
-				err := clipboard.WriteAll(title)
+				err := clipboard.WriteAll(fullValue)
 				if err != nil {
 					panic(err)
 				}
@@ -206,7 +218,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				if len(m.Items()) == 0 {
 					keys.remove.SetEnabled(false)
 				}
-				err := deleteJsonItem(title)
+				err := deleteJsonItem(fullValue)
 				if err != nil {
 					os.Exit(1)
 				}
