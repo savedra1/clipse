@@ -54,12 +54,13 @@ func runListener() error {
 			if text != "" && !contains(data.ClipboardHistory, text) {
 				// If the length exceeds 50, remove the oldest item
 				if len(data.ClipboardHistory) >= 50 {
-					data.ClipboardHistory = data.ClipboardHistory[1:] // Remove the oldest item (first element)
+					lastIndex := len(data.ClipboardHistory) - 1
+					data.ClipboardHistory = data.ClipboardHistory[:lastIndex] // Remove the oldest item
 				}
 				timeNow := time.Now().UTC().String()
 				item := ClipboardItem{Value: text, Recorded: timeNow}
 				data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
-				fmt.Println("Added to clipboard history:", text)
+				//fmt.Println("Added to clipboard history:", text)
 
 				// Save data to file
 				err := saveDataToFile("../history.json", data)
@@ -289,7 +290,7 @@ func (m model) View() string {
 }
 
 func shorten(s string) string {
-	maxLen := 30 // Define your max length here
+	maxLen := 50 // Define your max length here
 	if len(s) <= maxLen {
 		return strings.ReplaceAll(s, "\n", " ")
 	}
@@ -467,9 +468,9 @@ func main() {
 			fmt.Println("Place holder")
 			os.Exit(0)
 		case listen:
-			cmd := exec.Command("pkill", os.Args[0])
+			cmd := exec.Command("pkill", "main.go")
 			cmd.Run() // Kill existing clipboard processes
-			cmd = exec.Command("nohup", "go", "run", os.Args[0], "--start", "&")
+			cmd = exec.Command("nohup", "go", "run", "main.go", "--start", ">/dev/null", "2>&1", "&")
 			//cmd = exec.Command("nohup", "sh", "-c", "go run "+os.Args[0]+" --start >/dev/null 2>&1 &")
 
 			if err := cmd.Start(); err != nil {
