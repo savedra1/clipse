@@ -1,27 +1,26 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
-	"time"
-	"encoding/json"
 	"strings"
+	"time"
 
+	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/atotto/clipboard"
-
 )
 
 var (
 	appStyle = lipgloss.NewStyle().Padding(1, 2)
 
 	titleStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#8FBCBB")).
-			Background(lipgloss.Color("#8FBCBB")).
+			Foreground(lipgloss.Color("#FFFFFF")).
+			Background(lipgloss.Color("#434C5E")).
 			Padding(0, 1)
 
 	statusMessageStyle = lipgloss.NewStyle().
@@ -35,8 +34,8 @@ type item struct {
 	description string
 }
 
-func (i item) Title()       string { return i.title }
-func (i item) TitleFull()  string { return i.titleFull }
+func (i item) Title() string       { return i.title }
+func (i item) TitleFull() string   { return i.titleFull }
 func (i item) Description() string { return i.description }
 func (i item) FilterValue() string { return i.title }
 
@@ -75,15 +74,15 @@ func newListKeyMap() *listKeyMap {
 }
 
 type model struct {
-	list          list.Model
-	keys          *listKeyMap
-	delegateKeys  *delegateKeyMap
+	list         list.Model
+	keys         *listKeyMap
+	delegateKeys *delegateKeyMap
 }
 
 func newModel() model {
 	var (
-		delegateKeys  = newDelegateKeyMap()
-		listKeys      = newListKeyMap()
+		delegateKeys = newDelegateKeyMap()
+		listKeys     = newListKeyMap()
 	)
 
 	// Make initial list of items
@@ -92,13 +91,12 @@ func newModel() model {
 	for _, entry := range clipboardItems {
 		shortenedVal := shorten(entry.Value)
 		item := item{
-            title:       shortenedVal,
-			titleFull: entry.Value,
-            description: "Copied to clipboard: " + entry.Recorded,
-        }
+			title:       shortenedVal,
+			titleFull:   entry.Value,
+			description: "Copied to clipboard: " + entry.Recorded,
+		}
 		entryItems = append(entryItems, item)
 	}
-
 
 	// Setup list
 	delegate := newItemDelegate(delegateKeys)
@@ -116,9 +114,9 @@ func newModel() model {
 	}
 
 	return model{
-		list:          clipboardList,
-		keys:          listKeys,
-		delegateKeys:  delegateKeys,
+		list:         clipboardList,
+		keys:         listKeys,
+		delegateKeys: delegateKeys,
 	}
 }
 
@@ -180,11 +178,11 @@ func (m model) View() string {
 }
 
 func shorten(s string) string {
-    maxLen := 30 // Define your max length here
-    if len(s) <= maxLen {
-        return strings.ReplaceAll(s, "\n", " ")
-    }
-    return strings.ReplaceAll(s[:maxLen-3], "\n", " ") + "..."
+	maxLen := 30 // Define your max length here
+	if len(s) <= maxLen {
+		return strings.ReplaceAll(s, "\n", " ")
+	}
+	return strings.ReplaceAll(s[:maxLen-3], "\n", " ") + "..."
 }
 
 // NEW ITEM DELEGATE SECTION
@@ -192,7 +190,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 	d := list.NewDefaultDelegate()
 
 	d.UpdateFunc = func(msg tea.Msg, m *list.Model) tea.Cmd {
-		var title     string
+		var title string
 		var fullValue string
 
 		if i, ok := m.SelectedItem().(item); ok {
@@ -281,12 +279,12 @@ func newDelegateKeyMap() *delegateKeyMap {
 }
 
 type ClipboardEntry struct {
-    Value   string `json:"value"`
-    Recorded string `json:"recorded"`
+	Value    string `json:"value"`
+	Recorded string `json:"recorded"`
 }
 
 type ClipboardHistory struct {
-    ClipboardHistory []ClipboardEntry `json:"clipboardHistory"`
+	ClipboardHistory []ClipboardEntry `json:"clipboardHistory"`
 }
 
 func getjsonData() []ClipboardEntry {
@@ -311,38 +309,38 @@ func getjsonData() []ClipboardEntry {
 }
 
 func deleteJsonItem(item string) error {
-    filePath := "../history.json"
-    fileContent, err := os.ReadFile(filePath)
-    if err != nil {
-        return fmt.Errorf("error reading file: %w", err)
-    }
+	filePath := "../history.json"
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("error reading file: %w", err)
+	}
 
-    var data ClipboardHistory
-    if err := json.Unmarshal(fileContent, &data); err != nil {
-        return fmt.Errorf("error unmarshalling JSON: %w", err)
-    }
+	var data ClipboardHistory
+	if err := json.Unmarshal(fileContent, &data); err != nil {
+		return fmt.Errorf("error unmarshalling JSON: %w", err)
+	}
 
-    var updatedClipboardHistory []ClipboardEntry
-    for _, entry := range data.ClipboardHistory {
-        if entry.Value != item {
-            updatedClipboardHistory = append(updatedClipboardHistory, entry)
-        }
-    }
+	var updatedClipboardHistory []ClipboardEntry
+	for _, entry := range data.ClipboardHistory {
+		if entry.Value != item {
+			updatedClipboardHistory = append(updatedClipboardHistory, entry)
+		}
+	}
 
-    updatedData := ClipboardHistory{
-        ClipboardHistory: updatedClipboardHistory,
-    }
-    updatedJSON, err := json.Marshal(updatedData)
-    if err != nil {
-        return fmt.Errorf("error marshalling JSON: %w", err)
-    }
+	updatedData := ClipboardHistory{
+		ClipboardHistory: updatedClipboardHistory,
+	}
+	updatedJSON, err := json.Marshal(updatedData)
+	if err != nil {
+		return fmt.Errorf("error marshalling JSON: %w", err)
+	}
 
-    // Write the updated JSON back to the file
-    if err := os.WriteFile(filePath, updatedJSON, 0644); err != nil {
-        return fmt.Errorf("error writing file: %w", err)
-    }
+	// Write the updated JSON back to the file
+	if err := os.WriteFile(filePath, updatedJSON, 0644); err != nil {
+		return fmt.Errorf("error writing file: %w", err)
+	}
 
-    return nil
+	return nil
 }
 
 func main() {

@@ -51,7 +51,7 @@ func main() {
 				}
 				timeNow := time.Now().UTC().String()
 				item := ClipboardItem{Value: text, Recorded: timeNow}
-				data.ClipboardHistory = append(data.ClipboardHistory, item)
+				data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
 				fmt.Println("Added to clipboard history:", text)
 
 				// Save data to file
@@ -61,8 +61,9 @@ func main() {
 				}
 			}
 
-			// Check for updates every second
-			time.Sleep(time.Second)
+			// Check for updates every 0.1 second
+			duration := 100 * time.Millisecond / 10
+			time.Sleep(duration)
 		}
 	}()
 
