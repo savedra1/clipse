@@ -13,7 +13,13 @@ import (
 
 // Data struct for storing clipboard strings
 type Data struct {
-	ClipboardHistory []string `json:"clipboardHistory"`
+	ClipboardHistory []ClipboardItem `json:"clipboardHistory"`
+}
+
+// ClipboardItem struct for individual clipboard history item
+type ClipboardItem struct {
+	Value    string `json:"value"`
+	Recorded string `json:"recorded"`
 }
 
 func main() {
@@ -39,11 +45,13 @@ func main() {
 
 			// If clipboard content is not empty and not already in the list, add it
 			if text != "" && !contains(data.ClipboardHistory, text) {
-				// If the length exceeds 20, remove the oldest item
-				if len(data.ClipboardHistory) >= 20 {
+				// If the length exceeds 50, remove the oldest item
+				if len(data.ClipboardHistory) >= 50 {
 					data.ClipboardHistory = data.ClipboardHistory[1:] // Remove the oldest item (first element)
 				}
-				data.ClipboardHistory = append(data.ClipboardHistory, text)
+				timeNow := time.Now().UTC().String()
+				item := ClipboardItem{Value: text, Recorded: timeNow}
+				data.ClipboardHistory = append(data.ClipboardHistory, item)
 				fmt.Println("Added to clipboard history:", text)
 
 				// Save data to file
@@ -65,7 +73,17 @@ func main() {
 	fmt.Println("Exiting...")
 }
 
-// loadDataFromFile loads data from a JSON file.
+// contains checks if a string exists in a slice of strings
+func contains(slice []ClipboardItem, str string) bool {
+	for _, item := range slice {
+		if item.Value == str {
+			return true
+		}
+	}
+	return false
+}
+
+// loadDataFromFile loads data from a JSON file
 func loadDataFromFile(filename string, data *Data) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -74,10 +92,14 @@ func loadDataFromFile(filename string, data *Data) error {
 	defer file.Close()
 
 	decoder := json.NewDecoder(file)
-	return decoder.Decode(data)
+	err = decoder.Decode(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-// saveDataToFile saves data to a JSON file.
+// saveDataToFile saves data to a JSON file
 func saveDataToFile(filename string, data Data) error {
 	file, err := os.Create(filename)
 	if err != nil {
@@ -86,16 +108,9 @@ func saveDataToFile(filename string, data Data) error {
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "    ")
-	return encoder.Encode(data)
-}
-
-// contains checks if a string is present in a slice of strings.
-func contains(slice []string, str string) bool {
-	for _, s := range slice {
-		if s == str {
-			return true
-		}
+	err = encoder.Encode(data)
+	if err != nil {
+		return err
 	}
-	return false
+	return nil
 }
