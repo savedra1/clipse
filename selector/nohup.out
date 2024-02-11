@@ -1,4 +1,9 @@
-# TODO
+Clipboard history listener running... Press Ctrl+C to exit.
+Added to clipboard history: oppenheimer where to watch
+Exiting...
+Clipboard history listener running... Press Ctrl+C to exit.
+Added to clipboard history: >/dev/null 2>&1 &
+Added to clipboard history: # TODO
 - Update item deletion to back of the list
 - Make sure existing nohup process always killed before `--listen` is started
 - Investigate single binary solution without exec (dont think thi sis poss)
@@ -7,3 +12,4 @@
 - Config added to json file, adjustable with CLI args
 - Nix package
 - Makefile installation
+Added to clipboard history: nohup go run main.go --start >/dev/null 2>&1 &
