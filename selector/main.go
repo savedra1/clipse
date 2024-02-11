@@ -3,10 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
@@ -344,7 +342,29 @@ func deleteJsonItem(item string) error {
 }
 
 func main() {
-	rand.Seed(time.Now().UTC().UnixNano())
+	// cmd args
+	help := "--help"
+	listen := "--listen"
+	clear := "--clear"
+
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case help:
+			fmt.Println("Place holder")
+			os.Exit(0)
+		case listen:
+			fmt.Println("Place holder")
+			os.Exit(0)
+		case clear:
+			fmt.Println("Place holder")
+			os.Exit(0)
+
+		default:
+			fmt.Println("Arg not recognised. Try `clipboard --help` for more details.")
+			os.Exit(0)
+		}
+	}
+
 	if _, err := tea.NewProgram(newModel()).Run(); err != nil {
 		fmt.Println("Error opening clipboard:", err)
 		os.Exit(1)
