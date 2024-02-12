@@ -37,7 +37,7 @@ func runListener() error {
 
 	// Load existing data from file, if any
 	var data Data
-	err := loadDataFromFile("../history.json", &data)
+	err := loadDataFromFile(fileName, &data)
 	if err != nil {
 		fmt.Println("Error loading data from file:", err)
 	}
@@ -58,29 +58,31 @@ func runListener() error {
 					lastIndex := len(data.ClipboardHistory) - 1
 					data.ClipboardHistory = data.ClipboardHistory[:lastIndex] // Remove the oldest item
 				}
-				timeNow := time.Now().UTC().String()
+
+				timeNow := strings.Split(time.Now().UTC().String(), "+0000")[0]
+
 				item := ClipboardItem{Value: text, Recorded: timeNow}
+
 				data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
 				//fmt.Println("Added to clipboard history:", text)
 
 				// Save data to file
-				err := saveDataToFile("../history.json", data)
+				err := saveDataToFile(fileName, data)
 				if err != nil {
 					fmt.Println("Error saving data to file:", err)
 				}
 			}
 
 			// Check for updates every 0.1 second
-			duration := 100 * time.Millisecond / 10
-			time.Sleep(duration)
+			time.Sleep(100 * time.Millisecond / 10)
 		}
 	}()
 
-	fmt.Println("Clipboard history listener running... Press Ctrl+C to exit.")
+	//fmt.Println("Clipboard history listener running... Press Ctrl+C to exit.")
 
 	// Wait for SIGINT or SIGTERM signal
 	<-interrupt
-	fmt.Println("Exiting...")
+	//fmt.Println("Exiting...")
 	return nil
 }
 
@@ -469,15 +471,13 @@ func checkConfig() error {
 
 		defer file.Close()
 
-		baseConfig := ClipboardHistory{
-			ClipboardHistory: []ClipboardEntry{},
-		}
-
-		err = setBaseConfig(baseConfig)
+		err = setBaseConfig()
 		if err != nil {
 			return err
 		}
-
+		baseConfig := ClipboardHistory{
+			ClipboardHistory: []ClipboardEntry{},
+		}
 		encoder := json.NewEncoder(file)
 		encoder.SetIndent("", "    ")
 		if err := encoder.Encode(baseConfig); err != nil {
@@ -490,7 +490,7 @@ func checkConfig() error {
 	return nil
 }
 
-func setBaseConfig(baseConfig ClipboardHistory) error {
+func setBaseConfig() error {
 	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return err
@@ -507,6 +507,10 @@ func setBaseConfig(baseConfig ClipboardHistory) error {
 	_, err = file.Seek(0, 0)
 	if err != nil {
 		return err
+	}
+
+	baseConfig := ClipboardHistory{
+		ClipboardHistory: []ClipboardEntry{},
 	}
 
 	// Encode initial history to JSON and write to file
@@ -528,7 +532,9 @@ func main() {
 	listen := "listen"
 	clear := "clear"
 	listenStart := "listen-start-background-process-0088" // obscure string to prevent accidental usage
+
 	help := flag.Bool("help", false, "Show help message")
+	flag.Parse()
 
 	err := checkConfig()
 	if err != nil {
@@ -554,7 +560,6 @@ func main() {
 			cmd := exec.Command("pkill", "main.go")
 			cmd.Run() // Kill existing clipboard processes
 			cmd = exec.Command("nohup", "go", "run", "main.go", listenStart, ">/dev/null", "2>&1", "&")
-			//cmd = exec.Command("nohup", "sh", "-c", "go run "+os.Args[0]+" --start >/dev/null 2>&1 &")
 
 			if err := cmd.Start(); err != nil {
 				fmt.Println("Error starting clipboard listener:", err)
@@ -563,7 +568,12 @@ func main() {
 			fmt.Println("Starting clipboard listener...")
 			return
 		case clear:
-			fmt.Println("Place holder")
+			err = setBaseConfig()
+			if err != nil {
+				fmt.Println("Failed to clear clipboard contents:", err)
+				os.Exit(1)
+			}
+			fmt.Println("Cleared clipboard contents.")
 			return
 		case listenStart:
 			err := runListener()
