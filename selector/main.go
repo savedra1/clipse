@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"os/user"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -30,59 +32,53 @@ type ClipboardItem struct {
 	Recorded string `json:"recorded"`
 }
 
-func runListener() error {
+func runListener(fullPath string) error {
 	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	// Load existing data from file, if any
 	var data Data
-	err := loadDataFromFile(fileName, &data)
+	err := loadDataFromFile(fullPath, &data)
 	if err != nil {
 		fmt.Println("Error loading data from file:", err)
 	}
 
-	// Start a goroutine to continuously monitor clipboard changes
-	go func() {
-		for {
-			// Get the current clipboard content
-			text, err := clipboard.ReadAll()
-			if err != nil {
-				fmt.Println("Error reading clipboard:", err)
-			}
-
-			// If clipboard content is not empty and not already in the list, add it
-			if text != "" && !contains(data.ClipboardHistory, text) {
-				// If the length exceeds 50, remove the oldest item
-				if len(data.ClipboardHistory) >= 50 {
-					lastIndex := len(data.ClipboardHistory) - 1
-					data.ClipboardHistory = data.ClipboardHistory[:lastIndex] // Remove the oldest item
-				}
-
-				timeNow := strings.Split(time.Now().UTC().String(), "+0000")[0]
-
-				item := ClipboardItem{Value: text, Recorded: timeNow}
-
-				data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
-				//fmt.Println("Added to clipboard history:", text)
-
-				// Save data to file
-				err := saveDataToFile(fileName, data)
-				if err != nil {
-					fmt.Println("Error saving data to file:", err)
-				}
-			}
-
-			// Check for updates every 0.1 second
-			time.Sleep(100 * time.Millisecond / 10)
+	for {
+		// Get the current clipboard content
+		text, err := clipboard.ReadAll()
+		if err != nil {
+			fmt.Println("Error reading clipboard:", err)
 		}
-	}()
 
-	//fmt.Println("Clipboard history listener running... Press Ctrl+C to exit.")
+		// If clipboard content is not empty and not already in the list, add it
+		if text != "" && !contains(data.ClipboardHistory, text) {
+			// If the length exceeds 50, remove the oldest item
+			if len(data.ClipboardHistory) >= 50 {
+				lastIndex := len(data.ClipboardHistory) - 1
+				data.ClipboardHistory = data.ClipboardHistory[:lastIndex] // Remove the oldest item
+			}
+
+			timeNow := strings.Split(time.Now().UTC().String(), "+0000")[0]
+
+			item := ClipboardItem{Value: text, Recorded: timeNow}
+
+			data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
+			//fmt.Println("Added to clipboard history:", text)
+
+			// Save data to file
+			err := saveDataToFile(fullPath, data)
+			if err != nil {
+				fmt.Println("Error saving data to file:", err)
+			}
+		}
+
+		// Check for updates every 0.1 second
+		time.Sleep(100 * time.Millisecond / 10)
+	}
 
 	// Wait for SIGINT or SIGTERM signal
 	<-interrupt
-	//fmt.Println("Exiting...")
 	return nil
 }
 
@@ -97,8 +93,8 @@ func contains(slice []ClipboardItem, str string) bool {
 }
 
 // loadDataFromFile loads data from a JSON file
-func loadDataFromFile(filename string, data *Data) error {
-	file, err := os.Open(filename)
+func loadDataFromFile(fullPath string, data *Data) error {
+	file, err := os.Open(fullPath)
 	if err != nil {
 		return err
 	}
@@ -113,8 +109,8 @@ func loadDataFromFile(filename string, data *Data) error {
 }
 
 // saveDataToFile saves data to a JSON file
-func saveDataToFile(filename string, data Data) error {
-	file, err := os.Create(filename)
+func saveDataToFile(fullPath string, data Data) error {
+	file, err := os.Create(fullPath)
 	if err != nil {
 		return err
 	}
@@ -331,7 +327,8 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				if len(m.Items()) == 0 {
 					keys.remove.SetEnabled(false)
 				}
-				err := deleteJsonItem(fullValue)
+				fullPath := getFullPath()
+				err := deleteJsonItem(fullPath, fullValue)
 				if err != nil {
 					os.Exit(1)
 				}
@@ -406,7 +403,8 @@ type ClipboardHistory struct {
 }
 
 func getjsonData() []ClipboardEntry {
-	file, err := os.Open(fileName)
+	fullPath := getFullPath()
+	file, err := os.Open(fullPath)
 	if err != nil {
 		fmt.Println("error opening file:", err)
 		file.Close()
@@ -420,14 +418,12 @@ func getjsonData() []ClipboardEntry {
 	}
 
 	// Extract clipboard history items
-	clipboardHistory := data.ClipboardHistory
-
-	return clipboardHistory
+	return data.ClipboardHistory
 
 }
 
-func deleteJsonItem(item string) error {
-	fileContent, err := os.ReadFile(fileName)
+func deleteJsonItem(fullPath, item string) error {
+	fileContent, err := os.ReadFile(fullPath)
 	if err != nil {
 		return fmt.Errorf("error reading file: %w", err)
 	}
@@ -453,45 +449,91 @@ func deleteJsonItem(item string) error {
 	}
 
 	// Write the updated JSON back to the file
-	if err := os.WriteFile(fileName, updatedJSON, 0644); err != nil {
+	if err := os.WriteFile(fullPath, updatedJSON, 0644); err != nil {
 		return fmt.Errorf("error writing file: %w", err)
 	}
 
 	return nil
 }
 
-func checkConfig() error {
-	if _, err := os.Stat(fileName); os.IsNotExist(err) {
-		// File does not exist, create it with default values
+func createConfigDir(configDir string) error {
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		fmt.Println("Error creating config directory:", err)
+		os.Exit(1)
+	}
+	return nil
+}
 
-		file, err := os.Create(fileName)
-		if err != nil {
-			return err
-		}
+func createHistoryFile(fullPath string) error {
+	file, err := os.Create(fullPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-		defer file.Close()
-
-		err = setBaseConfig()
-		if err != nil {
-			return err
-		}
-		baseConfig := ClipboardHistory{
-			ClipboardHistory: []ClipboardEntry{},
-		}
-		encoder := json.NewEncoder(file)
-		encoder.SetIndent("", "    ")
-		if err := encoder.Encode(baseConfig); err != nil {
-			return err
-		}
-
-	} else if err != nil {
+	err = setBaseConfig(fullPath)
+	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func setBaseConfig() error {
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0644)
+func getFullPath() string {
+	currentUser, err := user.Current()
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+	// Construct the path to the config directory
+	configDir := filepath.Join(currentUser.HomeDir, ".config", configDirName)
+	fullPath := filepath.Join(configDir, fileName)
+	return fullPath
+}
+
+func checkConfig() (string, error) {
+	currentUser, err := user.Current()
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+
+	// Construct the path to the config directory
+	configDir := filepath.Join(currentUser.HomeDir, ".config", configDirName)
+	fullPath := filepath.Join(configDir, fileName)
+
+	fmt.Println("Full path:", fullPath)
+
+	_, err = os.Stat(fullPath)
+	if os.IsNotExist(err) {
+
+		_, err = os.Stat(configDir)
+		if os.IsNotExist(err) {
+			err = createConfigDir(configDir)
+			if err != nil {
+				fmt.Println("Failed to create config dir. Please create:", configDir)
+				os.Exit(1)
+			}
+		}
+
+		_, err = os.Stat(fullPath)
+		if os.IsNotExist(err) {
+			err = createHistoryFile(fullPath)
+			if err != nil {
+				fmt.Println("Failed to create", fullPath)
+				os.Exit(1)
+			}
+
+		}
+
+	} else if err != nil {
+		fmt.Println("Unable to check if config file exists.")
+		os.Exit(1)
+	}
+	return fullPath, nil
+}
+
+func setBaseConfig(fullPath string) error {
+	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return err
 	}
@@ -524,19 +566,22 @@ func setBaseConfig() error {
 }
 
 const (
-	fileName = "../clipboard_history.json"
+	fileName      = "clipboard_history.json"
+	configDirName = "clipboard_manager"
 )
 
 func main() {
 	// cmd flags and args
 	listen := "listen"
 	clear := "clear"
-	listenStart := "listen-start-background-process-0088" // obscure string to prevent accidental usage
+	listenStart := "listen-start-background-process-dev/null" // obscure string to prevent accidental usage
+	kill := "kill"
 
 	help := flag.Bool("help", false, "Show help message")
+
 	flag.Parse()
 
-	err := checkConfig()
+	fullPath, err := checkConfig()
 	if err != nil {
 		fmt.Println("No clipboard_history.json file found in path. Failed to create:", err)
 		return
@@ -557,18 +602,19 @@ func main() {
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case listen:
-			cmd := exec.Command("pkill", "main.go")
-			cmd.Run() // Kill existing clipboard processes
-			cmd = exec.Command("nohup", "go", "run", "main.go", listenStart, ">/dev/null", "2>&1", "&")
+			// Kill existing clipboard processes
+			shellCmd := exec.Command("pkill", "-f", os.Args[0])
+			shellCmd.Run()
+			shellCmd = exec.Command("nohup", "go", "run", "main.go", listenStart, ">/dev/null", "2>&1", "&")
 
-			if err := cmd.Start(); err != nil {
+			if err := shellCmd.Start(); err != nil {
 				fmt.Println("Error starting clipboard listener:", err)
 				os.Exit(1)
 			}
 			fmt.Println("Starting clipboard listener...")
 			return
 		case clear:
-			err = setBaseConfig()
+			err = setBaseConfig(fullPath)
 			if err != nil {
 				fmt.Println("Failed to clear clipboard contents:", err)
 				os.Exit(1)
@@ -576,10 +622,15 @@ func main() {
 			fmt.Println("Cleared clipboard contents.")
 			return
 		case listenStart:
-			err := runListener()
+			err := runListener(fullPath)
 			if err != nil {
 				fmt.Println(err)
 			}
+			return
+		case kill:
+			shellCmd := exec.Command("pkill", "-f", "main.go")
+			shellCmd.Run()
+			fmt.Println("Stopped all clipboard listener processes. Use `clipboard listen` to resume.")
 			return
 		default:
 			fmt.Println("Arg not recognised. Try `clipboard --help` for more details.")

@@ -1,4 +1,4 @@
 ps aux | grep main.go
-# kill <pid>
+pkill -f "go run main.go"
 
-`nohup go run main.go --start >/dev/null 2>&1 &`
+nohup go run main.go --start >/dev/null 2>&1 &
