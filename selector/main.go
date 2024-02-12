@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -390,6 +391,9 @@ func newDelegateKeyMap() *delegateKeyMap {
 	}
 }
 
+type jsonFile struct {
+}
+
 type ClipboardEntry struct {
 	Value    string `json:"value"`
 	Recorded string `json:"recorded"`
@@ -400,7 +404,7 @@ type ClipboardHistory struct {
 }
 
 func getjsonData() []ClipboardEntry {
-	file, err := os.Open("../history.json")
+	file, err := os.Open(fileName)
 	if err != nil {
 		fmt.Println("error opening file:", err)
 		file.Close()
@@ -421,8 +425,7 @@ func getjsonData() []ClipboardEntry {
 }
 
 func deleteJsonItem(item string) error {
-	filePath := "../history.json"
-	fileContent, err := os.ReadFile(filePath)
+	fileContent, err := os.ReadFile(fileName)
 	if err != nil {
 		return fmt.Errorf("error reading file: %w", err)
 	}
@@ -448,29 +451,109 @@ func deleteJsonItem(item string) error {
 	}
 
 	// Write the updated JSON back to the file
-	if err := os.WriteFile(filePath, updatedJSON, 0644); err != nil {
+	if err := os.WriteFile(fileName, updatedJSON, 0644); err != nil {
 		return fmt.Errorf("error writing file: %w", err)
 	}
 
 	return nil
 }
 
+func checkConfig() error {
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
+		// File does not exist, create it with default values
+
+		file, err := os.Create(fileName)
+		if err != nil {
+			return err
+		}
+
+		defer file.Close()
+
+		baseConfig := ClipboardHistory{
+			ClipboardHistory: []ClipboardEntry{},
+		}
+
+		err = setBaseConfig(baseConfig)
+		if err != nil {
+			return err
+		}
+
+		encoder := json.NewEncoder(file)
+		encoder.SetIndent("", "    ")
+		if err := encoder.Encode(baseConfig); err != nil {
+			return err
+		}
+
+	} else if err != nil {
+		return err
+	}
+	return nil
+}
+
+func setBaseConfig(baseConfig ClipboardHistory) error {
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Truncate the file to zero length
+	err = file.Truncate(0)
+	if err != nil {
+		return err
+	}
+
+	// Rewind the file pointer to the beginning
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+
+	// Encode initial history to JSON and write to file
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "    ")
+	if err := encoder.Encode(baseConfig); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+const (
+	fileName = "../clipboard_history.json"
+)
+
 func main() {
-	// cmd args
-	help := "--help"
-	listen := "--listen"
-	clear := "--clear"
-	listenStart := "--start"
+	// cmd flags and args
+	listen := "listen"
+	clear := "clear"
+	listenStart := "listen-start-background-process-0088" // obscure string to prevent accidental usage
+	help := flag.Bool("help", false, "Show help message")
+
+	err := checkConfig()
+	if err != nil {
+		fmt.Println("No clipboard_history.json file found in path. Failed to create:", err)
+		return
+	}
+
+	if *help {
+		standardInfo := "| `clipboard` -> open clipboard history"
+		clearInfo := "| `clipboard clear` -> truncate clipboard history"
+		listenInfo := "| `clipboard listen` -> starts background process to listen for clipboard events"
+
+		fmt.Printf(
+			"Available commands:\n\n%s\n\n%s\n\n%s\n\n",
+			standardInfo, clearInfo, listenInfo,
+		)
+		return
+	}
 
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
-		case help:
-			fmt.Println("Place holder")
-			os.Exit(0)
 		case listen:
 			cmd := exec.Command("pkill", "main.go")
 			cmd.Run() // Kill existing clipboard processes
-			cmd = exec.Command("nohup", "go", "run", "main.go", "--start", ">/dev/null", "2>&1", "&")
+			cmd = exec.Command("nohup", "go", "run", "main.go", listenStart, ">/dev/null", "2>&1", "&")
 			//cmd = exec.Command("nohup", "sh", "-c", "go run "+os.Args[0]+" --start >/dev/null 2>&1 &")
 
 			if err := cmd.Start(); err != nil {
@@ -478,19 +561,19 @@ func main() {
 				os.Exit(1)
 			}
 			fmt.Println("Starting clipboard listener...")
-			os.Exit(0)
+			return
 		case clear:
 			fmt.Println("Place holder")
-			os.Exit(0)
+			return
 		case listenStart:
 			err := runListener()
 			if err != nil {
 				fmt.Println(err)
 			}
-			os.Exit(0)
+			return
 		default:
 			fmt.Println("Arg not recognised. Try `clipboard --help` for more details.")
-			os.Exit(0)
+			return
 		}
 	}
 
