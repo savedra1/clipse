@@ -501,8 +501,6 @@ func checkConfig() (string, error) {
 	configDir := filepath.Join(currentUser.HomeDir, ".config", configDirName)
 	fullPath := filepath.Join(configDir, fileName)
 
-	fmt.Println("Full path:", fullPath)
-
 	_, err = os.Stat(fullPath)
 	if os.IsNotExist(err) {
 
@@ -603,7 +601,7 @@ func main() {
 		switch os.Args[1] {
 		case listen:
 			// Kill existing clipboard processes
-			shellCmd := exec.Command("pkill", "-f", os.Args[0])
+			shellCmd := exec.Command("pkill", "-f", "main.go")
 			shellCmd.Run()
 			shellCmd = exec.Command("nohup", "go", "run", "main.go", listenStart, ">/dev/null", "2>&1", "&")
 
@@ -611,7 +609,7 @@ func main() {
 				fmt.Println("Error starting clipboard listener:", err)
 				os.Exit(1)
 			}
-			fmt.Println("Starting clipboard listener...")
+			//fmt.Println("Starting clipboard listener...\nTerminating any existing processes...")
 			return
 		case clear:
 			err = setBaseConfig(fullPath)
