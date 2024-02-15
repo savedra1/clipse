@@ -18,115 +18,24 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
+	ps "github.com/mitchellh/go-ps"
 )
 
-// ##################### LISTENER SECTION ####################### //
-// Data struct for storing clipboard strings
-type Data struct {
-	ClipboardHistory []ClipboardItem `json:"clipboardHistory"`
-}
+/* This is where the base level configuration for the
+   bubbletea CLI app is defined.
 
-// ClipboardItem struct for individual clipboard history item
-type ClipboardItem struct {
-	Value    string `json:"value"`
-	Recorded string `json:"recorded"`
-}
-
-func runListener(fullPath string) error {
-	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
-
-	// Load existing data from file, if any
-	var data Data
-	err := loadDataFromFile(fullPath, &data)
-	if err != nil {
-		fmt.Println("Error loading data from file:", err)
-	}
-
-	for {
-		// Get the current clipboard content
-		text, err := clipboard.ReadAll()
-		if err != nil {
-			fmt.Println("Error reading clipboard:", err)
-		}
-
-		// If clipboard content is not empty and not already in the list, add it
-		if text != "" && !contains(data.ClipboardHistory, text) {
-			// If the length exceeds 50, remove the oldest item
-			if len(data.ClipboardHistory) >= 50 {
-				lastIndex := len(data.ClipboardHistory) - 1
-				data.ClipboardHistory = data.ClipboardHistory[:lastIndex] // Remove the oldest item
-			}
-
-			timeNow := strings.Split(time.Now().UTC().String(), "+0000")[0]
-
-			item := ClipboardItem{Value: text, Recorded: timeNow}
-
-			data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
-			//fmt.Println("Added to clipboard history:", text)
-
-			// Save data to file
-			err := saveDataToFile(fullPath, data)
-			if err != nil {
-				fmt.Println("Error saving data to file:", err)
-			}
-		}
-
-		// Check for updates every 0.1 second
-		time.Sleep(100 * time.Millisecond / 10)
-	}
-
-	// Wait for SIGINT or SIGTERM signal
-	<-interrupt
-	return nil
-}
-
-// contains checks if a string exists in a slice of strings
-func contains(slice []ClipboardItem, str string) bool {
-	for _, item := range slice {
-		if item.Value == str {
-			return true
-		}
-	}
-	return false
-}
-
-// loadDataFromFile loads data from a JSON file
-func loadDataFromFile(fullPath string, data *Data) error {
-	file, err := os.Open(fullPath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(data)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// saveDataToFile saves data to a JSON file
-func saveDataToFile(fullPath string, data Data) error {
-	file, err := os.Create(fullPath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	err = encoder.Encode(data)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// ##################### LISTENER SECTION ####################### //
+   Base level config includes:
+   - Color scheme of text
+   - Font
+   - Key bindings
+   - List sructure
+   - Help menu
+   - Defualt actions
+*/
 
 var (
+	// base styling config using lipgloss
 	appStyle = lipgloss.NewStyle().Padding(1, 2)
 
 	titleStyle = lipgloss.NewStyle().
@@ -140,6 +49,7 @@ var (
 )
 
 type item struct {
+	// (Each Row in clipboard view)
 	title       string
 	titleFull   string
 	description string
@@ -151,6 +61,7 @@ func (i item) Description() string { return i.description }
 func (i item) FilterValue() string { return i.title }
 
 type listKeyMap struct {
+	// default keybind definitions
 	toggleSpinner    key.Binding
 	toggleTitleBar   key.Binding
 	toggleStatusBar  key.Binding
@@ -185,12 +96,14 @@ func newListKeyMap() *listKeyMap {
 }
 
 type model struct {
-	list         list.Model
-	keys         *listKeyMap
-	delegateKeys *delegateKeyMap
+	// model pulls all relevant elems together for rendering
+	list         list.Model      // list items
+	keys         *listKeyMap     // keybindings
+	delegateKeys *delegateKeyMap // custom key bindings
 }
 
 func newModel() model {
+	// new model needs raising to render additional custom keys
 	var (
 		delegateKeys = newDelegateKeyMap()
 		listKeys     = newListKeyMap()
@@ -231,11 +144,14 @@ func newModel() model {
 	}
 }
 
-func (m model) Init() tea.Cmd {
+func (m model) Init() tea.Cmd { // initialise app
 	return tea.EnterAltScreen
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	/* this is where the base logic is held for what action to take from
+	   the predefined key bindings
+	*/
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -284,20 +200,60 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m model) View() string {
+func (m model) View() string { // Render app in terminal using client libs
 	return appStyle.Render(m.list.View())
 }
 
-func shorten(s string) string {
-	maxLen := 50 // Define your max length here
-	if len(s) <= maxLen {
-		return strings.ReplaceAll(s, "\n", " ")
-	}
-	return strings.ReplaceAll(s[:maxLen-3], "\n", " ") + "..."
+/* This is were we define additional config to add to our
+base-level bubbletea app. Here including keybinds only.
+*/
+
+type delegateKeyMap struct {
+	choose key.Binding
+	remove key.Binding
 }
 
-// NEW ITEM DELEGATE SECTION
+/*
+Additional short/full help entries. This satisfies the help.KeyMap interface and
+
+	is entirely optional.
+*/
+func (d delegateKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{
+		d.choose,
+		d.remove,
+	}
+}
+
+func (d delegateKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{
+			d.choose,
+			d.remove,
+		},
+	}
+}
+
+// final config map for new keys
+func newDelegateKeyMap() *delegateKeyMap {
+	return &delegateKeyMap{
+		choose: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("enter", "copy"),
+		),
+		remove: key.NewBinding(
+			key.WithKeys("x", "backspace"),
+			key.WithHelp("x", "delete"),
+		),
+	}
+}
+
 func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
+	/* This is where the additional keybinding actions are defined:
+	   - enter/reurn: copies selected item to the clipboard and adds a status message
+	   - backspace/delete: removes item from list view and json file
+
+	*/
 	d := list.NewDefaultDelegate()
 
 	d.UpdateFunc = func(msg tea.Msg, m *list.Model) tea.Cmd {
@@ -319,6 +275,9 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				if err != nil {
 					panic(err)
 				}
+				cmd := exec.Command("kill", os.Args[2])
+				err = cmd.Run()
+				handleError(err)
 				return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))
 
 			case key.Matches(msg, keys.remove):
@@ -329,9 +288,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				}
 				fullPath := getFullPath()
 				err := deleteJsonItem(fullPath, fullValue)
-				if err != nil {
-					os.Exit(1)
-				}
+				handleError(err)
 				return m.NewStatusMessage(statusMessageStyle("Deleted: " + title))
 			}
 		}
@@ -352,65 +309,58 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 	return d
 }
 
-type delegateKeyMap struct {
-	choose key.Binding
-	remove key.Binding
-}
+/* File contains logic for parseing the cilpboard data and
+   general config.
+   - fileName defined in constants.go
+   - dirName defined in constants.go
+*/
 
-// Additional short help entries. This satisfies the help.KeyMap interface and
-// is entirely optional.
-func (d delegateKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{
-		d.choose,
-		d.remove,
-	}
-}
-
-// Additional full help entries. This satisfies the help.KeyMap interface and
-// is entirely optional.
-func (d delegateKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{
-			d.choose,
-			d.remove,
-		},
-	}
-}
-
-func newDelegateKeyMap() *delegateKeyMap {
-	return &delegateKeyMap{
-		choose: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "copy"),
-		),
-		remove: key.NewBinding(
-			key.WithKeys("x", "backspace"),
-			key.WithHelp("x", "delete"),
-		),
-	}
-}
-
-type jsonFile struct {
-}
-
-type ClipboardEntry struct {
+// ClipboardItem struct for individual clipboardHistor array item
+type ClipboardItem struct {
+	// EG: {"value": "copied_string", "recorded": "datetime"}
 	Value    string `json:"value"`
 	Recorded string `json:"recorded"`
 }
 
 type ClipboardHistory struct {
-	ClipboardHistory []ClipboardEntry `json:"clipboardHistory"`
+	ClipboardHistory []ClipboardItem `json:"clipboardHistory"`
 }
 
-func getjsonData() []ClipboardEntry {
+// saveDataToFile saves data to a JSON file
+func saveDataToFile(fullPath string, data ClipboardHistory) error {
+	/* Triggered from the system copy action:
+	   Adds the copied string to the clipboard_history.json file.
+	*/
+	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	err = file.Truncate(0)
+	if err != nil {
+		return err
+	}
+
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getjsonData() []ClipboardItem {
+	/* returns the clipboardHistory array from the
+	   clipboard_history.json file
+	*/
 	fullPath := getFullPath()
-	file, err := os.Open(fullPath)
+	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		fmt.Println("error opening file:", err)
 		file.Close()
 	}
 
-	// Decode JSON from the file
 	var data ClipboardHistory
 	if err := json.NewDecoder(file).Decode(&data); err != nil {
 		fmt.Println("Error decoding JSON:", err)
@@ -423,6 +373,9 @@ func getjsonData() []ClipboardEntry {
 }
 
 func deleteJsonItem(fullPath, item string) error {
+	/* Accessed by bubbletea method on backspace keybinding:
+	   Deletes selected item from json file.
+	*/
 	fileContent, err := os.ReadFile(fullPath)
 	if err != nil {
 		return fmt.Errorf("error reading file: %w", err)
@@ -433,7 +386,7 @@ func deleteJsonItem(fullPath, item string) error {
 		return fmt.Errorf("error unmarshalling JSON: %w", err)
 	}
 
-	var updatedClipboardHistory []ClipboardEntry
+	var updatedClipboardHistory []ClipboardItem
 	for _, entry := range data.ClipboardHistory {
 		if entry.Value != item {
 			updatedClipboardHistory = append(updatedClipboardHistory, entry)
@@ -457,6 +410,9 @@ func deleteJsonItem(fullPath, item string) error {
 }
 
 func createConfigDir(configDir string) error {
+	/* Used to create the ~/.config/clipboard_manager dir
+	   in relative path.
+	*/
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		fmt.Println("Error creating config directory:", err)
 		os.Exit(1)
@@ -465,6 +421,9 @@ func createConfigDir(configDir string) error {
 }
 
 func createHistoryFile(fullPath string) error {
+	/* Used to create the clipboard_history.json file
+	   in relative path.
+	*/
 	file, err := os.Create(fullPath)
 	if err != nil {
 		return err
@@ -479,11 +438,12 @@ func createHistoryFile(fullPath string) error {
 }
 
 func getFullPath() string {
+	/* Returns full path string for clipboard file.
+	   useful when needing to be accessed form a
+	   bubbletea method.
+	*/
 	currentUser, err := user.Current()
-	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
-	}
+	handleError(err)
 	// Construct the path to the config directory
 	configDir := filepath.Join(currentUser.HomeDir, ".config", configDirName)
 	fullPath := filepath.Join(configDir, fileName)
@@ -491,20 +451,21 @@ func getFullPath() string {
 }
 
 func checkConfig() (string, error) {
+	/* Ensure $HOME/.config/clipboard_manager/clipboard_history.json
+	   exists and create the path if not. Full path returned as string
+	   when successful
+	*/
 	currentUser, err := user.Current()
-	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
-	}
+	handleError(err)
 
 	// Construct the path to the config directory
 	configDir := filepath.Join(currentUser.HomeDir, ".config", configDirName)
 	fullPath := filepath.Join(configDir, fileName)
 
-	_, err = os.Stat(fullPath)
+	_, err = os.Stat(fullPath) // File already exist?
 	if os.IsNotExist(err) {
 
-		_, err = os.Stat(configDir)
+		_, err = os.Stat(configDir) // Config dir at least exists?
 		if os.IsNotExist(err) {
 			err = createConfigDir(configDir)
 			if err != nil {
@@ -513,7 +474,7 @@ func checkConfig() (string, error) {
 			}
 		}
 
-		_, err = os.Stat(fullPath)
+		_, err = os.Stat(fullPath) // Attempts creation of full path now that relative path exists on system
 		if os.IsNotExist(err) {
 			err = createHistoryFile(fullPath)
 			if err != nil {
@@ -524,14 +485,20 @@ func checkConfig() (string, error) {
 		}
 
 	} else if err != nil {
-		fmt.Println("Unable to check if config file exists.")
+		fmt.Println("Unable to check if config file exists. Please update binary permisisons.")
 		os.Exit(1)
 	}
 	return fullPath, nil
 }
 
 func setBaseConfig(fullPath string) error {
-	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, 0644)
+	/*
+		 Sets clipboard_history.json file to:
+			{
+				"clipboardHistory": []
+			}
+	*/
+	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, 0644) // Permisisons specified for file to allow write
 	if err != nil {
 		return err
 	}
@@ -550,7 +517,7 @@ func setBaseConfig(fullPath string) error {
 	}
 
 	baseConfig := ClipboardHistory{
-		ClipboardHistory: []ClipboardEntry{},
+		ClipboardHistory: []ClipboardItem{},
 	}
 
 	// Encode initial history to JSON and write to file
@@ -563,27 +530,85 @@ func setBaseConfig(fullPath string) error {
 	return nil
 }
 
+/*
+Global vars stored in separate module.
+Any new additions to be added here.
+*/
+
 const (
 	fileName      = "clipboard_history.json"
 	configDirName = "clipboard_manager"
+	pollInterval  = 100 * time.Millisecond / 10
+	maxLen        = 50
 )
 
+/* runListener is essentially a while loop to be created as a system background process on boot.
+   can be stopped at any time with:
+   	clipboard kill
+   	pkill -f clipboard
+   	killall clipboard
+*/
+
+func runListener(fullPath string) error {
+	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
+	// Load existing data from file, if any
+	var data ClipboardHistory
+
+	go func() { // go routine necessary to acheive desired CTRL+C behavior
+		for {
+
+			// Get the current clipboard content
+			text, err := clipboard.ReadAll()
+			handleError(err)
+
+			// If clipboard content is not empty and not already in the list, add it
+			if text != "" && !contains(data.ClipboardHistory, text) {
+				// If the length exceeds 50, remove the oldest item
+				if len(data.ClipboardHistory) >= 50 {
+					lastIndex := len(data.ClipboardHistory) - 1
+					data.ClipboardHistory = data.ClipboardHistory[:lastIndex] // Remove the oldest item
+				}
+
+				// yyyy-mm-dd hh-mm-s.msmsms Time format
+				timeNow := strings.Split(time.Now().UTC().String(), "+0000")[0]
+
+				// {"value": "copied_strig", "recorded": "2024-01-02 12:34:78743687"}
+				item := ClipboardItem{Value: text, Recorded: timeNow}
+
+				data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
+
+				// Save updated data to JSON file
+				err = saveDataToFile(fullPath, data)
+				handleError(err)
+
+			}
+
+			time.Sleep(pollInterval) // pollInterval defined in constants.go
+
+		}
+
+	}()
+	// Wait for SIGINT or SIGTERM signal
+	<-interrupt
+	return nil
+}
+
 func main() {
-	// cmd flags and args
+	// definitions for cmd flags and args
 	listen := "listen"
 	clear := "clear"
-	listenStart := "listen-start-background-process-dev/null" // obscure string to prevent accidental usage
+	listenStart := "listen-start-background-process" // obscure arg to prevent accidental usage
 	kill := "kill"
 
 	help := flag.Bool("help", false, "Show help message")
 
 	flag.Parse()
 
+	// explicit path for config file is tested before program can continue
 	fullPath, err := checkConfig()
-	if err != nil {
-		fmt.Println("No clipboard_history.json file found in path. Failed to create:", err)
-		return
-	}
+	handleError(err)
 
 	if *help {
 		standardInfo := "| `clipboard` -> open clipboard history"
@@ -596,48 +621,108 @@ func main() {
 		)
 		return
 	}
-
+	bin := "test.go"
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case listen:
 			// Kill existing clipboard processes
-			shellCmd := exec.Command("pkill", "-f", "main.go")
-			shellCmd.Run()
-			shellCmd = exec.Command("nohup", "go", "run", "main.go", listenStart, ">/dev/null", "2>&1", "&")
+			shellCmd := exec.Command("pkill", "-f", bin)
+			err = shellCmd.Run()
+			handleError(err)
 
-			if err := shellCmd.Start(); err != nil {
-				fmt.Println("Error starting clipboard listener:", err)
-				os.Exit(1)
-			}
-			//fmt.Println("Starting clipboard listener...\nTerminating any existing processes...")
+			shellCmd = exec.Command("nohup", "go", "run", bin, listenStart, ">/dev/null", "2>&1", "&")
+			err = shellCmd.Run()
+			handleError(err)
 			return
+
 		case clear:
+			// Remove contents of jsonFile.clipboardHistory array
 			err = setBaseConfig(fullPath)
-			if err != nil {
-				fmt.Println("Failed to clear clipboard contents:", err)
-				os.Exit(1)
-			}
-			fmt.Println("Cleared clipboard contents.")
+			handleError(err)
+			fmt.Println("Cleared clipboard contents from system.")
 			return
+
 		case listenStart:
+			//Hidden arg that starts listener as background process
 			err := runListener(fullPath)
-			if err != nil {
-				fmt.Println(err)
-			}
+			handleError(err)
 			return
+
 		case kill:
-			shellCmd := exec.Command("pkill", "-f", "main.go")
+			// End any existing background listener processes
+			shellCmd := exec.Command("pkill", "-f", bin)
 			shellCmd.Run()
 			fmt.Println("Stopped all clipboard listener processes. Use `clipboard listen` to resume.")
 			return
+
+		case "test":
+			//htop()
+			c := exec.Command("kill", "3407899")
+			out, err := c.Output()
+			handleError(err)
+			fmt.Println(out)
+
+			return
+
+		case "htop":
+			htop()
+			return
+
+		case "open":
+
+			// Open bubbletea app in terminal session
+			if _, err := tea.NewProgram(newModel()).Run(); err != nil {
+				fmt.Println("Error opening clipboard:\n", err)
+				os.Exit(1)
+			}
+
 		default:
+			// Arg not recognised
 			fmt.Println("Arg not recognised. Try `clipboard --help` for more details.")
 			return
 		}
 	}
 
-	if _, err := tea.NewProgram(newModel()).Run(); err != nil {
-		fmt.Println("Error opening clipboard:", err)
+}
+
+/* General purpose functions to be used by other modules
+ */
+
+func htop() {
+	list, err := ps.Processes()
+	if err != nil {
+		panic(err)
+	}
+	for _, p := range list {
+		if strings.Contains(p.Executable(), "zsh") { //&& p.PPid() != 1 {
+			fmt.Printf("- Process %s with PID %d and PPID %d\n", p.Executable(), p.Pid(), p.PPid())
+		}
+
+	}
+}
+
+// Avoids repeat code by handling errors in a uniform way
+func handleError(err error) {
+	if err != nil {
+		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
+}
+
+// Contains checks if a string exists in a slice of strings
+func contains(slice []ClipboardItem, str string) bool {
+	for _, item := range slice {
+		if item.Value == str {
+			return true
+		}
+	}
+	return false
+}
+
+// Shortens string val to show in list view
+func shorten(s string) string {
+	if len(s) <= maxLen { // maxLen defined in constants.go
+		return strings.ReplaceAll(s, "\n", " ")
+	}
+	return strings.ReplaceAll(s[:maxLen-3], "\n", " ") + "..."
 }

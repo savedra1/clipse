@@ -1,1 +1,0 @@
-sudo docker rmi -f fyne-test && sudo docker build -t fyne-test . && sudo docker run fyne-test
