@@ -10,6 +10,7 @@ Any new additions to be added here.
 const (
 	fileName      = "clipboard_history.json"
 	configDirName = "clipboard_manager"
+	listenCmd     = "--listen-shell"
 	pollInterval  = 100 * time.Millisecond / 10
-	maxLen        = 50
+	maxLen        = 100
 )

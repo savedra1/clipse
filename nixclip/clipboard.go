@@ -6,12 +6,14 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
+	"time"
 )
 
 /* File contains logic for parseing the cilpboard data and
-   general config.
-   - fileName defined in constants.go
-   - dirName defined in constants.go
+general config.
+- fileName defined in constants.go
+- dirName defined in constants.go
 */
 
 // ClipboardItem struct for individual clipboardHistor array item
@@ -28,13 +30,18 @@ type ClipboardHistory struct {
 // saveDataToFile saves data to a JSON file
 func saveDataToFile(fullPath string, data ClipboardHistory) error {
 	/* Triggered from the system copy action:
-	   Adds the copied string to the clipboard_history.json file.
+	Adds the copied string to the clipboard_history.json file.
 	*/
-	file, err := os.Create(fullPath)
+	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
+
+	err = file.Truncate(0)
+	if err != nil {
+		return err
+	}
 
 	encoder := json.NewEncoder(file)
 	err = encoder.Encode(data)
@@ -46,10 +53,10 @@ func saveDataToFile(fullPath string, data ClipboardHistory) error {
 
 func getjsonData() []ClipboardItem {
 	/* returns the clipboardHistory array from the
-	   clipboard_history.json file
+	clipboard_history.json file
 	*/
 	fullPath := getFullPath()
-	file, err := os.Open(fullPath)
+	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		fmt.Println("error opening file:", err)
 		file.Close()
@@ -68,7 +75,7 @@ func getjsonData() []ClipboardItem {
 
 func deleteJsonItem(fullPath, item string) error {
 	/* Accessed by bubbletea method on backspace keybinding:
-	   Deletes selected item from json file.
+	Deletes selected item from json file.
 	*/
 	fileContent, err := os.ReadFile(fullPath)
 	if err != nil {
@@ -105,7 +112,7 @@ func deleteJsonItem(fullPath, item string) error {
 
 func createConfigDir(configDir string) error {
 	/* Used to create the ~/.config/clipboard_manager dir
-	   in relative path.
+	in relative path.
 	*/
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		fmt.Println("Error creating config directory:", err)
@@ -116,7 +123,7 @@ func createConfigDir(configDir string) error {
 
 func createHistoryFile(fullPath string) error {
 	/* Used to create the clipboard_history.json file
-	   in relative path.
+	in relative path.
 	*/
 	file, err := os.Create(fullPath)
 	if err != nil {
@@ -133,8 +140,8 @@ func createHistoryFile(fullPath string) error {
 
 func getFullPath() string {
 	/* Returns full path string for clipboard file.
-	   useful when needing to be accessed form a
-	   bubbletea method.
+	useful when needing to be accessed form a
+	bubbletea method.
 	*/
 	currentUser, err := user.Current()
 	handleError(err)
@@ -146,8 +153,8 @@ func getFullPath() string {
 
 func checkConfig() (string, error) {
 	/* Ensure $HOME/.config/clipboard_manager/clipboard_history.json
-	   exists and create the path if not. Full path returned as string
-	   when successful
+	exists and create the path if not. Full path returned as string
+	when successful
 	*/
 	currentUser, err := user.Current()
 	handleError(err)
@@ -163,19 +170,15 @@ func checkConfig() (string, error) {
 		if os.IsNotExist(err) {
 			err = createConfigDir(configDir)
 			if err != nil {
-				fmt.Println("Failed to create config dir. Please create:", configDir)
+				fmt.Println("Failed to create config dir:", configDir)
 				os.Exit(1)
 			}
 		}
 
-		_, err = os.Stat(fullPath) // Attempts creation of full path now that relative path exists on system
-		if os.IsNotExist(err) {
-			err = createHistoryFile(fullPath)
-			if err != nil {
-				fmt.Println("Failed to create", fullPath)
-				os.Exit(1)
-			}
-
+		err = createHistoryFile(fullPath) // Attempts creation of file now that dir path exists
+		if err != nil {
+			fmt.Println("Failed to create:", fullPath)
+			os.Exit(1)
 		}
 
 	} else if err != nil {
@@ -187,10 +190,10 @@ func checkConfig() (string, error) {
 
 func setBaseConfig(fullPath string) error {
 	/*
-		 Sets clipboard_history.json file to:
-			{
-				"clipboardHistory": []
-			}
+		  Sets clipboard_history.json file to:
+			 {
+				 "clipboardHistory": []
+			 }
 	*/
 	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, 0644) // Permisisons specified for file to allow write
 	if err != nil {
@@ -222,4 +225,43 @@ func setBaseConfig(fullPath string) error {
 	}
 
 	return nil
+}
+
+func addClipboardItem(filePath, text string) error {
+	// Read data from JSON file
+	fileData, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	var data ClipboardHistory
+	err = json.Unmarshal(fileData, &data)
+	if err != nil {
+		return err
+	}
+
+	if text != "" && !contains(data.ClipboardHistory, text) {
+		// If the length exceeds maxLen, remove the oldest item
+		if len(data.ClipboardHistory) >= maxLen {
+			data.ClipboardHistory = data.ClipboardHistory[1:]
+		}
+
+		// yyyy-mm-dd hh-mm-s.msmsms Time format
+		timeNow := strings.Split(time.Now().UTC().String(), "+0000")[0]
+
+		// Create new ClipboardItem
+		item := ClipboardItem{Value: text, Recorded: timeNow}
+
+		// Append the new item to the beginning of the array
+		data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
+
+		// Save updated data to JSON file
+		err = saveDataToFile(filePath, data)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+
 }

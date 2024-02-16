@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -77,6 +79,9 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				err := clipboard.WriteAll(fullValue)
 				if err != nil {
 					panic(err)
+				}
+				if len(os.Args) > 1 {
+					closeShell(os.Args[1])
 				}
 				return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))
 
