@@ -81,7 +81,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 					panic(err)
 				}
 				if len(os.Args) > 1 {
-					closeShell(os.Args[1])
+					killProcess(os.Args[1])
 				}
 				return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))
 

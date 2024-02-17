@@ -12,5 +12,5 @@ const (
 	configDirName = "clipboard_manager"
 	listenCmd     = "--listen-shell"
 	pollInterval  = 100 * time.Millisecond / 10
-	maxLen        = 100
+	maxLen        = 120
 )

@@ -28,13 +28,16 @@ func runListener(fullPath string) error {
 			// Get the current clipboard content
 			text, err := clipboard.ReadAll()
 			handleError(err)
+			if !isFile(text) {
+				// If clipboard content is not empty and not already in the list, add it
+				if text != "" && !contains(data.ClipboardHistory, text) {
+					err := addClipboardItem(fullPath, text)
+					handleError(err)
+				}
+				time.Sleep(pollInterval) // pollInterval defined in constants.go
 
-			// If clipboard content is not empty and not already in the list, add it
-			if text != "" && !contains(data.ClipboardHistory, text) {
-				err := addClipboardItem(fullPath, text)
-				handleError(err)
 			}
-			time.Sleep(pollInterval) // pollInterval defined in constants.go
+
 		}
 	}()
 	// Wait for SIGINT or SIGTERM signal

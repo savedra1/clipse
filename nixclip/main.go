@@ -4,14 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"strconv"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
-	// definitions for cmd flags
 
 	//time.Sleep(100 * time.Second)
 
@@ -23,8 +21,6 @@ func main() {
 	kill := flag.Bool("kill", false, "Kill any existing background processes.")
 	clear := flag.Bool("clear", false, "Remove all contents from the clipboard's history.")
 
-	test := flag.Bool("test", false, "testing")
-
 	flag.Parse()
 
 	// explicit path for config file is tested before program can continue
@@ -34,6 +30,7 @@ func main() {
 	if flag.NFlag() == 0 {
 		if len(os.Args) > 1 {
 			_, err := strconv.Atoi(os.Args[1]) // check for valid PPID by attempting conversion to an int
+			// above line causes canic so cannot catch this error effictively
 			if err != nil {
 				fmt.Printf("Invalid PPID supplied: %s\nPPID must be integer. use var `$PPID`", os.Args[2])
 				return
@@ -53,7 +50,7 @@ func main() {
 	}
 
 	if *version {
-		fmt.Println(os.Args[0], "1.01")
+		fmt.Println(os.Args[0], "1.00")
 		return
 	}
 
@@ -64,10 +61,13 @@ func main() {
 		}
 		err = addClipboardItem(fullPath, os.Args[2])
 		handleError(err)
+		fmt.Printf("Added %s to clipboard", os.Args[2])
+		return
 	}
 
 	if *listen {
-		//killExistingProcess(os.Args[0])
+		err = killExisting()
+		handleError(err)
 		runNohupListener(listenCmd) // hardcoded as const
 		return
 	}
@@ -79,7 +79,8 @@ func main() {
 	}
 
 	if *kill {
-		killExistingProcess(os.Args[0])
+		killAll(os.Args[0])
+		handleError(err)
 		return
 	}
 
@@ -87,14 +88,6 @@ func main() {
 		err = setBaseConfig(fullPath)
 		handleError(err)
 		fmt.Println("Removed clipboard contents from system.")
-		return
-	}
-
-	if *test {
-		killExistingProcess("test.go")
-		cmd := exec.Command("nohup", "go", "run", "test.go", listenCmd, ">/dev/null", "2>&1", "&")
-		err := cmd.Start()
-		handleError(err)
 		return
 	}
 

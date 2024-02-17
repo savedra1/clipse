@@ -1,10 +1,12 @@
 ## Future Improvements
-- Exit on choose
-- Floating window?
-- images
-- Allow duplicates in board except for most recent item
+- Update the kill process to kill other binary PPIDS only so cirrent is not terminated
+- catch atoi panic
+- Prevent duplicate clipboards being opened
 - Use with rofi front end?
-- Fix issue where background process wont run against binary file
+- Paste option
+- images (able to save image but issue with writing image to clipboard)
 - Config added to json file, adjustable with CLI args
 - Nix package
 - Makefile installation
+
+
