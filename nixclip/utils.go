@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"image/gif"
 	"image/jpeg"
 	"image/png"
 	"os"
@@ -57,10 +56,7 @@ func isFile(data string) bool {
 	if err == nil {
 		return true
 	}
-	_, err = gif.Decode(reader)
-	if err == nil {
-		return true
-	}
+
 	return false
 
 }

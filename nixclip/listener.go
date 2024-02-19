@@ -11,9 +11,9 @@ import (
 
 /* runListener is essentially a while loop to be created as a system background process on boot.
    can be stopped at any time with:
-   	clipboard kill
-   	pkill -f clipboard
-   	killall clipboard
+   	clipse -kill
+   	pkill -f clipse
+   	killall clipse
 */
 
 func runListener(fullPath string) error {
@@ -36,8 +36,11 @@ func runListener(fullPath string) error {
 				}
 				time.Sleep(pollInterval) // pollInterval defined in constants.go
 
+			} else {
+				if imagesEnabled() {
+					return //save image to .config/clipboard_history
+				}
 			}
-
 		}
 	}()
 	// Wait for SIGINT or SIGTERM signal

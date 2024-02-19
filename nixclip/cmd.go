@@ -66,3 +66,22 @@ func killProcess(ppid string) {
 	cmd := exec.Command("kill", ppid)
 	cmd.Run()
 }
+
+func imagesEnabled() bool {
+	cmd := exec.Command("sh", "-c", "wl-copy -v")
+	err := cmd.Run()
+	if err != nil {
+		return false
+	}
+	return true
+
+}
+
+func copyImage(imagePath, imageType string) error {
+	cmd := fmt.Sprintf("wl-copy --type %s %s", imageType, imagePath)
+	err := exec.Command("sh", "-c", cmd).Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}

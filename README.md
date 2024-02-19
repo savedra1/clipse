@@ -1,5 +1,4 @@
 ## Future Improvements
-- Update the kill process to kill other binary PPIDS only so cirrent is not terminated
 - catch atoi panic
 - Prevent duplicate clipboards being opened
 - Use with rofi front end?
