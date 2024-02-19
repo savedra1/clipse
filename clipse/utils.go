@@ -41,7 +41,7 @@ func shorten(s string) string {
 	return strings.ReplaceAll(s[:maxLen-3], "\n", "\\n") + "..."
 }
 
-func isFile(data string) bool {
+func checkDataType(data string) string {
 	/*
 	   Confirms if clipboard data is currently folding a file vs a string
 	*/
@@ -50,13 +50,13 @@ func isFile(data string) bool {
 
 	_, err := png.Decode(reader)
 	if err == nil {
-		return true
+		return "png"
 	}
 	_, err = jpeg.Decode(reader)
 	if err == nil {
-		return true
+		return "jpeg"
 	}
 
-	return false
+	return "text"
 
 }

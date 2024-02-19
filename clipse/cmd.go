@@ -77,8 +77,17 @@ func imagesEnabled() bool {
 
 }
 
-func copyImage(imagePath, imageType string) error {
-	cmd := fmt.Sprintf("wl-copy --type %s %s", imageType, imagePath)
+func copyImage(imagePath string) error {
+	cmd := fmt.Sprintf("wl-copy --type image/png %s", imagePath)
+	err := exec.Command("sh", "-c", cmd).Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func saveImage(imagePath string) error {
+	cmd := fmt.Sprintf("wl-paste --type image/png > %s", imagePath)
 	err := exec.Command("sh", "-c", cmd).Run()
 	if err != nil {
 		return err

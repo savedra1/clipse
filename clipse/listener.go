@@ -28,7 +28,8 @@ func runListener(fullPath string) error {
 			// Get the current clipboard content
 			text, err := clipboard.ReadAll()
 			handleError(err)
-			if !isFile(text) {
+			dataType := checkDataType(text)
+			if dataType == "text" {
 				// If clipboard content is not empty and not already in the list, add it
 				if text != "" && !contains(data.ClipboardHistory, text) {
 					err := addClipboardItem(fullPath, text)
@@ -38,7 +39,9 @@ func runListener(fullPath string) error {
 
 			} else {
 				if imagesEnabled() {
-					return //save image to .config/clipboard_history
+					fileName := string(time.Now().UTC().Second()) + "." + dataType
+					saveImage(fullPath + "/images" + fileName)
+					addClipboardItem(fullPath, "<IMAGE_FILE> "+fileName)
 				}
 			}
 		}

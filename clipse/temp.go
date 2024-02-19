@@ -9,39 +9,19 @@ import (
 	_ "image/jpeg"
 	"image/png"
 	_ "image/png"
-	"io"
 	"os"
-	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/atotto/clipboard"
 )
 
 func main() {
-	cmd := exec.Command("wl-paste")
 
-	// Create a buffer to capture command output
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	// Run the command
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println("Error running wl-paste:", err)
-		return
-	}
-
-	// Set the output of wl-paste as os.Stdin
-	os.Stdin = &out
-
-	// Read image data from os.Stdin
-	imageData, err := io.ReadAll(os.Stdin)
-	if err != nil {
-		fmt.Println("Error reading image data from stdin:", err)
-		return
-	}
-
-	newFile, err := os.Create("new_image.png")
+	fileExt := FileType()
+	fileName := fmt.Sprintf("%s.%s", string(time.Now().Second()), strings.ToLower(fileExt))
+	cmdString := fmt.Sprintf("wl-paste--type image/png > %s", fileName)
+	cmd := os.exec("sh", "-c", cmdString)
 
 	time.Sleep(1000 * time.Second)
 
