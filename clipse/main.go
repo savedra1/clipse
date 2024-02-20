@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	// explicit path for config file is tested before program can continue
-	fullPath, err := checkConfig()
+	fullPath, fileDir, err := Init()
 	handleError(err)
 
 	if flag.NFlag() == 0 {
@@ -73,7 +73,7 @@ func main() {
 	}
 
 	if *listenShell {
-		err = runListener(fullPath)
+		err = runListener(fullPath, fileDir)
 		handleError(err)
 		return
 	}

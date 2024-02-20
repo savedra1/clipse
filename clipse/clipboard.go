@@ -69,8 +69,11 @@ func deleteJsonItem(fullPath, item string) error {
 		if entry.Value != item {
 			updatedClipboardHistory = append(updatedClipboardHistory, entry)
 		}
+		if entry.Value == item && entry.FilePath != "null" {
+			err = deleteImage(entry.FilePath)
+			handleError(err)
+		}
 	}
-
 	updatedData := ClipboardHistory{
 		ClipboardHistory: updatedClipboardHistory,
 	}
@@ -128,7 +131,7 @@ func getFullPath() string {
 	return fullPath
 }
 
-func checkConfig() (string, error) {
+func Init() (string, string, error) {
 	/* Ensure $HOME/.config/clipboard_manager/clipboard_history.json
 	exists and create the path if not. Full path returned as string
 	when successful
@@ -137,8 +140,9 @@ func checkConfig() (string, error) {
 	handleError(err)
 
 	// Construct the path to the config directory
-	configDir := filepath.Join(currentUser.HomeDir, ".config", configDirName)
-	fullPath := filepath.Join(configDir, fileName)
+	configDir := filepath.Join(currentUser.HomeDir, ".config", configDirName) // the ~/.config/clipboard_manager dir
+	fullPath := filepath.Join(configDir, fileName)                            // the path to the clipboard_history.json file
+	filePath := filepath.Join(configDir, fileDir)                             // where tmporary image files are stored
 
 	_, err = os.Stat(fullPath) // File already exist?
 	if os.IsNotExist(err) {
@@ -163,15 +167,15 @@ func checkConfig() (string, error) {
 		os.Exit(1)
 	}
 
-	_, err = os.Stat(configDir + "/tmp_files")
+	_, err = os.Stat(filePath)
 	if os.IsNotExist(err) {
-		err = createConfigDir(configDir + "/tmp_files")
+		err = createConfigDir(filePath)
 		if err != nil {
 			fmt.Errorf("Failed to initialise config directory for storing image files.")
 		}
 	}
 
-	return fullPath, nil
+	return fullPath, filePath, nil
 }
 
 func setBaseConfig(fullPath string) error {
@@ -216,39 +220,35 @@ func setBaseConfig(fullPath string) error {
 func addClipboardItem(configFile, text, imgPath string) error {
 	// Read data from JSON file
 	var data ClipboardHistory
-	if text != "" && !contains(data.ClipboardHistory, text) {
-		fileData, err := os.ReadFile(configFile)
-		if err != nil {
-			return err
-		}
 
-		var data ClipboardHistory
-		err = json.Unmarshal(fileData, &data)
-		if err != nil {
-			return err
-		}
-
-		// If the length exceeds maxLen, remove the oldest item
-		if len(data.ClipboardHistory) >= maxLen {
-			data.ClipboardHistory = data.ClipboardHistory[1:]
-		}
-
-		// yyyy-mm-dd hh-mm-s.msmsms Time format
-		timeNow := strings.Split(time.Now().UTC().String(), "+0000")[0]
-
-		item := ClipboardItem{Value: text, Recorded: timeNow, FilePath: imgPath}
-
-		// Append the new item to the beginning of the array to appear at top of list
-		data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
-
-		err = saveDataToFile(configFile, data)
-		if err != nil {
-			return err
-		}
-
-		return nil
-
+	fileData, err := os.ReadFile(configFile)
+	if err != nil {
+		return err
 	}
+
+	err = json.Unmarshal(fileData, &data)
+	if err != nil {
+		return err
+	}
+
+	// If the length exceeds maxLen, remove the oldest item
+	if len(data.ClipboardHistory) >= maxLen {
+		data.ClipboardHistory = data.ClipboardHistory[:1]
+	}
+
+	// yyyy-mm-dd hh-mm-s.msmsms Time format
+	timeNow := strings.Split(time.Now().UTC().String(), "+0000")[0]
+
+	item := ClipboardItem{Value: text, Recorded: timeNow, FilePath: imgPath}
+
+	// Append the new item to the beginning of the array to appear at top of list
+	data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
+
+	err = saveDataToFile(configFile, data)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

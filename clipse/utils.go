@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"image/gif"
 	"image/jpeg"
 	"image/png"
 	"os"
@@ -35,10 +36,10 @@ func contains(slice []ClipboardItem, str string) bool {
 
 // Shortens string val to show in list view
 func shorten(s string) string {
-	if len(s) <= maxLen { // maxLen defined in constants.go
+	if len(s) <= maxChar { // maxChar defined in constants.go
 		return strings.ReplaceAll(s, "\n", "\\n")
 	}
-	return strings.ReplaceAll(s[:maxLen-3], "\n", "\\n") + "..."
+	return strings.ReplaceAll(s[:maxChar-3], "\n", "\\n") + "..."
 }
 
 func checkDataType(data string) string {
@@ -55,6 +56,10 @@ func checkDataType(data string) string {
 	_, err = jpeg.Decode(reader)
 	if err == nil {
 		return "jpg"
+	}
+	_, err = gif.Decode(reader)
+	if err == nil {
+		return "gif"
 	}
 
 	return "text"
