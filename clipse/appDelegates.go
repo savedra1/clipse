@@ -78,7 +78,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 		case tea.KeyMsg:
 			switch {
 			case key.Matches(msg, keys.choose):
-				if fp != "" && imagesEnabled() {
+				if fp != "null" && imagesEnabled() {
 					err := copyImage(fp)
 					handleError(err)
 				} else {

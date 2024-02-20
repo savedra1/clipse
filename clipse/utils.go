@@ -16,17 +16,20 @@ import (
 // Avoids repeat code by handling errors in a uniform way
 func handleError(err error) {
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Printf("Error: %s", err)
 		os.Exit(1)
 	}
 }
 
 // Contains checks if a string exists in the most recent 3 items
-func contains(slice []ClipboardItem, str string) bool {
-	if len(slice) > 3 {
-		slice = slice[:3]
+func contains(str string) bool {
+	data := getjsonData()
+
+	if len(data) > 3 {
+		data = data[:3]
 	}
-	for _, item := range slice {
+	for _, item := range data {
+
 		if item.Value == str {
 			return true
 		}
