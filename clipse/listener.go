@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -34,10 +35,10 @@ func runListener(fullPath string) error {
 				// If clipboard content is not empty and not already in the list, add it
 				err := addClipboardItem(fullPath, text, "")
 				handleError(err)
-			} else {
-				if imagesEnabled() && (dataType == "png" || dataType == "JPG") {
-					randoTimeStamp := fmt.Sprintf("%d", time.Now().UnixNano())
-					fileName := fmt.Sprintf("%s/%s.%s", fileDir, randoTimeStamp, dataType) // fileDir defined in constants.go
+			} else { // NEED A WAY TO GET A UNIQUE REPLICATABLE STRING VALUE FOR EACH IMG FILE
+				if imagesEnabled() && (dataType == "png" || dataType == "jpg") {
+					bytesLength := strconv.Itoa(len(text))
+					fileName := fmt.Sprintf("%s/%s.%s", fileDir, bytesLength, dataType) // fileDir defined in constants.go
 					saveImage(fileName)
 					displayName := fmt.Sprintf("<BINARY FILE> %s", fileName)
 					addClipboardItem(fullPath, displayName, fileName)
