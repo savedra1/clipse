@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,7 +22,6 @@ func runListener(fullPath string) error {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 	// Load existing data from file, if any
-	var data ClipboardHistory
 
 	go func() { // go routine necessary to acheive desired CTRL+C behavior
 		for {
@@ -29,21 +29,21 @@ func runListener(fullPath string) error {
 			text, err := clipboard.ReadAll()
 			handleError(err)
 			dataType := checkDataType(text)
+
 			if dataType == "text" {
 				// If clipboard content is not empty and not already in the list, add it
-				if text != "" && !contains(data.ClipboardHistory, text) {
-					err := addClipboardItem(fullPath, text)
-					handleError(err)
-				}
-				time.Sleep(pollInterval) // pollInterval defined in constants.go
-
+				err := addClipboardItem(fullPath, text, "")
+				handleError(err)
 			} else {
-				if imagesEnabled() {
-					fileName := string(time.Now().UTC().Second()) + "." + dataType
-					saveImage(fullPath + "/images" + fileName)
-					addClipboardItem(fullPath, "<IMAGE_FILE> "+fileName)
+				if imagesEnabled() && (dataType == "png" || dataType == "JPG") {
+					randoTimeStamp := fmt.Sprintf("%d", time.Now().UnixNano())
+					fileName := fmt.Sprintf("%s/%s.%s", fileDir, randoTimeStamp, dataType) // fileDir defined in constants.go
+					saveImage(fileName)
+					displayName := fmt.Sprintf("<BINARY FILE> %s", fileName)
+					addClipboardItem(fullPath, displayName, fileName)
 				}
 			}
+			time.Sleep(pollInterval) // pollInterval defined in constants.go
 		}
 	}()
 	// Wait for SIGINT or SIGTERM signal

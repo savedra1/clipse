@@ -54,7 +54,7 @@ func checkDataType(data string) string {
 	}
 	_, err = jpeg.Decode(reader)
 	if err == nil {
-		return "jpeg"
+		return "jpg"
 	}
 
 	return "text"

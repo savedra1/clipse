@@ -21,34 +21,11 @@ type ClipboardItem struct {
 	// EG: {"value": "copied_string", "recorded": "datetime"}
 	Value    string `json:"value"`
 	Recorded string `json:"recorded"`
+	FilePath string `json:"filePath"`
 }
 
 type ClipboardHistory struct {
 	ClipboardHistory []ClipboardItem `json:"clipboardHistory"`
-}
-
-// saveDataToFile saves data to a JSON file
-func saveDataToFile(fullPath string, data ClipboardHistory) error {
-	/* Triggered from the system copy action:
-	Adds the copied string to the clipboard_history.json file.
-	*/
-	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	err = file.Truncate(0)
-	if err != nil {
-		return err
-	}
-
-	encoder := json.NewEncoder(file)
-	err = encoder.Encode(data)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func getjsonData() []ClipboardItem {
@@ -185,6 +162,15 @@ func checkConfig() (string, error) {
 		fmt.Println("Unable to check if config file exists. Please update binary permisisons.")
 		os.Exit(1)
 	}
+
+	_, err = os.Stat(configDir + "/tmp_files")
+	if os.IsNotExist(err) {
+		err = createConfigDir(configDir + "/tmp_files")
+		if err != nil {
+			fmt.Errorf("Failed to initialise config directory for storing image files.")
+		}
+	}
+
 	return fullPath, nil
 }
 
@@ -227,20 +213,21 @@ func setBaseConfig(fullPath string) error {
 	return nil
 }
 
-func addClipboardItem(filePath, text string) error {
+func addClipboardItem(configFile, text, imgPath string) error {
 	// Read data from JSON file
-	fileData, err := os.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-
 	var data ClipboardHistory
-	err = json.Unmarshal(fileData, &data)
-	if err != nil {
-		return err
-	}
-
 	if text != "" && !contains(data.ClipboardHistory, text) {
+		fileData, err := os.ReadFile(configFile)
+		if err != nil {
+			return err
+		}
+
+		var data ClipboardHistory
+		err = json.Unmarshal(fileData, &data)
+		if err != nil {
+			return err
+		}
+
 		// If the length exceeds maxLen, remove the oldest item
 		if len(data.ClipboardHistory) >= maxLen {
 			data.ClipboardHistory = data.ClipboardHistory[1:]
@@ -249,19 +236,47 @@ func addClipboardItem(filePath, text string) error {
 		// yyyy-mm-dd hh-mm-s.msmsms Time format
 		timeNow := strings.Split(time.Now().UTC().String(), "+0000")[0]
 
-		// Create new ClipboardItem
-		item := ClipboardItem{Value: text, Recorded: timeNow}
+		item := ClipboardItem{Value: text, Recorded: timeNow, FilePath: imgPath}
 
-		// Append the new item to the beginning of the array
+		// Append the new item to the beginning of the array to appear at top of list
 		data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
 
-		// Save updated data to JSON file
-		err = saveDataToFile(filePath, data)
+		err = saveDataToFile(configFile, data)
 		if err != nil {
 			return err
 		}
+
+		return nil
+
+	}
+	return nil
+}
+
+// saveDataToFile saves data to a JSON file
+func saveDataToFile(fullPath string, data ClipboardHistory) error {
+	/* Triggered from the system copy action:
+	Adds the copied string to the clipboard_history.json file.
+	*/
+	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	err = file.Truncate(0)
+	if err != nil {
+		return err
 	}
 
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(data)
+	if err != nil {
+		return err
+	}
 	return nil
-
 }
+
+/*
+func Init() error {
+	configFile, err := checkConfig()
+}*/

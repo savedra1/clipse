@@ -59,7 +59,7 @@ func main() {
 			fmt.Printf("Nothing to add. %s -a requires a following arg. Use --help of more info.", os.Args[0])
 			return
 		}
-		err = addClipboardItem(fullPath, os.Args[2])
+		err = addClipboardItem(fullPath, os.Args[2], "")
 		handleError(err)
 		fmt.Printf("Added %s to clipboard", os.Args[2])
 		return
