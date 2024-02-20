@@ -38,11 +38,13 @@ type item struct {
 	title       string
 	titleFull   string
 	description string
+	filePath    string
 }
 
 func (i item) Title() string       { return i.title }
 func (i item) TitleFull() string   { return i.titleFull }
 func (i item) Description() string { return i.description }
+func (i item) FilePath() string    { return i.filePath }
 func (i item) FilterValue() string { return i.title }
 
 type listKeyMap struct {
@@ -103,6 +105,7 @@ func newModel() model {
 			title:       shortenedVal,
 			titleFull:   entry.Value,
 			description: "Copied to clipboard: " + entry.Recorded,
+			filePath:    entry.FilePath,
 		}
 		entryItems = append(entryItems, item)
 	}

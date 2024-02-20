@@ -64,10 +64,12 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 	d.UpdateFunc = func(msg tea.Msg, m *list.Model) tea.Cmd {
 		var title string
 		var fullValue string
+		var fp string
 
 		if i, ok := m.SelectedItem().(item); ok {
 			title = i.Title()
 			fullValue = i.TitleFull()
+			fp = i.FilePath()
 		} else {
 			return nil
 		}
@@ -76,10 +78,14 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 		case tea.KeyMsg:
 			switch {
 			case key.Matches(msg, keys.choose):
-				err := clipboard.WriteAll(fullValue)
-				if err != nil {
-					panic(err)
+				if fp != "" && imagesEnabled() {
+					err := copyImage(fp)
+					handleError(err)
+				} else {
+					err := clipboard.WriteAll(fullValue)
+					handleError(err)
 				}
+
 				if len(os.Args) > 1 {
 					killProcess(os.Args[1])
 				}
