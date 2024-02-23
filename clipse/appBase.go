@@ -111,8 +111,47 @@ func newModel() model {
 	}
 
 	// Setup list
-	delegate := newItemDelegate(delegateKeys)
-	clipboardList := list.New(entryItems, delegate, 0, 0)
+
+	del := newItemDelegate(delegateKeys)
+	ct := getTheme()
+	if ct.UseCustom {
+		del.Styles.DimmedDesc = del.Styles.DimmedDesc.
+			Foreground(lipgloss.Color(ct.DimmedDesc))
+
+		del.Styles.DimmedTitle = del.Styles.DimmedTitle.
+			Foreground(lipgloss.Color(ct.DimmedTitle))
+
+		del.Styles.FilterMatch = del.Styles.FilterMatch.
+			Foreground(lipgloss.Color(ct.FilteredMatch))
+
+		del.Styles.NormalDesc = del.Styles.NormalDesc.
+			Foreground(lipgloss.Color(ct.NormalDesc))
+
+		del.Styles.NormalTitle = del.Styles.NormalTitle.
+			Foreground(lipgloss.Color(ct.NormalTitle))
+
+		del.Styles.SelectedDesc = del.Styles.SelectedDesc.
+			Foreground(lipgloss.Color(ct.SelectedDesc)).
+			BorderForeground(lipgloss.Color(ct.SelectedDescBorder))
+
+		del.Styles.SelectedTitle = del.Styles.SelectedTitle.
+			Foreground(lipgloss.Color(ct.SelectedTitle)).
+			BorderForeground(lipgloss.Color(ct.SelectedBorder))
+
+		titleStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(ct.TitleFore)).
+			Background(lipgloss.Color(ct.TitleBack)).
+			Padding(0, 1)
+
+		statusMessageStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.AdaptiveColor{Light: ct.StatusMsg, Dark: ct.StatusMsg}).
+			Render
+	}
+
+	//c := lipgloss.Color("#6f03fc")
+	//delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(c)
+
+	clipboardList := list.New(entryItems, del, 0, 0)
 	clipboardList.Title = "Clipboard History"
 	clipboardList.Styles.Title = titleStyle
 	clipboardList.AdditionalFullHelpKeys = func() []key.Binding {
@@ -178,6 +217,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 
 		}
+
 	}
 
 	// This will also call our delegate's update function.

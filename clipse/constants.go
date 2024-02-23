@@ -10,6 +10,7 @@ Any new additions to be added here.
 const (
 	baseDir       = ".config"
 	fileName      = "clipboard_history.json"
+	themeFile     = "custom_theme.json"
 	configDirName = "clipse"
 	fileDir       = "tmp_files"
 	listenCmd     = "--listen-shell"

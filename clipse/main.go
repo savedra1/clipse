@@ -20,9 +20,16 @@ var (
 )
 
 func main() {
+
 	flag.Parse()
 	fullPath, fileDir, displayServer, imgEnabled, err := Init()
 	handleError(err)
+
+	//themeConfig := getTheme()
+	//fmt.Println(themeConfig.DimmedDesc)
+	//fmt.Println(themeConfig.UseCustom)
+	//
+	//time.Sleep(100 * time.Second)
 
 	if flag.NFlag() == 0 {
 		if len(os.Args) > 1 {

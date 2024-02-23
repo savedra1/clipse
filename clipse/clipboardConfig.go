@@ -84,11 +84,13 @@ func Init() (string, string, string, bool, error) {
 
 	_, err = os.Stat(filePath)
 	if os.IsNotExist(err) {
-		err = createConfigDir(filePath)
-		if err != nil {
-			fmt.Errorf("Failed to initialise config directory for storing image files.")
+		if err = createConfigDir(filePath); err != nil {
+			fmt.Println("Failed to initialise config directory for storing image files.")
 		}
 	}
+
+	themePath := filepath.Join(configDir, themeFile)
+	initTheme(themePath)
 
 	ds := displayServer()
 	var ie bool // imagesEnabled?
@@ -105,7 +107,7 @@ func getjsonData() []ClipboardItem {
 	/* returns the clipboardHistory array from the
 	clipboard_history.json file
 	*/
-	fullPath := getFullPath()
+	fullPath, _ := getFullPath()
 	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		fmt.Println("error opening file:", err)
@@ -190,7 +192,7 @@ func createHistoryFile(fullPath string) error {
 	return nil
 }
 
-func getFullPath() string {
+func getFullPath() (string, string) {
 	/* Returns full path string for clipboard file.
 	useful when needing to be accessed form a
 	bubbletea method.
@@ -200,7 +202,8 @@ func getFullPath() string {
 	// Construct the path to the config directory
 	configDir := filepath.Join(currentUser.HomeDir, ".config", configDirName)
 	fullPath := filepath.Join(configDir, fileName)
-	return fullPath
+
+	return fullPath, configDir
 }
 
 func setBaseConfig(fullPath string) error {

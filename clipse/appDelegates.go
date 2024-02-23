@@ -100,7 +100,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				if len(m.Items()) == 0 {
 					keys.remove.SetEnabled(false)
 				}
-				fullPath := getFullPath()
+				fullPath, _ := getFullPath()
 				err := deleteJsonItem(fullPath, fp) // This func will also delete the temoraily stored image if filepath present
 				handleError(err)
 
