@@ -19,7 +19,7 @@ import (
    	killall clipse
 */
 
-func runListener(fullPath, fileDir string) error {
+func runListener(fullPath, fileDir, displayServer string, imgEnabled bool) error {
 	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -40,12 +40,12 @@ func runListener(fullPath, fileDir string) error {
 					handleError(err)
 				}
 			case "png", "jpeg":
-				if imagesEnabled() {
+				if imgEnabled {
 					file := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dataType) // fileDir defined in constants.go
 					filePath := filepath.Join(fileDir, file)
 					title := fmt.Sprintf("<BINARY FILE> %s", file)
 					if !contains(title) {
-						err = saveImage(filePath)
+						err = saveImage(filePath, displayServer)
 						handleError(err)
 						err = addClipboardItem(fullPath, title, filePath)
 						handleError(err)

@@ -78,8 +78,10 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 		case tea.KeyMsg:
 			switch {
 			case key.Matches(msg, keys.choose):
-				if fp != "null" && imagesEnabled() {
-					err := copyImage(fp)
+
+				if fp != "null" {
+					ds := displayServer() // eg "wayland"
+					err := copyImage(fp, ds)
 					handleError(err)
 				} else {
 					err := clipboard.WriteAll(fullValue)

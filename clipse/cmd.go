@@ -67,18 +67,29 @@ func killProcess(ppid string) {
 	cmd.Run()
 }
 
-func imagesEnabled() bool {
-	cmd := exec.Command("sh", "-c", "wl-copy -v")
-	err := cmd.Run()
-	if err != nil {
+func imagesEnabled(displayServer string) bool {
+	var cmd *exec.Cmd
+	switch displayServer {
+	case "wayland":
+		cmd = exec.Command("sh", "-c", "wl-copy -v")
+	case "x11", "darwin":
+		cmd = exec.Command("sh", "-c", "xclip -v")
+	default:
+		return false
+	}
+	if err := cmd.Run(); err != nil {
 		return false
 	}
 	return true
-
 }
 
-func copyImage(imagePath string) error {
-	cmd := fmt.Sprintf("wl-copy -t image/png < %s", imagePath)
+func copyImage(imagePath, displayServer string) error {
+	var cmd string
+	if displayServer == "wayland" {
+		cmd = fmt.Sprintf("wl-copy -t image/png < %s", imagePath)
+	} else {
+		cmd = fmt.Sprintf("xclip -selection clipboard -t image/png -i %s", imagePath)
+	}
 	err := exec.Command("sh", "-c", cmd).Run()
 	if err != nil {
 		return err
@@ -86,8 +97,14 @@ func copyImage(imagePath string) error {
 	return nil
 }
 
-func saveImage(imagePath string) error {
-	cmd := fmt.Sprintf("wl-paste -t image/png > %s", imagePath)
+func saveImage(imagePath, displayServer string) error {
+	var cmd string
+	if displayServer == "wayland" {
+		cmd = fmt.Sprintf("wl-paste -t image/png > %s", imagePath)
+	} else {
+		cmd = fmt.Sprintf("xclip -selection clipboard -t image/png -o > %s", imagePath)
+	}
+
 	err := exec.Command("sh", "-c", cmd).Run()
 	if err != nil {
 		return err

@@ -9,22 +9,19 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+var (
+	help        = flag.Bool("help", false, "Show help message.")
+	version     = flag.Bool("version", false, "Show app version.")
+	add         = flag.Bool("a", false, "Add the following arg to the clipboard history.")
+	listen      = flag.Bool("listen", false, "Start background process for monitoring clipboard activity.")
+	listenShell = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
+	kill        = flag.Bool("kill", false, "Kill any existing background processes.")
+	clear       = flag.Bool("clear", false, "Remove all contents from the clipboard's history.")
+)
+
 func main() {
-
-	//time.Sleep(100 * time.Second)
-
-	help := flag.Bool("help", false, "Show help message.")
-	version := flag.Bool("version", false, "Show app version.")
-	add := flag.Bool("a", false, "Add the following arg to the clipboard history.")
-	listen := flag.Bool("listen", false, "Start background process for monitoring clipboard activity.")
-	listenShell := flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
-	kill := flag.Bool("kill", false, "Kill any existing background processes.")
-	clear := flag.Bool("clear", false, "Remove all contents from the clipboard's history.")
-
 	flag.Parse()
-
-	// explicit path for config file is tested before program can continue
-	fullPath, fileDir, err := Init()
+	fullPath, fileDir, displayServer, imgEnabled, err := Init()
 	handleError(err)
 
 	if flag.NFlag() == 0 {
@@ -73,7 +70,7 @@ func main() {
 	}
 
 	if *listenShell {
-		err = runListener(fullPath, fileDir)
+		err = runListener(fullPath, fileDir, displayServer, imgEnabled)
 		handleError(err)
 		return
 	}

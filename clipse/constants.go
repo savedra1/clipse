@@ -8,8 +8,9 @@ Any new additions to be added here.
 */
 
 const (
+	baseDir       = ".config"
 	fileName      = "clipboard_history.json"
-	configDirName = "clipboard_manager"
+	configDirName = "clipse"
 	fileDir       = "tmp_files"
 	listenCmd     = "--listen-shell"
 	pollInterval  = 100 * time.Millisecond / 10
