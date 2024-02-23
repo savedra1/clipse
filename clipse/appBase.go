@@ -104,7 +104,7 @@ func newModel() model {
 		item := item{
 			title:       shortenedVal,
 			titleFull:   entry.Value,
-			description: "Copied to clipboard: " + entry.Recorded,
+			description: "Date copied: " + entry.Recorded,
 			filePath:    entry.FilePath,
 		}
 		entryItems = append(entryItems, item)

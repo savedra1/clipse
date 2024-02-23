@@ -12,7 +12,7 @@ const (
 	historyFileName = "clipboard_history.json"
 	themeFile       = "custom_theme.json"
 	clipseDirName   = "clipse"
-	imgFileDir      = "tmp_files"
+	tmpDir          = "tmp_files"
 	listenCmd       = "--listen-shell"
 	pollInterval    = 100 * time.Millisecond / 10
 	maxLen          = 100

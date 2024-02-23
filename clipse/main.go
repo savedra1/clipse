@@ -21,7 +21,7 @@ var (
 )
 
 func main() {
-	//killExistingFG()
+
 	//time.Sleep(10000 * time.Second)
 
 	flag.Parse()
@@ -29,6 +29,7 @@ func main() {
 	handleError(err)
 
 	if flag.NFlag() == 0 {
+		killExistingFG()
 		if len(os.Args) > 1 {
 			_, err := strconv.Atoi(os.Args[1]) // check for valid PPID by attempting conversion to an int
 			// above line causes canic so cannot catch this error effictively

@@ -57,18 +57,18 @@ func Init() (string, string, string, bool, error) {
 	// Construct the path to the config directory
 	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDirName) // the ~/.config/clipboard_manager dir
 	historyFilePath := filepath.Join(clipseDir, historyFileName)              // the path to the clipboard_history.json file
-	themePath := filepath.Join(clipseDir, themeFile)                          // where tmporary image files are stored
+	tmpFileDir := filepath.Join(clipseDir, tmpDir)                            // where tmporary image files are stored
+	themePath := filepath.Join(clipseDir, themeFile)                          // explicit path to theme.json file
+
+	initTheme(themePath)
 
 	_, err = os.Stat(historyFilePath) // File already exist?
 	if os.IsNotExist(err) {
 
 		_, err = os.Stat(clipseDir) // Config dir at least exists?
 		if os.IsNotExist(err) {
-			err = createConfigDir(clipseDir)
-			if err != nil {
-				fmt.Println("Failed to create config dir:", clipseDir)
-				os.Exit(1)
-			}
+			err = createDir(clipseDir)
+			handleError(err)
 		}
 
 		err = createHistoryFile(historyFilePath) // Attempts creation of file now that dir path exists
@@ -82,7 +82,11 @@ func Init() (string, string, string, bool, error) {
 		os.Exit(1)
 	}
 
-	initTheme(themePath)
+	_, err = os.Stat(tmpFileDir)
+	if os.IsNotExist(err) { // create temp files dir within main config
+		err = createDir(tmpFileDir)
+		handleError(err)
+	}
 
 	ds := displayServer()
 	var ie bool // imagesEnabled?
@@ -127,17 +131,21 @@ func deleteJsonItem(historyFilePath, item string) error {
 	}
 
 	var data ClipboardHistory
+
 	if err := json.Unmarshal(fileContent, &data); err != nil {
 		return fmt.Errorf("error unmarshalling JSON: %w", err)
 	}
 
 	var updatedClipboardHistory []ClipboardItem
+
 	for _, entry := range data.ClipboardHistory {
 		if entry.Recorded != item {
 			updatedClipboardHistory = append(updatedClipboardHistory, entry)
-		} else if entry.FilePath != "null" {
-			err = deleteImage(entry.FilePath)
-			handleError(err)
+		} else {
+			if entry.FilePath != "null" {
+				err = deleteImage(entry.FilePath)
+				handleError(err)
+			}
 		}
 	}
 	updatedData := ClipboardHistory{
@@ -156,12 +164,12 @@ func deleteJsonItem(historyFilePath, item string) error {
 	return nil
 }
 
-func createConfigDir(clipseDir string) error {
+func createDir(dirPath string) error {
 	/* Used to create the ~/.config/clipboard_manager dir
 	in relative path.
 	*/
-	if err := os.MkdirAll(clipseDir, 0755); err != nil {
-		fmt.Println("Error creating config directory:", err)
+	if err := os.MkdirAll(dirPath, 0755); err != nil {
+		fmt.Println("Error creating directory:", err)
 		os.Exit(1)
 	}
 	return nil
@@ -255,7 +263,7 @@ func addClipboardItem(configFile, text, imgPath string) error {
 
 	item := ClipboardItem{
 		Value:    text,
-		Recorded: timeNow,
+		Recorded: strings.TrimSpace(timeNow),
 		FilePath: imgPath,
 	}
 

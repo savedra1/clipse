@@ -69,13 +69,11 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 		var desc string
 
 		if i, ok := m.SelectedItem().(item); ok {
-			writelog(i.Description())
 
 			title = i.Title()
 			fullValue = i.TitleFull()
 			fp = i.FilePath()
 			desc = strings.Split(i.Description(), ": ")[1]
-			//writelog(desc)
 		} else {
 			return nil
 		}
@@ -106,8 +104,8 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				if len(m.Items()) == 0 {
 					keys.remove.SetEnabled(false)
 				}
-				fullPath, _ := paths()
-				err := deleteJsonItem(fullPath, desc) // This func will also delete the temoraily stored image if filepath present
+				historyFilePath, _ := paths()
+				err := deleteJsonItem(historyFilePath, strings.TrimSpace(desc)) // This func will also delete the temoraily stored image if filepath present
 				handleError(err)
 
 				return m.NewStatusMessage(statusMessageStyle("Deleted: " + title))

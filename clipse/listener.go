@@ -42,7 +42,7 @@ func runListener(historyFilePath, clipsDir, displayServer string, imgEnabled boo
 			case "png", "jpeg":
 				if imgEnabled {
 					file := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dt)
-					filePath := filepath.Join(clipsDir, imgFileDir, file)
+					filePath := filepath.Join(clipsDir, tmpDir, file)
 					title := fmt.Sprintf("<BINARY FILE> %s", file)
 					if !contains(title) {
 						err = saveImage(filePath, displayServer)

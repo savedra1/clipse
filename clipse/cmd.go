@@ -15,13 +15,6 @@ import (
 CMD funcs
 */
 
-func writelog(msg string) {
-	c := fmt.Sprintf("echo %s > templog.txt", msg)
-	err := exec.Command("sh", "-c", c).Run()
-	handleError(err)
-
-}
-
 func killExisting() error {
 	/*
 		Kills any existing clipse processes but keeps current ps live
@@ -44,29 +37,29 @@ func killExisting() error {
 	return nil
 }
 
-func killExistingFG() error {
-	//currentPS := syscall.Getpid()
-	//fmt.Println("current:", currentPS)
-	psList, err := ps.Processes()
-	if err != nil {
-		return err
-	}
+func killExistingFG() {
+	/*
+		Only kill other clipboard GUI windows to prevent
+		file conflicts.
+	*/
 
-	for _, p := range psList {
-		if strings.Contains(os.Args[0], p.Executable()) {
-			fmt.Println("Process:", p.Executable())
-			stingPID := strconv.Itoa(p.Pid())
-			cmd := exec.Command("ps", "-p", stingPID, "-o", "args=")
-			output, _ := cmd.Output()
+	currentPS := strconv.Itoa(syscall.Getpid())
+	fmt.Println("current:", currentPS)
+	cmd := exec.Command("sh", "-c", "pgrep -a clipse")
+	output, err := cmd.Output()
+	handleError(err)
+	/*
+		EG Output returns as:
+		156842 ./clipse --listen-shell >/dev/null 2>&1 &
+		310228 ./clipse
+	*/
 
-			fmt.Println(output)
-			//if p.Pid() != currentPS {
-			//	killProcess(strconv.Itoa(p.Pid()))
-			//}
+	psList := strings.Split(string(output), "\n")
+	for _, ps := range psList {
+		if !strings.Contains(ps, currentPS) && !strings.Contains(ps, listenCmd) {
+			killProcess(strings.Split(ps, " ")[0])
 		}
 	}
-	return nil
-
 }
 
 /* Not currently used
