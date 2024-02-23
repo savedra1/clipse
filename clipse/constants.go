@@ -8,13 +8,13 @@ Any new additions to be added here.
 */
 
 const (
-	baseDir       = ".config"
-	fileName      = "clipboard_history.json"
-	themeFile     = "custom_theme.json"
-	configDirName = "clipse"
-	fileDir       = "tmp_files"
-	listenCmd     = "--listen-shell"
-	pollInterval  = 100 * time.Millisecond / 10
-	maxLen        = 100
-	maxChar       = 125
+	baseDir         = ".config"
+	historyFileName = "clipboard_history.json"
+	themeFile       = "custom_theme.json"
+	clipseDirName   = "clipse"
+	imgFileDir      = "tmp_files"
+	listenCmd       = "--listen-shell"
+	pollInterval    = 100 * time.Millisecond / 10
+	maxLen          = 100
+	maxChar         = 125
 )

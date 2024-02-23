@@ -27,7 +27,7 @@ func getTheme() CustomTheme {
 	/* returns the clipboardHistory array from the
 	clipboard_history.json file
 	*/
-	_, configDir := getFullPath()
+	_, configDir := paths()
 	fp := filepath.Join(configDir, themeFile)
 
 	file, err := os.OpenFile(fp, os.O_RDWR|os.O_CREATE, 0644)

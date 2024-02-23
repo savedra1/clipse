@@ -19,7 +19,7 @@ import (
    	killall clipse
 */
 
-func runListener(fullPath, fileDir, displayServer string, imgEnabled bool) error {
+func runListener(historyFilePath, clipsDir, displayServer string, imgEnabled bool) error {
 	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -31,74 +31,31 @@ func runListener(fullPath, fileDir, displayServer string, imgEnabled bool) error
 			input, err := clipboard.ReadAll()
 			handleError(err)
 
-			dataType := checkDataType(input)
+			dt := dataType(input)
 
-			switch dataType {
+			switch dt {
 			case "text":
 				if input != "" && !contains(input) {
-					err := addClipboardItem(fullPath, input, "null")
+					err := addClipboardItem(historyFilePath, input, "null")
 					handleError(err)
 				}
 			case "png", "jpeg":
 				if imgEnabled {
-					file := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dataType) // fileDir defined in constants.go
-					filePath := filepath.Join(fileDir, file)
+					file := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dt)
+					filePath := filepath.Join(clipsDir, imgFileDir, file)
 					title := fmt.Sprintf("<BINARY FILE> %s", file)
 					if !contains(title) {
 						err = saveImage(filePath, displayServer)
 						handleError(err)
-						err = addClipboardItem(fullPath, title, filePath)
+						err = addClipboardItem(historyFilePath, title, filePath)
 						handleError(err)
 					}
 				}
-
 			}
 			time.Sleep(pollInterval) // pollInterval defined in constants.go
 		}
-
 	}()
 
-	//time.Sleep(pollInterval) // pollInterval defined in constants.go
-	// Wait for SIGINT or SIGTERM signal
 	<-interrupt
 	return nil
 }
-
-/*
-func runListener(fullPath, fp string) error {
-	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
-	// Load existing data from file, if any
-
-	fmt.Println("DEBUG 1")
-	time.Sleep(2 * time.Second)
-
-	go func() { // go routine necessary to acheive desired CTRL+C behavior
-		for {
-			// Get the current clipboard content
-			text, err := clipboard.ReadAll()
-			fmt.Println("Input:", text)
-			fmt.Println("DEBUG 2")
-			time.Sleep(2 * time.Second)
-
-			handleError(err)
-
-			// If clipboard content is not empty and not already in the list, add it
-			if text != "" && !contains(text) {
-				fmt.Println("DEBUG 3")
-				time.Sleep(2 * time.Second)
-				err := addClipboardItem(fullPath, text, "null")
-				handleError(err)
-				fmt.Println("DEBUG 4")
-				time.Sleep(2 * time.Second)
-			}
-			time.Sleep(pollInterval) // pollInterval defined in constants.go
-
-		}
-	}()
-	// Wait for SIGINT or SIGTERM signal
-	<-interrupt
-	return nil
-}
-*/

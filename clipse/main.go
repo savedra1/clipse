@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/atotto/clipboard"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -20,16 +21,12 @@ var (
 )
 
 func main() {
+	//killExistingFG()
+	//time.Sleep(10000 * time.Second)
 
 	flag.Parse()
-	fullPath, fileDir, displayServer, imgEnabled, err := Init()
+	historyFilePath, clipseDir, displayServer, imgEnabled, err := Init()
 	handleError(err)
-
-	//themeConfig := getTheme()
-	//fmt.Println(themeConfig.DimmedDesc)
-	//fmt.Println(themeConfig.UseCustom)
-	//
-	//time.Sleep(100 * time.Second)
 
 	if flag.NFlag() == 0 {
 		if len(os.Args) > 1 {
@@ -43,6 +40,7 @@ func main() {
 		_, err := tea.NewProgram(newModel()).Run()
 		handleError(err)
 		return
+
 	} else if flag.NFlag() > 1 {
 		fmt.Printf("Too many flags provided. Use %s --help for more info.", os.Args[0])
 		return
@@ -60,12 +58,12 @@ func main() {
 
 	if *add {
 		if len(os.Args) < 3 {
-			fmt.Printf("Nothing to add. %s -a requires a following arg. Use --help of more info.", os.Args[0])
+			fmt.Printf("Nothing to add. %s -a requires a following arg. See --help for more info.", os.Args[0])
 			return
 		}
-		err = addClipboardItem(fullPath, os.Args[2], "")
+		err = addClipboardItem(historyFilePath, os.Args[2], "")
 		handleError(err)
-		fmt.Printf("Added %s to clipboard", os.Args[2])
+		fmt.Printf("added %s to clipboard!", os.Args[2])
 		return
 	}
 
@@ -77,7 +75,7 @@ func main() {
 	}
 
 	if *listenShell {
-		err = runListener(fullPath, fileDir, displayServer, imgEnabled)
+		err = runListener(historyFilePath, clipseDir, displayServer, imgEnabled)
 		handleError(err)
 		return
 	}
@@ -89,7 +87,8 @@ func main() {
 	}
 
 	if *clear {
-		err = setBaseConfig(fullPath)
+		clipboard.WriteAll("")
+		err = clearHistory(historyFilePath)
 		handleError(err)
 		fmt.Println("Removed clipboard contents from system.")
 		return

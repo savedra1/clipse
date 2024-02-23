@@ -37,11 +37,38 @@ func killExisting() error {
 	return nil
 }
 
+func killExistingFG() error {
+	//currentPS := syscall.Getpid()
+	//fmt.Println("current:", currentPS)
+	psList, err := ps.Processes()
+	if err != nil {
+		return err
+	}
+
+	for _, p := range psList {
+		if strings.Contains(os.Args[0], p.Executable()) {
+			fmt.Println("Process:", p.Executable())
+			stingPID := strconv.Itoa(p.Pid())
+			cmd := exec.Command("ps", "-p", stingPID, "-o", "args=")
+			output, _ := cmd.Output()
+
+			fmt.Println(output)
+			//if p.Pid() != currentPS {
+			//	killProcess(strconv.Itoa(p.Pid()))
+			//}
+		}
+	}
+	return nil
+
+}
+
+/* Not currently used
 func clearShellOutput() {
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
 	cmd.Start() // Not essential to wait for this process to complete
 }
+*/
 
 func killAll(bin string) {
 	cmd := exec.Command("pkill", "-f", bin)

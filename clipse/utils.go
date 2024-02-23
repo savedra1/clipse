@@ -16,14 +16,16 @@ import (
 // Avoids repeat code by handling errors in a uniform way
 func handleError(err error) {
 	if err != nil {
-		fmt.Printf("Error: %s", err)
+		if err = fmt.Errorf("error: %s", err); err != nil {
+			fmt.Println("Failed to retreive error log form program:", err)
+		}
 		os.Exit(1)
 	}
 }
 
 // Contains checks if a string exists in the most recent 3 items
 func contains(str string) bool {
-	data := getjsonData()
+	data := getHistory()
 
 	if len(data) > 3 {
 		data = data[:3]
@@ -45,7 +47,7 @@ func shorten(s string) string {
 	return strings.ReplaceAll(s[:maxChar-3], "\n", "\\n") + "..."
 }
 
-func checkDataType(data string) string {
+func dataType(data string) string {
 	/*
 	   Confirms if clipboard data is currently folding a file vs a string
 	*/

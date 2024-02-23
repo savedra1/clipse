@@ -97,7 +97,7 @@ func newModel() model {
 	)
 
 	// Make initial list of items
-	clipboardItems := getjsonData()
+	clipboardItems := getHistory()
 	var entryItems []list.Item
 	for _, entry := range clipboardItems {
 		shortenedVal := shorten(entry.Value)
@@ -217,7 +217,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 
 		}
-
 	}
 
 	// This will also call our delegate's update function.
