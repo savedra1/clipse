@@ -89,6 +89,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				if len(os.Args) > 1 {
 					killProcess(os.Args[1])
 				}
+
 				return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))
 
 			case key.Matches(msg, keys.remove):
@@ -98,8 +99,9 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 					keys.remove.SetEnabled(false)
 				}
 				fullPath := getFullPath()
-				err := deleteJsonItem(fullPath, fullValue)
+				err := deleteJsonItem(fullPath, fp) // This func will also delete the temoraily stored image if filepath present
 				handleError(err)
+
 				return m.NewStatusMessage(statusMessageStyle("Deleted: " + title))
 			}
 		}

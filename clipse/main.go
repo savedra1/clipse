@@ -32,7 +32,7 @@ func main() {
 			_, err := strconv.Atoi(os.Args[1]) // check for valid PPID by attempting conversion to an int
 			// above line causes canic so cannot catch this error effictively
 			if err != nil {
-				fmt.Printf("Invalid PPID supplied: %s\nPPID must be integer. use var `$PPID`", os.Args[2])
+				fmt.Printf("Invalid PPID supplied: %s\nPPID must be integer. use var `$PPID`", os.Args[1])
 				return
 			}
 		}

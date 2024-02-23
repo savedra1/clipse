@@ -66,10 +66,9 @@ func deleteJsonItem(fullPath, item string) error {
 
 	var updatedClipboardHistory []ClipboardItem
 	for _, entry := range data.ClipboardHistory {
-		if entry.Value != item {
+		if entry.Recorded != item {
 			updatedClipboardHistory = append(updatedClipboardHistory, entry)
-		}
-		if entry.Value == item && entry.FilePath != "null" {
+		} else if entry.FilePath != "null" {
 			err = deleteImage(entry.FilePath)
 			handleError(err)
 		}
