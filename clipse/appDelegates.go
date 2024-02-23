@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
@@ -65,11 +66,16 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 		var title string
 		var fullValue string
 		var fp string
+		var desc string
 
 		if i, ok := m.SelectedItem().(item); ok {
+			writelog(i.Description())
+
 			title = i.Title()
 			fullValue = i.TitleFull()
 			fp = i.FilePath()
+			desc = strings.Split(i.Description(), ": ")[1]
+			//writelog(desc)
 		} else {
 			return nil
 		}
@@ -101,7 +107,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 					keys.remove.SetEnabled(false)
 				}
 				fullPath, _ := paths()
-				err := deleteJsonItem(fullPath, fp) // This func will also delete the temoraily stored image if filepath present
+				err := deleteJsonItem(fullPath, desc) // This func will also delete the temoraily stored image if filepath present
 				handleError(err)
 
 				return m.NewStatusMessage(statusMessageStyle("Deleted: " + title))

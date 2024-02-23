@@ -15,6 +15,13 @@ import (
 CMD funcs
 */
 
+func writelog(msg string) {
+	c := fmt.Sprintf("echo %s > templog.txt", msg)
+	err := exec.Command("sh", "-c", c).Run()
+	handleError(err)
+
+}
+
 func killExisting() error {
 	/*
 		Kills any existing clipse processes but keeps current ps live

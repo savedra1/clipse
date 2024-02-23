@@ -1,4 +1,5 @@
 ## TODO
+- Items not deleting properly - bug with finding by time added - try using Trim() when adding 
 - Prevent duplicate clipboards being opened - would have to kill only the existing gui process
 
 - README (with videos)
