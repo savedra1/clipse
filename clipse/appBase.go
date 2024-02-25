@@ -188,6 +188,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		// Don't match any of the keys below if we're actively filtering.
+		//txtlog(fmt.Sprintf("%s: key state = %s", time.Now(), m.list.FilterState()))
 		if m.list.FilterState() == list.Filtering {
 			break
 		}

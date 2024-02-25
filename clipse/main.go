@@ -62,9 +62,13 @@ func main() {
 			fmt.Printf("Nothing to add. %s -a requires a following arg. See --help for more info.", os.Args[0])
 			return
 		}
-		err = addClipboardItem(historyFilePath, os.Args[2], "")
+
+		err := addClipboardItem(historyFilePath, os.Args[2], "null")
 		handleError(err)
 		fmt.Printf("added %s to clipboard!", os.Args[2])
+
+		fmt.Printf("added %s to clipboard!", os.Args[2])
+
 		return
 	}
 

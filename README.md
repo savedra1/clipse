@@ -1,6 +1,4 @@
 ## TODO
-- Increased customisation to be made available
-
 - README (with videos)
 - Nix package
 - Makefile installation
@@ -12,3 +10,4 @@
 - Extra config added to json file, adjustable with CLI args
 - Better debugging? (currently can use > to a custom file)
 - Use of a GUI library such as fyne/GIO
+- Increased customisation (keybinds/themes)

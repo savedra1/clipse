@@ -147,10 +147,9 @@ func deleteImage(imagePath string) error {
 
 }
 
-/* NOT IN USE
+/* NOT IN USE - Log messages to a designates txt file for debug
 func txtlog(msg string) {
 	cmd := fmt.Sprintf("echo %s > ~/.config/clipse/log.txt", msg)
 	err := exec.Command("sh", "-c", cmd).Run()
 	handleError(err)
-}
-*/
+}*/

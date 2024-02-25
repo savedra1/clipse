@@ -7,6 +7,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"os"
+	"runtime/debug"
 	"strings"
 	"time"
 )
@@ -17,9 +18,8 @@ import (
 // Avoids repeat code by handling errors in a uniform way
 func handleError(err error) {
 	if err != nil {
-		if err = fmt.Errorf("error: %s", err); err != nil {
-			fmt.Println("Failed to retreive error log form program:", err)
-		}
+		debug.PrintStack()
+		fmt.Println("ERROR:", err)
 		os.Exit(1)
 	}
 }
@@ -42,11 +42,20 @@ func contains(str string) bool {
 
 // Shortens string val to show in list view
 func shorten(s string) string {
-	if len(s) <= maxChar { // maxChar defined in constants.go
-		return strings.ReplaceAll(s, "\n", "\\n")
+	sl := strings.ReplaceAll(s, "\n", "\\n") // make single line
+	if len(sl) <= maxChar {                  // maxChar defined in constants.go
+		return strings.ReplaceAll(sl, "  ", " ") // remove double spaces
 	}
-	return strings.ReplaceAll(s[:maxChar-3], "\n", "\\n") + "..."
+	return strings.ReplaceAll(sl[:maxChar-3], "  ", " ") + "..."
 }
+
+/* NOT IN USE - Remove bad chars - can cause issues with fuzzy finder
+func cleanString(s string) string {
+	regex := regexp.MustCompile("[^a-zA-Z0-9 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~]+")
+	sanitised := regex.ReplaceAllString(s, "")
+	sl := strings.ReplaceAll(sanitised, "\n", "\\n")
+	return strings.ReplaceAll(sl, "  ", " ")         // remove trailing space
+}*/
 
 func dataType(data string) string {
 	/*
@@ -69,7 +78,6 @@ func dataType(data string) string {
 	}
 
 	return "text"
-
 }
 
 func getTime() string {
