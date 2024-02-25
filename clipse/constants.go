@@ -16,5 +16,5 @@ const (
 	listenCmd       = "--listen-shell"
 	pollInterval    = 100 * time.Millisecond / 10
 	maxLen          = 100
-	maxChar         = 125
+	maxChar         = 100
 )

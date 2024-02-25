@@ -1,0 +1,15 @@
+{
+    "useCustomTheme": true,
+    "DimmedDesc": "#928374",
+    "DimmedTitle": "#928374",
+    "FilteredMatch": "#B8BB26",
+    "NormalDesc": "#A89984",
+    "NormalTitle": "#D3869B",
+    "SelectedDesc": "#8EC07C",
+    "SelectedTitle": "#8EC07C",
+    "SelectedBorder": "#83A598",
+    "SelectedDescBorder": "#83A598",
+    "TitleFore": "#EBDBB2",
+    "Titleback": "#282828",
+    "StatusMsg": "#B8BB26"
+}
