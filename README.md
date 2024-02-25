@@ -1,6 +1,5 @@
 ## TODO
 - Increased customisation to be made available
-- Test -listen reliability and what makes it fail (log each step)
 
 - README (with videos)
 - Nix package

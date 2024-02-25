@@ -69,8 +69,8 @@ func main() {
 	}
 
 	if *listen {
-		err = killExisting()
-		handleError(err)
+		killExisting()
+		//handleError(err)
 		runNohupListener(listenCmd) // hardcoded as const
 		return
 	}

@@ -81,9 +81,7 @@ func killAll(bin string) {
 }
 
 func runNohupListener(cmdArg string) {
-	//c := fmt.Sprintf("nohup %s %s >/dev/null 2>&1 &", os.Args[0], cmdArg)
 	cmd := exec.Command("nohup", os.Args[0], cmdArg, ">/dev/null", "2>&1", "&")
-	//cmd := exec.Command("zsh", "-c", c)
 	err := cmd.Start()
 	handleError(err)
 	//clearShellOutput()
@@ -148,3 +146,11 @@ func deleteImage(imagePath string) error {
 	return nil
 
 }
+
+/* NOT IN USE
+func txtlog(msg string) {
+	cmd := fmt.Sprintf("echo %s > ~/.config/clipse/log.txt", msg)
+	err := exec.Command("sh", "-c", cmd).Run()
+	handleError(err)
+}
+*/

@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"os"
 	"strings"
+	"time"
 )
 
 /* General purpose functions to be used by other modules
@@ -69,4 +70,8 @@ func dataType(data string) string {
 
 	return "text"
 
+}
+
+func getTime() string {
+	return strings.TrimSpace(strings.Split(time.Now().UTC().String(), "+0000")[0])
 }

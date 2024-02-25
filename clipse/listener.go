@@ -19,7 +19,35 @@ import (
    	killall clipse
 */
 
+func bootLoaded() bool {
+	/*
+		System fails to read clipboard data when run on boot.
+		Needs a buffer period to continue.
+	*/
+	var loaded bool
+	startTime := time.Now()
+
+	for {
+		if time.Since(startTime) >= 60*time.Second {
+			loaded = false
+			break
+		}
+
+		_, err := clipboard.ReadAll()
+		if err == nil {
+			loaded = true
+			break
+		}
+
+		time.Sleep(time.Second)
+	}
+	return loaded
+}
+
 func runListener(historyFilePath, clipsDir, displayServer string, imgEnabled bool) error {
+	if !bootLoaded() {
+		time.Sleep(30 * time.Second) // Account for extra slow boot loaders
+	}
 	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)

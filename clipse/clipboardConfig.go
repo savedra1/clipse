@@ -7,8 +7,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
-	"strings"
-	"time"
 )
 
 /* File contains logic for parseing the cilpboard data and
@@ -17,9 +15,7 @@ general config.
 - dirName defined in constants.go
 */
 
-// ClipboardItem struct for individual clipboardHistor array item
 type ClipboardItem struct {
-	// EG: {"value": "copied_string", "recorded": "datetime"}
 	Value    string `json:"value"`
 	Recorded string `json:"recorded"`
 	FilePath string `json:"filePath"`
@@ -30,6 +26,10 @@ type ClipboardHistory struct {
 }
 
 func displayServer() string {
+	/* Determine runtime and return appropriate window server.
+	used to determine which dependency is required for handling
+	image files.
+	*/
 	osName := runtime.GOOS
 	switch osName {
 	case "linux":
@@ -211,11 +211,10 @@ func paths() (string, string) {
 }
 
 func clearHistory(historyFilePath string) error {
-	/*
-		  Sets clipboard_history.json file to:
-			 {
-				 "clipboardHistory": []
-			 }
+	/* Sets clipboard_history.json file to:
+	 {
+		 "clipboardHistory": []
+	 }
 	*/
 	file, err := os.OpenFile(historyFilePath, os.O_RDWR|os.O_CREATE, 0644) // Permisisons specified for file to allow write
 	if err != nil {
@@ -258,12 +257,9 @@ func addClipboardItem(configFile, text, imgPath string) error {
 		data.ClipboardHistory = data.ClipboardHistory[:1]
 	}
 
-	// yyyy-mm-dd hh-mm-s.msmsms Time format
-	timeNow := strings.Split(time.Now().UTC().String(), "+0000")[0]
-
 	item := ClipboardItem{
 		Value:    text,
-		Recorded: strings.TrimSpace(timeNow),
+		Recorded: getTime(),
 		FilePath: imgPath,
 	}
 
