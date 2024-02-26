@@ -1,6 +1,27 @@
+# About 
+*clipse* is dependencyless, configurable TUI-based clipboard manager built in Go, and supports any Linux OS (especially Wayland). 
+
+Why use *clipse*?
+- Customizable TUI allows you to easily match your system's theme
+- Fuzzy finder capabilities
+- Easily recall, add and delete clipboard history with no explicit expiry
+- Image file support
+- Terminal-based means TUI can be easily called bound to a key, simulating a GUI without the memory overhead   
+
+<div style="text-align: center;">
+  <video width="900" height="600" controls allowfullscreen>
+    <source src="resources/demo.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+# Setup & installation
+
+# Themes
+
+## Considerations
+
 ## TODO
-- reset on over 100 items bug
-- File copying deley bug (negligable)
 - README (with videos)
 - Nix package
 - Makefile installation
