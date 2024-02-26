@@ -8,12 +8,8 @@ Why use *clipse*?
 - Image file support
 - Terminal-based means TUI can be easily called bound to a key, simulating a GUI without the memory overhead   
 
-<div style="text-align: center;">
-  <video width="900" height="600" controls allowfullscreen>
-    <source src="resources/demo.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-</div>
+<video src='https://drive.google.com/file/d/183Oaj5Zz71Gd5aYcdCVPA2Ouwzd8sPfn/view?usp=sharing' width=180/>
+
 
 # Setup & installation
 
