@@ -30,14 +30,15 @@ func getTheme() CustomTheme {
 	_, configDir := paths()
 	fp := filepath.Join(configDir, themeFile)
 
-	file, err := os.OpenFile(fp, os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.OpenFile(fp, os.O_RDONLY, 0644)
 	if err != nil {
 		file.Close()
 	}
 
 	var theme CustomTheme
 	if err := json.NewDecoder(file).Decode(&theme); err != nil {
-		fmt.Println("Error decoding JSON:", err)
+		fmt.Println("Error decoding JSON for custom_theme.json. Try creating this file manually instead. Err:", err)
+		//handleError(err) // No need to terminate program here as default theme can be kept
 	}
 
 	// Extract clipboard history items
@@ -73,6 +74,7 @@ func initTheme(fp string) error {
 		if err != nil {
 			return err
 		}
+
 		err = os.WriteFile(fp, jsonData, 0644)
 		if err != nil {
 			return err

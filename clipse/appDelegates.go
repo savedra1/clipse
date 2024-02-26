@@ -105,14 +105,13 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 					keys.remove.SetEnabled(false)
 				}
 				historyFilePath, _ := paths()
-				go func() {
+				go func() { // stop cached clipboard item repopulating
 					currentContent, _ := clipboard.ReadAll()
 					if currentContent == fullValue {
 						clipboard.WriteAll("")
 					}
 					err := deleteJsonItem(historyFilePath, strings.TrimSpace(desc)) // This func will also delete the temoraily stored image if filepath present
 					handleError(err)
-
 				}()
 
 				return m.NewStatusMessage(statusMessageStyle("Deleted: " + title))

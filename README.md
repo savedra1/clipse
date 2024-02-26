@@ -1,4 +1,6 @@
 ## TODO
+- reset on over 100 items bug
+- File copying deley bug (negligable)
 - README (with videos)
 - Nix package
 - Makefile installation

@@ -44,7 +44,7 @@ func killExistingFG() {
 	*/
 
 	currentPS := strconv.Itoa(syscall.Getpid())
-	fmt.Println("current:", currentPS)
+	//fmt.Println("current:", currentPS)
 	cmd := exec.Command("sh", "-c", "pgrep -a clipse")
 	output, err := cmd.Output()
 	handleError(err)
@@ -131,18 +131,19 @@ func saveImage(imagePath, displayServer string) error {
 	}
 
 	err := exec.Command("sh", "-c", cmd).Run()
-	if err != nil {
-		return err
-	}
+	handleError(err)
+
 	return nil
 }
 
 func deleteImage(imagePath string) error {
-	cmd := fmt.Sprintf("rm %s", imagePath)
+
+	cmd := fmt.Sprintf("rm -f %s", imagePath)
 	err := exec.Command("sh", "-c", cmd).Run()
 	if err != nil {
-		return err
+		handleError(err)
 	}
+
 	return nil
 
 }

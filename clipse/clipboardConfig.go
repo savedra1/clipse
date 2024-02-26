@@ -15,6 +15,8 @@ general config.
 - dirName defined in constants.go
 */
 
+//var fileMutex sync.Locker
+
 type ClipboardItem struct {
 	Value    string `json:"value"`
 	Recorded string `json:"recorded"`
@@ -105,16 +107,12 @@ func getHistory() []ClipboardItem {
 	*/
 	historyFilePath, _ := paths()
 	file, err := os.OpenFile(historyFilePath, os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		fmt.Println("error opening file:", err)
-		file.Close()
-	}
+	handleError(err)
 
 	var data ClipboardHistory
-	if err := json.NewDecoder(file).Decode(&data); err != nil {
-		fmt.Println("Error decoding JSON:", err)
-		os.Exit(1)
-	}
+
+	err = json.NewDecoder(file).Decode(&data)
+	handleError(err)
 
 	// Extract clipboard history items
 	return data.ClipboardHistory
@@ -125,6 +123,9 @@ func deleteJsonItem(historyFilePath, item string) error {
 	/* Accessed by bubbletea method on backspace keybinding:
 	Deletes selected item from json file.
 	*/
+	//fileMutex.Lock()
+	//defer fileMutex.Unlock()
+
 	fileContent, err := os.ReadFile(historyFilePath)
 	if err != nil {
 		return fmt.Errorf("error reading file: %w", err)
@@ -240,6 +241,7 @@ func clearHistory(historyFilePath string) error {
 }
 
 func addClipboardItem(configFile, text, imgPath string) error {
+
 	var data ClipboardHistory
 
 	fileData, err := os.ReadFile(configFile)
@@ -252,11 +254,6 @@ func addClipboardItem(configFile, text, imgPath string) error {
 		return err
 	}
 
-	// If the length exceeds maxLen, remove the oldest item
-	if len(data.ClipboardHistory) >= maxLen {
-		data.ClipboardHistory = data.ClipboardHistory[:1]
-	}
-
 	item := ClipboardItem{
 		Value:    text,
 		Recorded: getTime(),
@@ -265,6 +262,10 @@ func addClipboardItem(configFile, text, imgPath string) error {
 
 	// Append the new item to the beginning of the array to appear at top of list
 	data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
+
+	if len(data.ClipboardHistory) > maxLen {
+		data.ClipboardHistory = data.ClipboardHistory[:maxLen]
+	}
 
 	if err = saveDataToFile(configFile, data); err != nil {
 		return err
@@ -277,6 +278,7 @@ func saveDataToFile(historyFilePath string, data ClipboardHistory) error {
 	/* Triggered from the system copy action:
 	Adds the copied string to the clipboard_history.json file.
 	*/
+
 	file, err := os.OpenFile(historyFilePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return err

@@ -67,8 +67,6 @@ func main() {
 		handleError(err)
 		fmt.Printf("added %s to clipboard!", os.Args[2])
 
-		fmt.Printf("added %s to clipboard!", os.Args[2])
-
 		return
 	}
 
