@@ -17,8 +17,6 @@ general config.
 - dirName defined in constants.go
 */
 
-//var fileMutex sync.Locker
-
 const (
 	baseDir         = ".config"
 	historyFileName = "clipboard_history.json"
