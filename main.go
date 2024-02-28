@@ -28,9 +28,7 @@ var (
 )
 
 func main() {
-
 	//time.Sleep(10000 * time.Second)
-
 	flag.Parse()
 	historyFilePath, clipseDir, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)
@@ -65,14 +63,16 @@ func main() {
 	}
 
 	if *add {
+		var input string
 		if len(os.Args) < 3 {
-			fmt.Printf("Nothing to add. %s -a requires a following arg. See --help for more info.", os.Args[0])
-			return
+			input = utils.GetStdin()
+		} else {
+			input = os.Args[2]
 		}
 
-		err := config.AddClipboardItem(historyFilePath, os.Args[2], "null")
+		err := config.AddClipboardItem(historyFilePath, input, "null")
 		utils.HandleError(err)
-		fmt.Printf("added %s to clipboard!", os.Args[2])
+		fmt.Println("added the following val to clipboard:", input)
 
 		return
 	}

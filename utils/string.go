@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"io"
+	"os"
 	"strings"
 )
 
@@ -13,6 +15,20 @@ func Shorten(s string) string {
 		return strings.ReplaceAll(sl, "  ", " ") // remove double spaces
 	}
 	return strings.ReplaceAll(sl[:maxChar-3], "  ", " ") + "..."
+}
+
+func GetStdin() string {
+	/*
+		Gets piped input from the terminal when n
+		no additional arg provided
+	*/
+	buffer := make([]byte, 1024)
+	n, err := os.Stdin.Read(buffer)
+	if err != nil && err != io.EOF {
+		return "Error reading Stdin"
+	}
+	return string(buffer[:n])
+
 }
 
 /* NOT IN USE - Remove bad chars - can cause issues with fuzzy finder

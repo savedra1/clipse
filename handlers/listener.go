@@ -54,22 +54,37 @@ func RunListener(historyFilePath, clipsDir, displayServer string, imgEnabled boo
 	if !bootLoaded() {
 		time.Sleep(30 * time.Second) // Account for extra slow boot loaders
 	}
+
 	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
-	// Load existing data from file, if any
 
-	go func() { // go routine necessary to acheive desired CTRL+C behavior
+	// Buffered channel for clipboard data
+	clipboardData := make(chan string, 1)
+
+	// Goroutine to monitor clipboard
+	go func() {
 		for {
 			// Get the current clipboard content
 			input, err := clipboard.ReadAll()
 			utils.HandleError(err)
+			clipboardData <- input // Pass clipboard data to main goroutine
+
+			time.Sleep(pollInterval) // pollInterval defined in constants.go
+		}
+	}()
+
+	// Main goroutine
+MainLoop:
+	for {
+		select {
+		case input := <-clipboardData:
 			dt := utils.DataType(input)
 
 			switch dt {
 			case "text":
 				if input != "" && !config.Contains(input) {
-					err = config.AddClipboardItem(historyFilePath, input, "null")
+					err := config.AddClipboardItem(historyFilePath, input, "null")
 					utils.HandleError(err)
 				}
 			case "png", "jpeg":
@@ -78,7 +93,7 @@ func RunListener(historyFilePath, clipsDir, displayServer string, imgEnabled boo
 					filePath := filepath.Join(clipsDir, tmpDir, file)
 					title := fmt.Sprintf("<BINARY FILE> %s", file)
 					if !config.Contains(title) {
-						err = shell.SaveImage(filePath, displayServer)
+						err := shell.SaveImage(filePath, displayServer)
 						utils.HandleError(err)
 
 						err = config.AddClipboardItem(historyFilePath, title, filePath)
@@ -86,11 +101,10 @@ func RunListener(historyFilePath, clipsDir, displayServer string, imgEnabled boo
 					}
 				}
 			}
-
-			time.Sleep(pollInterval) // pollInterval defined in constants.go
+		case <-interrupt:
+			break MainLoop // Exit main loop on interrupt signal
 		}
-	}()
+	}
 
-	<-interrupt
 	return nil
 }
