@@ -1,5 +1,9 @@
 <a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a>
 
+<p align="centre">
+  <img src="./resources/examples/demo.gif?raw=true" width=50% alt="gif" />
+</p>
+
 # About 
 
 `clipse` is a dependency-less, configurable TUI-based clipboard manager built with Go. Though the app is optimised for a linux OS with a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get [your desired clipboard behavior](https://www.youtube.com/watch?v=ZE2F8Mj0_I0). Further instructions for setting this up can be found below.
@@ -120,9 +124,8 @@ The `clipse` binary, installable from the repo, can run on pretty much any Unix-
 
 **Note that working with image files will require one of the following dependencies**:
 
-Linux (X11), MacOs: [xclip](https://github.com/astrand/xclip)
-
-Linux (Wayland): [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
+- Linux (X11) & MacOs: [xclip](https://github.com/astrand/xclip)
+- Linux (Wayland): [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
 
 # Setup & installation
 
