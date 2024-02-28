@@ -8,8 +8,9 @@ Why use *clipse*?
 - Image file support
 - Terminal-based means TUI can be easily called bound to a key, simulating a GUI without the memory overhead   
 
-<video src='https://drive.google.com/file/d/183Oaj5Zz71Gd5aYcdCVPA2Ouwzd8sPfn/view?usp=sharing' width=180/>
-
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=ZE2F8Mj0_I0g"><img src="https://img.youtube.com/vi/ZE2F8Mj0_I0g/0.jpg" alt="IMAGE ALT TEXT"></a>
+</div>
 
 # Setup & installation
 
