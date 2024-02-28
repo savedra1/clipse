@@ -10,7 +10,7 @@
 
 [Click here to see a video demo for clipse](https://www.youtube.com/watch?v=ZE2F8Mj0_I0)
 
-## Why use *clipse*? 
+# Why use *clipse*? 
 
 ### 1. Configurability 🧰 
 
