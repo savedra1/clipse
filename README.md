@@ -101,7 +101,7 @@ The `clipse` binary, installable from the repo, can run on pretty much any Unix-
 - Linux (X11) & MacOs: [xclip](https://github.com/astrand/xclip)
 - Linux (Wayland): [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
 
-# Setup & installation
+# Setup & installation 🏗️
 
 ## Installation 
 
@@ -117,7 +117,7 @@ go install https://github.com/savedra1/clipse@latest
 
 ```
 
-### Building from source 🏗️
+### Building from source 
 
 ```shell
 
@@ -162,7 +162,7 @@ bind = SUPER, V, exec,  <terminal name> --class floating -clipse $PPID # bind th
 ### i3 
 TBC
 
-## All commands
+## All commands 💻
 
 ```shell
 
@@ -184,7 +184,7 @@ clipse # Open Clipboard TUI in persistent/debug mode
 
 ```
 
-## How it works
+## How it works 🤔
 
 When the app is run for the first time it creates a `/home/$USER/.config/clipse` dir with a `clipboard_hostory.json` file, a `custom_theme.json` file, and `tmp_files` folder for storing image data. After the `clipse -listen` command is executed, a background process will be watching for clipboard activity and adding any changes to the `clipboard_hstory.json` file. 
 
@@ -194,7 +194,7 @@ Operations within the TUI are defined with the [BubbleTea](https://pkg.go.dev/gi
 
 The maximum item storage limit is currently hardcoded at **100**. However, there are plans to make this configurable in the future.
 
-## Contributing
+## Contributing 🙏
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
 - System Paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
