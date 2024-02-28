@@ -8,8 +8,6 @@ Why use *clipse*?
 - Image file support
 - Terminal-based means TUI can be easily called bound to a key, simulating a GUI without the memory overhead   
 
-
-
 <video src='https://drive.google.com/file/d/183Oaj5Zz71Gd5aYcdCVPA2Ouwzd8sPfn/view?usp=sharing' width=180/>
 
 
