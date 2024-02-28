@@ -17,8 +17,9 @@ import (
 )
 
 var (
+	version     = "v1.0.0"
 	help        = flag.Bool("help", false, "Show help message.")
-	version     = flag.Bool("version", false, "Show app version.")
+	v           = flag.Bool("v", false, "Show app version.")
 	add         = flag.Bool("a", false, "Add the following arg to the clipboard history.")
 	listen      = flag.Bool("listen", false, "Start background process for monitoring clipboard activity.")
 	listenShell = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
@@ -58,8 +59,8 @@ func main() {
 		return
 	}
 
-	if *version {
-		fmt.Println(os.Args[0], "1.00")
+	if *v {
+		fmt.Println(os.Args[0], version)
 		return
 	}
 

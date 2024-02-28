@@ -21,14 +21,8 @@ jobs:
         with:
           go-version: stable
       
-      #- name: Install deps
-      #  run: |
-      #    go get github.com/atotto/clipboard
-      #    go get github.com/charmbracelet/bubbles/key
-      #    go get github.com/charmbracelet/bubbles/list
-      #    go get github.com/charmbracelet/bubbletea
-      #    go get github.com/charmbracelet/lipgloss
-      #    go get github.com/mitchellh/go-ps
+      - name: Install modules # This is needed before running goreleaser as parallel builds crash the process when having to install deps
+        run: go mod tidy
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5

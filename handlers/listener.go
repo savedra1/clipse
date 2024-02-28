@@ -24,10 +24,6 @@ runListener is essentially a while loop to be created as a system background pro
 		pkill -f clipse
 		killall clipse
 */
-const (
-	tmpDir       = "tmp_files"
-	pollInterval = 100 * time.Millisecond / 10
-)
 
 func bootLoaded() bool {
 	/*
