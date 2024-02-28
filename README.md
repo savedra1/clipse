@@ -197,7 +197,7 @@ The maximum item storage limit is currently hardcoded at **100**. However, there
 ## Contributing 🙏
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
-- System Paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
+- System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
 - Theme adjustments made available via CLI 
 - Better debugging
 - Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
