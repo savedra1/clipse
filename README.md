@@ -1,6 +1,4 @@
-notepad
-
-																														
+<a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a>
 
 # About 
 
@@ -78,7 +76,7 @@ Simply leaving this file alone or setting the `useCustomTheme` value to `false` 
 
 <p align="left">
 
-  <img src="./resources/examples/fuzzy.png?raw=true" alt="Gruvbox" />
+  <img src="./resources/examples/default.png?raw=true" alt="Gruvbox" />
 
 </p>
 
