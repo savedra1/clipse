@@ -4,74 +4,54 @@
   <img src="./resources/examples/demo.gif?raw=true" width=50% alt="gif" />
 </p>
 
-# About 
+# About 📋
 
 `clipse` is a dependency-less, configurable TUI-based clipboard manager built with Go. Though the app is optimised for a linux OS with a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get [your desired clipboard behavior](https://www.youtube.com/watch?v=ZE2F8Mj0_I0). Further instructions for setting this up can be found below.
 
 [Click here to see a video demo for clipse](https://www.youtube.com/watch?v=ZE2F8Mj0_I0)
 
-## Why use *clipse*?
+## Why use *clipse*? 
 
-### 1. Configurability 
+### 1. Configurability 🧰 
 
-Customizable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is customisable from a `.config/clipse/custom_theme.json` file that gets created when the program is ran for the first time. Some example themes (based on my terminal)...
+Customizable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is customisable from a `.config/clipse/custom_theme.json` file that gets created when the program is run for the first time. Some example themes (based on my terminal)...
 
 **Nord**
 
 <p align="left">
-
   <img src="./resources/examples/nord.png?raw=true" alt="Nord" />
-
 </p>
 
 **Dracula**
 
 <p align="left">
-
   <img src="./resources/examples/dracula.png?raw=true" alt="Dracula" />
-
 </p>
 
 **Gruvbox**
 
 <p align="left">
-
   <img src="./resources/examples/gruvbox.png?raw=true" alt="Gruvbox" />
-
 </p>
 
 An example `.config/clipse/custom_theme.json`: 
 
 ```
-
 {
 
     "useCustomTheme": true,
-
     "DimmedDesc": "#4C566A",
-
     "DimmedTitle": "#4C566A",
-
     "FilteredMatch": "#A3BE8C",
-
     "NormalDesc": "#81A1C1",
-
     "NormalTitle": "#B48EAD",
-
     "SelectedDesc": "#A3BE8C",
-
     "SelectedTitle": "#A3BE8C",
-
     "SelectedBorder": "#88C0D0",
-
     "SelectedDescBorder": "#88C0D0",
-
     "TitleFore": "#D8DEE9",
-
     "Titleback": "#3B4252",
-
     "StatusMsg": "#8FBCBB"
-
 }
 
 ```
@@ -79,19 +59,15 @@ An example `.config/clipse/custom_theme.json`:
 Simply leaving this file alone or setting the `useCustomTheme` value to `false` will give you a nice pink and where default theme... 
 
 <p align="left">
-
   <img src="./resources/examples/default.png?raw=true" alt="Gruvbox" />
-
 </p>
 
-### 2. Usability 
+### 2. Usability ✨
 
 Easily recall, add, and delete clipboard history via a dreamy TUI built with Go's excellent [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) library. A simple fuzzy finder, callable with the `/` key can easily match content from a theoretically unlimited amount of time in the past: 
 
 <p align="left">
-
   <img src="./resources/examples/fuzzy.png?raw=true" alt="Gruvbox" />
-
 </p>
 
 Items can be permanently deleted from the list by simply hitting `backspace` when the item is selected, as seen in the [demo video](https://youtu.be/ZE2F8Mj0_I0), and can be added explicitly from the command line using the `-a` flag. This would allow you to easily pipe any CLI output directly into your history with commands like:
@@ -108,17 +84,15 @@ clipse -a "a custom string value"
 
 ```
 
-### 3. Efficiency 
-
+### 3. Efficiency 💥
+ 
 Due to Go's inbuilt garbage collection system and the way the application is built, `clipse` is pretty selfless when it comes to CPU consumption and memory. The below image shows how little resources are required to poser the background event listener used to continually update the history displayed in the TUI... 
 
 <p align="left">
-
   <img src="./resources/examples/htop.png?raw=true" alt="Gruvbox" />
-
 </p>
 
-### 4. Versatility
+### 4. Versatility 🌐
 
 The `clipse` binary, installable from the repo, can run on pretty much any Unix-based OS and will require zero external dependencies. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown in [my example](https://youtu.be/ZE2F8Mj0_I0) using [Hyprland window manager](https://hyprland.org/) on __NixOs__.
 
@@ -129,7 +103,7 @@ The `clipse` binary, installable from the repo, can run on pretty much any Unix-
 
 # Setup & installation
 
-## Installation
+## Installation 
 
 ### Installing on NixOs
 
@@ -143,7 +117,7 @@ go install https://github.com/savedra1/clipse@latest
 
 ```
 
-### Building from source
+### Building from source 🏗️
 
 ```shell
 
@@ -178,7 +152,7 @@ clipse -listen
 The above command creates a `nohup` process of `clipse --listen-shell`, which if called on its own will start a listener in your current terminal session instead.
 
 ### Hyprland
-Add the following lines to your Hyprland config to acheive the optimal TUI behaviour:
+Add the following lines to your Hyprland config to achieve the optimal TUI behaviour:
 ```shell
 exec-once = clipse -listen # run listener on startup
 windowrulev2 = float,class:(floating) # ensure you have defined a floating window class
@@ -206,7 +180,7 @@ clipse -clear # Wipe all clipboard history
 
 clipse -kill # Kill any existing background processes
 
-clipse # Open Clipboard TUI in persistant/debug mode
+clipse # Open Clipboard TUI in persistent/debug mode
 
 ```
 
@@ -216,14 +190,14 @@ When the app is run for the first time it creates a `/home/$USER/.config/clipse`
 
 The TUI that displays the clipboard history should then be called with the `clipse $PPID` command. Passing in the terminal's PPID is irregular, but allows the terminal-based app to close itself from within the program itself, simulating the behavior of a full GUI without the memory overhead. A worthy trade-off in my opinion. 
 
-Operations within the TUI are defined with the [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) framework, allowing for efficient concurrency and a smooth UX. `Delete` operations will remove the selected item form the TUI view and the storage file, `select` operastions will copy the item to the systems clipboard and close the terminal window in which the session is currently hosted.  
+Operations within the TUI are defined with the [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) framework, allowing for efficient concurrency and a smooth UX. `Delete` operations will remove the selected item from the TUI view and the storage file, `select` operations will copy the item to the systems clipboard and close the terminal window in which the session is currently hosted.  
 
-The maximum item storage limit is currently hardcoded at **100**. However there are plans to make this configurable in the future.
+The maximum item storage limit is currently hardcoded at **100**. However, there are plans to make this configurable in the future.
 
 ## Contributing
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
-- System Paste option (building functionality to paste the chosen item directly into th next place of focus after the TUI closes)
+- System Paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
 - Theme adjustments made available via CLI 
 - Better debugging
 - Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
