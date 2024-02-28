@@ -9,7 +9,7 @@ Why use *clipse*?
 - Terminal-based means TUI can be easily called bound to a key, simulating a GUI without the memory overhead   
 
 <div align="center">
-  <a href="https://www.youtube.com/watch?v=ZE2F8Mj0_I0g"><img src="./resources/examples/nord.png?raw=true" alt="Example1"> </a>
+  <a href="https://www.youtube.com/watch?v=ZE2F8Mj0_I0g"><img src="./resources/nix-logo.png?raw=true" alt="Example1"> </a>
 </div>
 
 # Setup & installation
