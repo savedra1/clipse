@@ -1,7 +1,9 @@
 <a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a>
 
 <p align="centre">
+
   <img src="./resources/examples/demo.gif?raw=true" width=50% alt="gif" />
+
 </p>
 
 # About 📋
@@ -14,44 +16,64 @@
 
 ### 1. Configurability 🧰 
 
-Customizable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is customisable from a `.config/clipse/custom_theme.json` file that gets created when the program is run for the first time. Some example themes (based on my terminal)...
+A customisable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is editable from a `.config/clipse/custom_theme.json` file that gets created when the program is run for the first time. Some example themes (based on my terminal)...
 
 **Nord**
 
 <p align="left">
+
   <img src="./resources/examples/nord.png?raw=true" alt="Nord" />
+
 </p>
 
 **Dracula**
 
 <p align="left">
+
   <img src="./resources/examples/dracula.png?raw=true" alt="Dracula" />
+
 </p>
 
 **Gruvbox**
 
 <p align="left">
+
   <img src="./resources/examples/gruvbox.png?raw=true" alt="Gruvbox" />
+
 </p>
 
 An example `.config/clipse/custom_theme.json`: 
 
 ```
+
 {
 
     "useCustomTheme": true,
+
     "DimmedDesc": "#4C566A",
+
     "DimmedTitle": "#4C566A",
+
     "FilteredMatch": "#A3BE8C",
+
     "NormalDesc": "#81A1C1",
+
     "NormalTitle": "#B48EAD",
+
     "SelectedDesc": "#A3BE8C",
+
     "SelectedTitle": "#A3BE8C",
+
     "SelectedBorder": "#88C0D0",
+
     "SelectedDescBorder": "#88C0D0",
+
     "TitleFore": "#D8DEE9",
+
     "Titleback": "#3B4252",
+
     "StatusMsg": "#8FBCBB"
+
 }
 
 ```
@@ -59,7 +81,9 @@ An example `.config/clipse/custom_theme.json`:
 Simply leaving this file alone or setting the `useCustomTheme` value to `false` will give you a nice pink and where default theme... 
 
 <p align="left">
+
   <img src="./resources/examples/default.png?raw=true" alt="Gruvbox" />
+
 </p>
 
 ### 2. Usability ✨
@@ -67,7 +91,9 @@ Simply leaving this file alone or setting the `useCustomTheme` value to `false` 
 Easily recall, add, and delete clipboard history via a dreamy TUI built with Go's excellent [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) library. A simple fuzzy finder, callable with the `/` key can easily match content from a theoretically unlimited amount of time in the past: 
 
 <p align="left">
+
   <img src="./resources/examples/fuzzy.png?raw=true" alt="Gruvbox" />
+
 </p>
 
 Items can be permanently deleted from the list by simply hitting `backspace` when the item is selected, as seen in the [demo video](https://youtu.be/ZE2F8Mj0_I0), and can be added explicitly from the command line using the `-a` flag. This would allow you to easily pipe any CLI output directly into your history with commands like:
@@ -85,11 +111,13 @@ clipse -a "a custom string value"
 ```
 
 ### 3. Efficiency 💥
- 
+
 Due to Go's inbuilt garbage collection system and the way the application is built, `clipse` is pretty selfless when it comes to CPU consumption and memory. The below image shows how little resources are required to poser the background event listener used to continually update the history displayed in the TUI... 
 
 <p align="left">
+
   <img src="./resources/examples/htop.png?raw=true" alt="Gruvbox" />
+
 </p>
 
 ### 4. Versatility 🌐
@@ -102,6 +130,8 @@ The `clipse` binary, installable from the repo, can run on pretty much any Unix-
 - Linux (Wayland): [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
 
 # Setup & installation 🏗️
+
+See below for instructions on getting clipse installed at configured effectively. 
 
 ## Installation 
 
@@ -149,36 +179,83 @@ clipse -listen
 
 ``` 
 
-The above command creates a `nohup` process of `clipse --listen-shell`, which if called on its own will start a listener in your current terminal session instead.
+The above command creates a `nohup` process of `clipse --listen-shell`, which if called on its own will start a listener in your current terminal session instead. If `nohup` is not supported on your system, you can use your preferred method of running `clipse --listen-shell` in the background instead.
 
-### Hyprland
-Add the following lines to your Hyprland config to achieve the optimal TUI behaviour:
+### Hyprland example
+
+Add the following lines to your Hyprland config file:
+
 ```shell
-exec-once = clipse -listen # run listener on startup
-windowrulev2 = float,class:(floating) # ensure you have defined a floating window class
-bind = SUPER, V, exec,  <terminal name> --class floating -clipse $PPID # bind the open clipboard operation to a nice key
+
+exec-once = clipse -listen                                                                 # run listener on startup
+
+windowrulev2 = float,class:(floating)                                                      # ensure you have defined a floating window class
+
+bind = SUPER, V, exec,  <terminal name> --class floating -e <shell-env>  -c 'clipse $PPID' # bind the open clipboard operation to a nice key. 
+
+                                                                                           # Example: bind = SUPER, V, exec, alacritty --class floating -e zsh -c 'clipse $PPID'
+
 ```
 
-### i3 
-TBC
+[Hyprland reference](https://wiki.hyprland.org/Configuring/Window-Rules/)
 
-## All commands 💻
-`clipse` is more than just a TUI. It also offers a number of CLI commands for managing cliboard content directly from the terminal. 
+### i3 example 
+
+Add the following commands to your `.config/i3/config` file:
 
 ```shell
+
+exec --no-startup-id clipse -listen                                                                 # run listener on startup
+
+bindsym $mod+V exec --no-startup-id urxvt -e "$SHELL" -c "i3-msg 'floating enable' && clipse $PPID" # Bind floating shell with TUI selection to something nice 
+
+``` 
+
+[i3 reference](https://wiki.archlinux.org/title/i3)
+
+### Sway
+
+Add the following config to your `~/.config/sway/config` file:
+
+```shell
+
+exec clipse -listen                                                                                                                           # run the background listener on startup
+
+bindsym $mod+V exec <terminal name> -e sh -c "swaymsg floating enable, move position center; swaymsg resize set 80ppt 80ppt && clipse $PPID"  # Bind floating shell with TUI selection to something nice
+
+```
+
+[Sway reference](https://wiki.archlinux.org/title/sway#:~:text=To%20enable%20floating%20windows%20or,enable%20floating%20windows%2Fwindow%20assignments.)
+
+### Other
+
+Every system/window manager is different and hard to determine exactly how to achieve the more ‘GUI-like’ behaviour. If using something not mentioned above just refer to your systems documentation to find how to:
+
+- Run the `clipse -listen` / `clipse --listen-shell` command on startup
+- Bind the `clipse $PPID` command to a key that opens a terminal session (ideally in a window)
+
+## All commands 💻
+
+`clipse` is more than just a TUI. It also offers a number of CLI commands for managing clipboard content directly from the terminal. 
+
+```shell
+
 # Operational commands 
 
 clipse -a <arg>       # Adds <arg> directly to the clipboard history without copying to system clipboard (string
 
 clipse -a             # Adds any standard input directly to the clipboard history without copying to the system clipboard.
+
                       # For example: echo "some data" | clipse -a
 
 clipse -c <arg>       # Copy the <arg> to the system clipboard (string). This also adds to clipboard history if currently listening. 
 
 clipse -c             # Copies any standard input directly to the system clipboard.
+
                       # For example: echo "some data" | clipse -c
 
-clipse -p             # Prints the current cipboard content to the console. 
+clipse -p             # Prints the current clipboard content to the console. 
+
                       # Example: clipse -p > file.txt
 
 # TUI management commands
@@ -193,18 +270,21 @@ clipse -help          # Display menu option
 
 clipse -v             # Get version
 
-clipse -clear         # Wipe all clipboard history
+clipse -clear         # Wipe all clipboard history and current system clipboard value
 
 clipse -kill          # Kill any existing background processes
 
 clipse                # Open Clipboard TUI in persistent/debug mode
 
 ```
-You can view the full list of key bind commands when in the TUI by hitting thye `?` key: 
-<p align="left">
-  <img src="./resources/examples/menu.png?raw=true" alt="Gruvbox" />
-</p>
 
+You can view the full list of key bind commands when in the TUI by hitting the `?` key: 
+
+<p align="left">
+
+  <img src="./resources/examples/menu.png?raw=true" alt="Gruvbox" />
+
+</p>
 
 ## How it works 🤔
 
@@ -220,12 +300,12 @@ The maximum item storage limit is currently hardcoded at **100**. However, there
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
 - System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
+- Packages for apt, dnf, brew etc  
 - Theme adjustments made available via CLI 
 - Better debugging
 - Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
 - Custom key binds added to config file 
+- Customisable config file storage paths
 
 ## TODO
-- Nix package
-- Apt package
-- Makefile installation
+Nix package

@@ -7,7 +7,6 @@ const (
 	clipseDirName   = "clipse"
 	tmpDir          = "tmp_files"
 	listenCmd       = "--listen-shell"
-	//pollInterval    = 100 * time.Millisecond / 10
-	maxLen  = 100
-	maxChar = 65
+	maxLen          = 100
+	maxChar         = 65
 )

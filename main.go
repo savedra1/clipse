@@ -17,24 +17,19 @@ import (
 )
 
 var (
-	version = "v1.0.0"
-	help    = flag.Bool("help", false, "Show help message.")
-	v       = flag.Bool("v", false, "Show app version.")
-	add     = flag.Bool("a", false, "Add the following arg to the clipboard history.")
-
-	copy  = flag.Bool("c", false, "Copy the input to your systems clipboard.")
-	paste = flag.Bool("p", false, "Prints the current clipboard content.")
-
+	version     = "v1.0.0"
+	help        = flag.Bool("help", false, "Show help message.")
+	v           = flag.Bool("v", false, "Show app version.")
+	add         = flag.Bool("a", false, "Add the following arg to the clipboard history.")
+	copy        = flag.Bool("c", false, "Copy the input to your systems clipboard.")
+	paste       = flag.Bool("p", false, "Prints the current clipboard content.")
 	listen      = flag.Bool("listen", false, "Start background process for monitoring clipboard activity.")
 	listenShell = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
 	kill        = flag.Bool("kill", false, "Kill any existing background processes.")
 	clear       = flag.Bool("clear", false, "Remove all contents from the clipboard's history.")
 )
 
-// RESTRUCTURE MIAN FUNC
-
 func main() {
-	//time.Sleep(10000 * time.Second)
 	flag.Parse()
 	historyFilePath, clipseDir, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)
@@ -103,7 +98,6 @@ func handleAdd(historyFilePath string) {
 
 	err := config.AddClipboardItem(historyFilePath, input, "null")
 	utils.HandleError(err)
-	fmt.Println("added the following val to clipboard:", input)
 }
 
 func handleListen() {

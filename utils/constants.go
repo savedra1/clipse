@@ -1,3 +1,5 @@
 package utils
 
-const maxChar = 65
+const (
+	maxChar = 65
+)
