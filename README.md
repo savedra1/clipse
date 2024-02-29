@@ -6,7 +6,7 @@
 
 # About 📋
 
-`clipse` is a dependency-less, configurable TUI-based clipboard manager built with Go. Though the app is optimised for a linux OS with a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get [your desired clipboard behavior](https://www.youtube.com/watch?v=ZE2F8Mj0_I0). Further instructions for setting this up can be found below.
+`clipse` is a dependencyless, configurable TUI-based clipboard manager application. Though the app is optimised for a linux OS with a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get [your desired clipboard behavior](https://www.youtube.com/watch?v=ZE2F8Mj0_I0). Further instructions for setting this up can be found below.
 
 [Click here to see a video demo for clipse](https://www.youtube.com/watch?v=ZE2F8Mj0_I0)
 
@@ -163,26 +163,48 @@ bind = SUPER, V, exec,  <terminal name> --class floating -clipse $PPID # bind th
 TBC
 
 ## All commands 💻
+`clipse` is more than just a TUI. It also offers a number of CLI commands for managing cliboard content directly from the terminal. 
 
 ```shell
+# Operational commands 
 
-clipse $PPID # Open Clipboard TUI
+clipse -a <arg>       # Adds <arg> directly to the clipboard history without copying to system clipboard (string
 
-clipse -listen # Run a background listener process
+clipse -a             # Adds any standard input directly to the clipboard history without copying to the system clipboard.
+                      # For example: echo "some data" | clipse -a
+
+clipse -c <arg>       # Copy the <arg> to the system clipboard (string). This also adds to clipboard history if currently listening. 
+
+clipse -c             # Copies any standard input directly to the system clipboard.
+                      # For example: echo "some data" | clipse -c
+
+clipse -p             # Prints the current cipboard content to the console. 
+                      # Example: clipse -p > file.txt
+
+# TUI management commands
+
+clipse $PPID          # Open Clipboard TUI
+
+clipse -listen        # Run a background listener process
 
 clipse --listen-shell # Run a listener process in the current terminal
 
-clipse -help # Display menu option
+clipse -help          # Display menu option
 
-clipse -v # Get version
+clipse -v             # Get version
 
-clipse -clear # Wipe all clipboard history
+clipse -clear         # Wipe all clipboard history
 
-clipse -kill # Kill any existing background processes
+clipse -kill          # Kill any existing background processes
 
-clipse # Open Clipboard TUI in persistent/debug mode
+clipse                # Open Clipboard TUI in persistent/debug mode
 
 ```
+You can view the full list of key bind commands when in the TUI by hitting thye `?` key: 
+<p align="left">
+  <img src="./resources/examples/menu.png?raw=true" alt="Gruvbox" />
+</p>
+
 
 ## How it works 🤔
 

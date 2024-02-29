@@ -17,15 +17,21 @@ import (
 )
 
 var (
-	version     = "v1.0.0"
-	help        = flag.Bool("help", false, "Show help message.")
-	v           = flag.Bool("v", false, "Show app version.")
-	add         = flag.Bool("a", false, "Add the following arg to the clipboard history.")
+	version = "v1.0.0"
+	help    = flag.Bool("help", false, "Show help message.")
+	v       = flag.Bool("v", false, "Show app version.")
+	add     = flag.Bool("a", false, "Add the following arg to the clipboard history.")
+
+	copy  = flag.Bool("c", false, "Copy the input to your systems clipboard.")
+	paste = flag.Bool("p", false, "Prints the current clipboard content.")
+
 	listen      = flag.Bool("listen", false, "Start background process for monitoring clipboard activity.")
 	listenShell = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
 	kill        = flag.Bool("kill", false, "Kill any existing background processes.")
 	clear       = flag.Bool("clear", false, "Remove all contents from the clipboard's history.")
 )
+
+// RESTRUCTURE MIAN FUNC
 
 func main() {
 	//time.Sleep(10000 * time.Second)
@@ -33,76 +39,109 @@ func main() {
 	historyFilePath, clipseDir, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)
 
-	if flag.NFlag() == 0 {
-		shell.KillExistingFG()
-		if len(os.Args) > 1 {
-			_, err := strconv.Atoi(os.Args[1]) // check for valid PPID by attempting conversion to an int
-			// above line causes canic so cannot catch this error effictively
-			if err != nil {
-				fmt.Printf("Invalid PPID supplied: %s\nPPID must be integer. use var `$PPID`", os.Args[1])
-				return
-			}
-		}
-		_, err := tea.NewProgram(app.NewModel()).Run()
-		utils.HandleError(err)
-		return
+	switch {
 
-	} else if flag.NFlag() > 1 {
+	case flag.NFlag() == 0:
+		handleNoFlags(historyFilePath)
+
+	case flag.NFlag() > 1:
 		fmt.Printf("Too many flags provided. Use %s --help for more info.", os.Args[0])
-		return
-	}
 
-	if *help {
+	case *help:
 		flag.PrintDefaults()
-		return
-	}
 
-	if *v {
+	case *v:
 		fmt.Println(os.Args[0], version)
-		return
-	}
 
-	if *add {
-		var input string
-		if len(os.Args) < 3 {
-			input = utils.GetStdin()
-		} else {
-			input = os.Args[2]
+	case *add:
+		handleAdd(historyFilePath)
+
+	case *copy:
+		handleCopy()
+
+	case *paste:
+		handlePaste()
+
+	case *listen:
+		handleListen()
+
+	case *listenShell:
+		handleListenShell(historyFilePath, clipseDir, displayServer, imgEnabled)
+
+	case *kill:
+		handleKill()
+
+	case *clear:
+		handleClear(historyFilePath)
+
+	default:
+		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])
+	}
+}
+
+func handleNoFlags(historyFilePath string) {
+	shell.KillExistingFG()
+	if len(os.Args) > 1 {
+		_, err := strconv.Atoi(os.Args[1]) // check for valid PPID by attempting conversion to an int
+		// above line causes canic so cannot catch this error effictively
+		if err != nil {
+			fmt.Printf("Invalid PPID supplied: %s\nPPID must be integer. use var `$PPID`", os.Args[1])
+			return
 		}
+	}
+	_, err := tea.NewProgram(app.NewModel()).Run()
+	utils.HandleError(err)
+}
 
-		err := config.AddClipboardItem(historyFilePath, input, "null")
-		utils.HandleError(err)
-		fmt.Println("added the following val to clipboard:", input)
-
-		return
+func handleAdd(historyFilePath string) {
+	var input string
+	if len(os.Args) < 3 {
+		input = utils.GetStdin()
+	} else {
+		input = os.Args[2]
 	}
 
-	if *listen {
-		shell.KillExisting()
-		shell.RunNohupListener() // hardcoded as const
-		return
+	err := config.AddClipboardItem(historyFilePath, input, "null")
+	utils.HandleError(err)
+	fmt.Println("added the following val to clipboard:", input)
+}
+
+func handleListen() {
+	shell.KillExisting()
+	shell.RunNohupListener() // hardcoded as const
+}
+
+func handleListenShell(historyFilePath, clipseDir, displayServer string, imgEnabled bool) {
+	err := handlers.RunListener(historyFilePath, clipseDir, displayServer, imgEnabled)
+	utils.HandleError(err)
+}
+
+func handleKill() {
+	shell.KillAll(os.Args[0])
+}
+
+func handleClear(historyFilePath string) {
+	clipboard.WriteAll("")
+	err := config.ClearHistory(historyFilePath)
+	utils.HandleError(err)
+	fmt.Println("Removed clipboard contents from system.")
+}
+
+func handleCopy() {
+	var input string
+	if len(os.Args) < 3 {
+		input = utils.GetStdin()
+	} else {
+		input = os.Args[2]
 	}
+	err := clipboard.WriteAll(input)
+	utils.HandleError(err)
+}
 
-	if *listenShell {
-		err = handlers.RunListener(historyFilePath, clipseDir, displayServer, imgEnabled)
-		utils.HandleError(err)
-		return
+func handlePaste() {
+	currentItem, err := clipboard.ReadAll()
+	utils.HandleError(err)
+	if currentItem != "" {
+		fmt.Println(currentItem)
 	}
-
-	if *kill {
-		shell.KillAll(os.Args[0])
-		utils.HandleError(err)
-		return
-	}
-
-	if *clear {
-		clipboard.WriteAll("")
-		err = config.ClearHistory(historyFilePath)
-		utils.HandleError(err)
-		fmt.Println("Removed clipboard contents from system.")
-		return
-	}
-
-	fmt.Printf("Command not recognised. See %s --help for usage instructions.", os.Args[0])
-
 }
