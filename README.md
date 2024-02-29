@@ -47,33 +47,19 @@ An example `.config/clipse/custom_theme.json`:
 ```
 
 {
-
     "useCustomTheme": true,
-
     "DimmedDesc": "#4C566A",
-
     "DimmedTitle": "#4C566A",
-
     "FilteredMatch": "#A3BE8C",
-
     "NormalDesc": "#81A1C1",
-
     "NormalTitle": "#B48EAD",
-
     "SelectedDesc": "#A3BE8C",
-
     "SelectedTitle": "#A3BE8C",
-
     "SelectedBorder": "#88C0D0",
-
     "SelectedDescBorder": "#88C0D0",
-
     "TitleFore": "#D8DEE9",
-
     "Titleback": "#3B4252",
-
     "StatusMsg": "#8FBCBB"
-
 }
 
 ```
@@ -181,7 +167,7 @@ clipse -listen
 
 The above command creates a `nohup` process of `clipse --listen-shell`, which if called on its own will start a listener in your current terminal session instead. If `nohup` is not supported on your system, you can use your preferred method of running `clipse --listen-shell` in the background instead.
 
-### Hyprland example
+### Hyprland
 
 Add the following lines to your Hyprland config file:
 
@@ -199,7 +185,7 @@ bind = SUPER, V, exec,  <terminal name> --class floating -e <shell-env>  -c 'cli
 
 [Hyprland reference](https://wiki.hyprland.org/Configuring/Window-Rules/)
 
-### i3 example 
+### i3 
 
 Add the following commands to your `.config/i3/config` file:
 
