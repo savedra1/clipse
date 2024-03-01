@@ -118,7 +118,6 @@ func handleClear(historyFilePath string) {
 	clipboard.WriteAll("")
 	err := config.ClearHistory(historyFilePath)
 	utils.HandleError(err)
-	fmt.Println("Removed clipboard contents from system.")
 }
 
 func handleCopy() {
