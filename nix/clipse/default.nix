@@ -9,7 +9,7 @@ buildGoModule {
     owner = "savedra1";
     repo = "clipse";
     rev = "v0.0.2";
-    hash = "sha256-jZtaZszduD+xZu5hv7kzkAJKkD24l25YSQf6Z7l9Wiw=";
+    hash = "sha256-zCsSfnZbhOYe1ysnGFO6VYZKVYCNZY0DvP2FB3EXFDM=";
   };
 
   vendorHash = "sha256-GIUEx4h3xvLySjBAQKajby2cdH8ioHkv8aPskHN0V+w=";
