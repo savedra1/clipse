@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"clipse/config"
-	"clipse/shell"
-	"clipse/utils"
+	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/shell"
+	"github.com/savedra1/clipse/utils"
 
 	"fmt"
 	"os"
