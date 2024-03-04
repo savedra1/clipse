@@ -1,4 +1,4 @@
-<a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a>
+<a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a>   ![GitHub last commit](https://img.shields.io/github/last-commit/savedra1/clipse)
 
 <p align="centre">
 

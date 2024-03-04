@@ -52,13 +52,10 @@ func SaveImage(imagePath, displayServer string) error {
 }
 
 func DeleteImage(imagePath string) error {
-
 	cmd := fmt.Sprintf("rm -f %s", imagePath)
 	err := exec.Command("sh", "-c", cmd).Run()
 	if err != nil {
 		return err
 	}
-
 	return nil
-
 }
