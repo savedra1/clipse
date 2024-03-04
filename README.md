@@ -128,7 +128,7 @@ TBC
 
 ```shell
 
-go install https://github.com/savedra1/clipse@latest
+go install github.com/savedra1/clipse@v0.0.6
 
 ```
 
