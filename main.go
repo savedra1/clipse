@@ -1,11 +1,11 @@
 package main
 
 import (
-	"clipse/app"
-	"clipse/config"
-	"clipse/handlers"
-	"clipse/shell"
-	"clipse/utils"
+	"github.com/savedra1/clipse/app"
+	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/handlers"
+	"github.com/savedra1/clipse/shell"
+	"github.com/savedra1/clipse/utils"
 
 	"flag"
 	"fmt"

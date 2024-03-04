@@ -1,13 +1,14 @@
 package shell
 
 import (
-	"clipse/utils"
 	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"syscall"
+
+	"github.com/savedra1/clipse/utils"
 
 	ps "github.com/mitchellh/go-ps"
 )

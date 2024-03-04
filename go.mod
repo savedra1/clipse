@@ -1,4 +1,4 @@
-module clipse
+module github.com/savedra1/clipse
 
 go 1.21.7
 

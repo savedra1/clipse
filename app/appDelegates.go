@@ -1,11 +1,12 @@
 package app
 
 import (
-	"clipse/config"
-	"clipse/shell"
-	"clipse/utils"
 	"os"
 	"strings"
+
+	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/shell"
+	"github.com/savedra1/clipse/utils"
 
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
