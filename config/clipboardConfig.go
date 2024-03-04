@@ -1,8 +1,8 @@
 package config
 
 import (
-	"clipse/shell"
-	"clipse/utils"
+	"github.com/savedra1/clipse/shell"
+	"github.com/savedra1/clipse/utils"
 
 	"encoding/json"
 	"fmt"
