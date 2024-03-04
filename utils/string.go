@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 )
 
 /* General purpose functions to be used by other modules
@@ -29,6 +30,10 @@ func GetStdin() string {
 	}
 	return string(buffer[:n])
 
+}
+
+func GetTime() string {
+	return strings.TrimSpace(strings.Split(time.Now().UTC().String(), "+0000")[0])
 }
 
 /* NOT IN USE - Remove bad chars - can cause issues with fuzzy finder

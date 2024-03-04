@@ -1,4 +1,4 @@
-<a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a>
+<a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a>   ![GitHub last commit](https://img.shields.io/github/last-commit/savedra1/clipse)
 
 <p align="centre">
 
@@ -7,7 +7,6 @@
 </p>
 
 # About 📋
-
 `clipse` is a dependencyless, configurable TUI-based clipboard manager application. Though the app is optimised for a linux OS with a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get [your desired clipboard behavior](https://www.youtube.com/watch?v=ZE2F8Mj0_I0). Further instructions for setting this up can be found below.
 
 [Click here to see a video demo for clipse](https://www.youtube.com/watch?v=ZE2F8Mj0_I0)
@@ -64,7 +63,7 @@ An example `.config/clipse/custom_theme.json`:
 
 ```
 
-Simply leaving this file alone or setting the `useCustomTheme` value to `false` will give you a nice pink and where default theme... 
+Simply leaving this file alone or setting the `useCustomTheme` value to `false` will give you a nice default theme... 
 
 <p align="left">
 
@@ -210,7 +209,6 @@ exec clipse -listen                                                             
 bindsym $mod+V exec <terminal name> -e sh -c "swaymsg floating enable, move position center; swaymsg resize set 80ppt 80ppt && clipse $PPID"  # Bind floating shell with TUI selection to something nice
 
 ```
-
 [Sway reference](https://wiki.archlinux.org/title/sway#:~:text=To%20enable%20floating%20windows%20or,enable%20floating%20windows%2Fwindow%20assignments.)
 
 ### Other

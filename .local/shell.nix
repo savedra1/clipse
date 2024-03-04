@@ -2,7 +2,7 @@
 
   pkgs.mkShell {
     buildInputs = with pkgs; [ 
-      nixclip
+      clipse
   ];
 
 }
