@@ -293,3 +293,5 @@ I would love to receive contributions to this project and welcome PRs from anyon
 
 ## TODO
 Nix package
+Pinned/favourite items
+Solution for auto-closing terminal window on MacOS
