@@ -1,10 +1,25 @@
 <a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a>   ![GitHub last commit](https://img.shields.io/github/last-commit/savedra1/clipse)
 
 <p align="centre">
-
   <img src="./resources/examples/demo.gif?raw=true" width=50% alt="gif" />
-
 </p>
+
+<br>
+
+<details>
+<summary>Table of contents</summary>
+
+- [Why use clipse?](#why-use-clipse)
+- [Installation](#installation)
+- [Set up](#set-up)
+- [All commands](#all-commands-💻)
+- [How it works](#how-it-works-🤔)
+- [Contributing](#contributing-🙏)
+
+</details>
+
+<br>
+
 
 # About 📋
 `clipse` is a dependencyless, configurable TUI-based clipboard manager application. Though the app is optimised for a linux OS with a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get [your desired clipboard behavior](https://www.youtube.com/watch?v=ZE2F8Mj0_I0). Further instructions for setting this up can be found below.
@@ -109,7 +124,7 @@ Due to Go's inbuilt garbage collection system and the way the application is bui
 
 The `clipse` binary, installable from the repo, can run on pretty much any Unix-based OS and will require zero external dependencies. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown in [my example](https://youtu.be/ZE2F8Mj0_I0) using [Hyprland window manager](https://hyprland.org/) on __NixOs__.
 
-**Note that working with image files will require one of the following dependencies**:
+**Note that working with image files will require one of the following dependencies to be installd on your system**:
 
 - Linux (X11) & MacOs: [xclip](https://github.com/astrand/xclip)
 - Linux (Wayland): [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
@@ -123,6 +138,34 @@ See below for instructions on getting clipse installed at configured effectively
 ### Installing on NixOs
 
 TBC
+
+### Installing with wget
+
+**Linux arm64**:
+```shell
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_linux_arm64.tar.gz -O - | tar -xz 
+```
+
+**Linux amd64**:
+```shell
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_linux_amd64.tar.gz -O - | tar -xz 
+```
+
+**Linux 836**:
+```shell
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_linux_836.tar.gz -O - | tar -xz 
+```
+
+**Darwin arm64**:
+```shell
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_darwin_arm64.tar.gz -O - | tar -xz 
+```
+
+**Darwin amd64**:
+```shell
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_darwin_amd64.tar.gz -O - | tar -xz 
+```
+
 
 ### Installing with Go
 
@@ -139,6 +182,8 @@ go install github.com/savedra1/clipse@v0.0.6
 git clone https://github.com/savedra1/clipse
 
 cd clipse
+
+go mod tidy
 
 go build -o clipse
 
@@ -213,7 +258,7 @@ bindsym $mod+V exec <terminal name> -e sh -c "swaymsg floating enable, move posi
 
 ### Other
 
-Every system/window manager is different and hard to determine exactly how to achieve the more ‘GUI-like’ behaviour. If using something not mentioned above just refer to your systems documentation to find how to:
+Every system/window manager is different and hard to determine exactly how to achieve the more ‘GUI-like’ behaviour. If using something not mentioned above, just refer to your systems documentation to find how to:
 
 - Run the `clipse -listen` / `clipse --listen-shell` command on startup
 - Bind the `clipse $PPID` command to a key that opens a terminal session (ideally in a window)
