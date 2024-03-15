@@ -1,25 +1,26 @@
+{ lib
+, buildGoModule
+, fetchFromGitHub
+}:
 
-{ lib, buildGoModule, fetchFromGitHub }:
-
-buildGoModule {
+buildGoModule rec {
   pname = "clipse";
-  version = "0.0.2";
+  version = "0.0.6";
 
   src = fetchFromGitHub {
     owner = "savedra1";
     repo = "clipse";
-    rev = "v0.0.2";
-    hash = "sha256-zCsSfnZbhOYe1ysnGFO6VYZKVYCNZY0DvP2FB3EXFDM=";
+    rev = "v${version}";
+    hash = "sha256-DLvYTPlLkp98zCzmbeL68B7mHl7RY3ee9rL30vYm5Ow=";
   };
 
   vendorHash = "sha256-GIUEx4h3xvLySjBAQKajby2cdH8ioHkv8aPskHN0V+w=";
 
-  meta = with lib; {
-    description = "A useful clipboard manager TUI for Unix.";
+  meta = {
+    description = "Useful clipboard manager TUI for Unix";
     homepage = "https://github.com/savedra1/clipse";
-    license = licenses.gpl3Only;
-    platforms = platforms.linux;
-    maintainers = with maintainers; [ "savedra1" ];
+    license = lib.licenses.mit;
     mainProgram = "clipse";
+    maintainers = [ lib.maintainers.savedra1 ];
   };
 }

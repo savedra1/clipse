@@ -1,8 +1,8 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixos-unstable> { config = { allowUnfree = true; }; } }:
 
   pkgs.mkShell {
     buildInputs = with pkgs; [ 
-      clipse
+      unstable.clipse
   ];
 
 }
