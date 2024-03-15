@@ -366,6 +366,8 @@ The maximum item storage limit is currently hardcoded at **100**. However, there
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
 - Pinned items view
+- Image previews in TUI view rather than `<BINARY FILE>`
+- Customisable max history limit
 - System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
 - Packages for apt, dnf, brew etc  
 - Theme adjustments made available via CLI 
