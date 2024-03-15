@@ -1,12 +1,11 @@
 <a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a>   ![GitHub last commit](https://img.shields.io/github/last-commit/savedra1/clipse)
 
 <p align="centre">
-  <img src="./resources/examples/demo.gif?raw=true" width=50% alt="gif" />
+  <img src="./resources/examples/demo.gif?raw=true" width=65% alt="gif" />
 </p>
 
 <br>
 
-<details>
 <summary>Table of contents</summary>
 
 - [Why use clipse?](#why-use-clipse)
@@ -16,10 +15,7 @@
 - [How it works](#how-it-works-🤔)
 - [Contributing](#contributing-🙏)
 
-</details>
-
 <br>
-
 
 # About 📋
 `clipse` is a dependencyless, configurable TUI-based clipboard manager application. Though the app is optimised for a linux OS with a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get [your desired clipboard behavior](https://www.youtube.com/watch?v=ZE2F8Mj0_I0). Further instructions for setting this up can be found below.
@@ -137,10 +133,51 @@ See below for instructions on getting clipse installed at configured effectively
 
 ### Installing on NixOs
 
-TBC
+As a new package, `clipse` is still currently on the `Unstable` branch of `nixpkgs`. You can use the following methods to install...
+
+**Direct install** __(recommended)__ 
+```shell
+nix-env -f channel:nixpkgs-unstable -iA clipse
+```
+
+**Nix shell**
+```shell
+nix shell github:NixOS/nixpkgs#clipse
+```
+
+**System package**
+Building `clipse` as a system package may depend on your nix environemnt. I would suggest referencing this article for best practice. The derivation can also be built fomr source using the following: 
+```c
+{ lib
+, buildGoModule
+, fetchFromGitHub
+}:
+
+buildGoModule rec {
+  pname = "clipse";
+  version = "0.0.6";
+
+  src = fetchFromGitHub {
+    owner = "savedra1";
+    repo = "clipse";
+    rev = "v${version}";
+    hash = "sha256-DLvYTPlLkp98zCzmbeL68B7mHl7RY3ee9rL30vYm5Ow=";
+  };
+
+  vendorHash = "sha256-GIUEx4h3xvLySjBAQKajby2cdH8ioHkv8aPskHN0V+w=";
+
+  meta = {
+    description = "Useful clipboard manager TUI for Unix";
+    homepage = "https://github.com/savedra1/clipse";
+    license = lib.licenses.mit;
+    mainProgram = "clipse";
+    maintainers = [ lib.maintainers.savedra1 ];
+  };
+}
+```
 
 ### Installing with wget
-
+ 
 **Linux arm64**:
 ```shell
 wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_linux_arm64.tar.gz -O - | tar -xz 
@@ -328,15 +365,16 @@ The maximum item storage limit is currently hardcoded at **100**. However, there
 ## Contributing 🙏
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
+- Pinned items view
 - System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
 - Packages for apt, dnf, brew etc  
 - Theme adjustments made available via CLI 
 - Better debugging
 - Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
 - Custom key binds added to config file 
-- Customisable config file storage paths
+- Customisable config file storage paths 
 
+<br><br>
 ## TODO
-Nix package
 Pinned/favourite items
-Solution for auto-closing terminal window on MacOS
+Solution for auto-closing terminal window on MacOs
