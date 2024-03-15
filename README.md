@@ -146,6 +146,7 @@ nix shell github:NixOS/nixpkgs#clipse
 ```
 
 **System package**
+
 Building `clipse` as a system package may depend on your nix environemnt. I would suggest referencing this article for best practice. The derivation can also be built fomr source using the following: 
 ```c
 { lib
