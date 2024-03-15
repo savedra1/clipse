@@ -147,7 +147,7 @@ nix shell github:NixOS/nixpkgs#clipse
 
 **System package**
 
-Building `clipse` as a system package may depend on your nix environemnt. I would suggest referencing this article for best practice. The derivation can also be built fomr source using the following: 
+Building unstable `clipse` as a system package may depend on your nix environemnt. I would suggest referencing [this article](https://discourse.nixos.org/t/installing-only-a-single-package-from-unstable/5598) for best practice. The derivation can also be built from source using the following: 
 ```c
 { lib
 , buildGoModule
