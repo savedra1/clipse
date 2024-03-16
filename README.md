@@ -6,7 +6,7 @@
 
 <br>
 
-<summary>Table of contents</summary>
+### Table of contents
 
 - [Why use clipse?](#why-use-clipse)
 - [Installation](#installation)
@@ -14,13 +14,28 @@
 - [All commands](#all-commands-💻)
 - [How it works](#how-it-works-🤔)
 - [Contributing](#contributing-🙏)
+- [FAQs](#faq)
 
 <br>
 
 # About 📋
-`clipse` is a dependencyless, configurable TUI-based clipboard manager application. Though the app is optimised for a linux OS with a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get [your desired clipboard behavior](https://www.youtube.com/watch?v=ZE2F8Mj0_I0). Further instructions for setting this up can be found below.
+`clipse` is a highly configurable, TUI-based clipboard manager application written in Go with minimal dependency. Though the app is optimised for a linux OS using a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get [your desired clipboard behavior](https://www.youtube.com/watch?v=ZE2F8Mj0_I0). Further instructions for setting this up can be found below. 
 
 [Click here to see a video demo for clipse](https://www.youtube.com/watch?v=ZE2F8Mj0_I0)
+
+### Dependency info and libraries used 
+__[atotto/clipboard](https://github.com/atotto/clipboard)__
+This requires a standard system clipboard like *one* of the following:
+- wl-clipboard
+- xclip
+- xsel
+- termux-clipboard
+
+__[go-ps](github.com/mitchellh/go-ps)__
+This does not require any additional dependency.
+
+__[BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea)__
+This does not require any additional dependency.
 
 # Why use *clipse*? 
 
@@ -377,7 +392,12 @@ I would love to receive contributions to this project and welcome PRs from anyon
 - Custom key binds added to config file 
 - Customisable config file storage paths 
 
-<br><br>
+## FAQ 
+- My terminal window does not close on selection, even when using `clipse $PPID` - _some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. The 'close on selection functionality is also not currently available for MacOs as killing the terminals ppid does not close the window - it seems applescript is needed to achieve this.'_ 
+- Why is it necessary to pass in the `$PPID` arg? - _Although your WM setup may close the window on process completion anyway, this is passed in to maintain consistent behaviour across all WMs and shell environments to ensure the window session can be always be killed. More elegant solutions to this are welcomed as PRs._
+- Is there risk of multiple parallel processes running? - _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
+
+<br>
 ## TODO
 Pinned/favourite items
 Solution for auto-closing terminal window on MacOs
