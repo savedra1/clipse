@@ -25,6 +25,7 @@
 
 ### Dependency info and libraries used 
 __[atotto/clipboard](https://github.com/atotto/clipboard)__
+
 This requires a standard system clipboard like *one* of the following:
 - wl-clipboard
 - xclip
@@ -32,10 +33,12 @@ This requires a standard system clipboard like *one* of the following:
 - termux-clipboard
 
 __[go-ps](github.com/mitchellh/go-ps)__
-This does not require any additional dependency.
+
+Does not require any additional dependency.
 
 __[BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea)__
-This does not require any additional dependency.
+
+Does not require any additional dependency.
 
 # Why use *clipse*? 
 
@@ -99,7 +102,7 @@ Simply leaving this file alone or setting the `useCustomTheme` value to `false` 
 
 ### 2. Usability ✨
 
-Easily recall, add, and delete clipboard history via a dreamy TUI built with Go's excellent [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) library. A simple fuzzy finder, callable with the `/` key can easily match content from a theoretically unlimited amount of time in the past: 
+Easily recall, add, and delete clipboard history via a smooth TUI experience built with Go's excellent [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) library. A simple fuzzy finder, callable with the `/` key can easily match content from a theoretically unlimited amount of time in the past: 
 
 <p align="left">
 
@@ -123,7 +126,7 @@ clipse -a "a custom string value"
 
 ### 3. Efficiency 💥
 
-Due to Go's inbuilt garbage collection system and the way the application is built, `clipse` is pretty selfless when it comes to CPU consumption and memory. The below image shows how little resources are required to poser the background event listener used to continually update the history displayed in the TUI... 
+Due to Go's inbuilt garbage collection system and the way the application is built, `clipse` is pretty selfless when it comes to CPU consumption and memory. The below image shows how little resources are required to run the background event listener used to continually update the history displayed in the TUI... 
 
 <p align="left">
 
@@ -133,7 +136,7 @@ Due to Go's inbuilt garbage collection system and the way the application is bui
 
 ### 4. Versatility 🌐
 
-The `clipse` binary, installable from the repo, can run on pretty much any Unix-based OS and will require zero external dependencies. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown in [my example](https://youtu.be/ZE2F8Mj0_I0) using [Hyprland window manager](https://hyprland.org/) on __NixOs__.
+The `clipse` binary, installable from the repo, can run on pretty much any Unix-based OS, though currently optimized for linux. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown in [my example](https://youtu.be/ZE2F8Mj0_I0) using [Hyprland window manager](https://hyprland.org/) on __NixOs__.
 
 **Note that working with image files will require one of the following dependencies to be installd on your system**:
 
@@ -142,7 +145,7 @@ The `clipse` binary, installable from the repo, can run on pretty much any Unix-
 
 # Setup & installation 🏗️
 
-See below for instructions on getting clipse installed at configured effectively. 
+See below for instructions on getting clipse installed and configured effectively. 
 
 ## Installation 
 
@@ -192,6 +195,9 @@ buildGoModule rec {
 }
 ```
 
+### Installing on Arch
+TBC - AUR package submitted: https://aur.archlinux.org/packages/clipse 
+
 ### Installing with wget
  
 **Linux arm64**:
@@ -218,7 +224,6 @@ wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6
 ```shell
 wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_darwin_amd64.tar.gz -O - | tar -xz 
 ```
-
 
 ### Installing with Go
 
@@ -252,7 +257,7 @@ clipse $PPID
 
 ```
 
-Passing in the `$PPID` variable as an arg to the main command allows the TUI to close the terminal session in which it's hosted on the `choose` event, simulating a full GUI experience. Without passing in `$PPID`, your TUI selection will still be copied to your system's clipboard, however, the terminal session will not close automatically.    
+Passing in the `$PPID` variable as an arg to the main command ensures the TUI will close the terminal session in which it's hosted on the `choose` event, despite the environment in which it's called. Without passing in `$PPID`, your TUI selection will enter _persistent mode_ where the window will not close automatically after selection. The `$PPID` var is also not available in every terminal environment. If you find the program enters persistent mode even when passing this in you will need to find the correct var to use instead. EG, `$fish_pid`. 
 
 The second command doesn't need to be bound to a key combination, but rather to the system boot to run the background listener on start-up:
 
@@ -263,6 +268,8 @@ clipse -listen
 ``` 
 
 The above command creates a `nohup` process of `clipse --listen-shell`, which if called on its own will start a listener in your current terminal session instead. If `nohup` is not supported on your system, you can use your preferred method of running `clipse --listen-shell` in the background instead.
+
+__Note: The following examples are based on bash/zsh shell environments. If you use something else like `foot` or `fish`, you may need to construct the command differently, referencing the relevant documentation.__
 
 ### Hyprland
 
