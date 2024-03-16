@@ -393,11 +393,15 @@ I would love to receive contributions to this project and welcome PRs from anyon
 - Customisable config file storage paths 
 
 ## FAQ 
-- My terminal window does not close on selection, even when using `clipse $PPID` - _some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. The 'close on selection functionality is also not currently available for MacOs as killing the terminals ppid does not close the window - it seems applescript is needed to achieve this.'_ 
-- Why is it necessary to pass in the `$PPID` arg? - _Although your WM setup may close the window on process completion anyway, this is passed in to maintain consistent behaviour across all WMs and shell environments to ensure the window session can be always be killed. More elegant solutions to this are welcomed as PRs._
-- Is there risk of multiple parallel processes running? - _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
+
+- __My terminal window does not close on selection, even when using `clipse $PPID`__ - _Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. The 'close on selection functionality is also not currently available for MacOs as killing the terminals ppid does not close the window - it seems applescript is needed to achieve this._
+
+- __Why is it necessary to pass in the `$PPID` arg?__ - _Although your WM setup may close the window on process completion anyway, this is passed in to maintain consistent behaviour across all WMs and shell environments to ensure the window session can be always be killed. More elegant solutions to this are welcomed as PRs._
+
+- __Is there risk of multiple parallel processes running?__ - _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
 
 <br>
+
 ## TODO
 Pinned/favourite items
 Solution for auto-closing terminal window on MacOs
