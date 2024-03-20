@@ -411,7 +411,7 @@ I would love to receive contributions to this project and welcome PRs from anyon
 
 ## TODO
 
-Pinned/favourite items
-Solution for auto-closing terminal window on MacOs
-image preview
-integrating xclip+wl-clip into binary with gcc
+- Pinned/favourite items
+- Solution for auto-closing terminal window on MacOs
+- image preview
+- integrating xclip+wl-clip into binary with gcc
