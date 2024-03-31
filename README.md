@@ -196,7 +196,17 @@ buildGoModule rec {
 ```
 
 ### Installing on Arch
-TBC - AUR package submitted: https://aur.archlinux.org/packages/clipse 
+[The AUR package can be found here](https://aur.archlinux.org/packages/clipse)
+
+**Installing with yay**
+```shell
+yay -S example-package
+```
+
+**Installing from pkg source**
+```shell
+git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
+```
 
 ### Installing with wget
  
@@ -410,7 +420,8 @@ I would love to receive contributions to this project and welcome PRs from anyon
 <br>
 
 ## TODO
-
+- __[bug]__ Tmp image files not deleting on some machines
+- Extra Config file for item limit, keybinds and clise dir 
 - Pinned/favourite items
 - Solution for auto-closing terminal window on MacOs
 - image preview
