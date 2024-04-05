@@ -1,15 +1,15 @@
 package config
 
 import (
-	"github.com/savedra1/clipse/shell"
-	"github.com/savedra1/clipse/utils"
-
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
+
+	"github.com/savedra1/clipse/shell"
+	"github.com/savedra1/clipse/utils"
 )
 
 /* File contains logic for parseing the cilpboard data and
@@ -22,6 +22,7 @@ type ClipboardItem struct {
 	Value    string `json:"value"`
 	Recorded string `json:"recorded"`
 	FilePath string `json:"filePath"`
+	Pinned   bool   `json:"pinned"`
 }
 
 type ClipboardHistory struct {
@@ -117,7 +118,6 @@ func GetHistory() []ClipboardItem {
 
 	// Extract clipboard history items
 	return data.ClipboardHistory
-
 }
 
 func DeleteJsonItem(historyFilePath, item string) error {
@@ -242,7 +242,6 @@ func ClearHistory(historyFilePath string) error {
 }
 
 func AddClipboardItem(configFile, text, imgPath string) error {
-
 	var data ClipboardHistory
 
 	fileData, err := os.ReadFile(configFile)
@@ -259,6 +258,7 @@ func AddClipboardItem(configFile, text, imgPath string) error {
 		Value:    text,
 		Recorded: utils.GetTime(),
 		FilePath: imgPath,
+		Pinned:   false,
 	}
 
 	// Append the new item to the beginning of the array to appear at top of list
@@ -271,6 +271,35 @@ func AddClipboardItem(configFile, text, imgPath string) error {
 	if err = saveDataToFile(configFile, data); err != nil {
 		return err
 	}
+	return nil
+}
+
+// This pins and unpins an item in the clipboard
+func TogglePinClipboardItem(configFile string, title string) error {
+	var data ClipboardHistory
+
+	fileData, err := os.ReadFile(configFile)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(fileData, &data)
+	if err != nil {
+		return err
+	}
+
+	for i := range data.ClipboardHistory {
+		if data.ClipboardHistory[i].Value == title {
+			// Toggle the pinned state
+			data.ClipboardHistory[i].Pinned = !data.ClipboardHistory[i].Pinned
+			break
+		}
+	}
+
+	if err = saveDataToFile(configFile, data); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -305,7 +334,6 @@ func Contains(str string) bool {
 		data = data[:3]
 	}
 	for _, item := range data {
-
 		if item.Value == str {
 			return true
 		}

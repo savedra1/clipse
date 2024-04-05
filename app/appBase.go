@@ -42,6 +42,7 @@ type item struct {
 	titleFull   string
 	description string
 	filePath    string
+	pinned      bool
 }
 
 func (i item) Title() string       { return i.title }
@@ -49,6 +50,7 @@ func (i item) TitleFull() string   { return i.titleFull }
 func (i item) Description() string { return i.description }
 func (i item) FilePath() string    { return i.filePath }
 func (i item) FilterValue() string { return i.title }
+func (i item) Pinned() bool        { return i.pinned }
 
 type listKeyMap struct {
 	// default keybind definitions
@@ -61,7 +63,6 @@ type listKeyMap struct {
 
 func newListKeyMap() *listKeyMap {
 	return &listKeyMap{
-
 		toggleSpinner: key.NewBinding(
 			key.WithKeys("s"),
 			key.WithHelp("s", "toggle spinner"),
@@ -109,6 +110,7 @@ func NewModel() model {
 			titleFull:   entry.Value,
 			description: "Date copied: " + entry.Recorded,
 			filePath:    entry.FilePath,
+			pinned:      entry.Pinned,
 		}
 		entryItems = append(entryItems, item)
 	}
@@ -151,8 +153,8 @@ func NewModel() model {
 			Render
 	}
 
-	//c := lipgloss.Color("#6f03fc")
-	//delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(c)
+	// c := lipgloss.Color("#6f03fc")
+	// delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(c)
 
 	clipboardList := list.New(entryItems, del, 0, 0)
 	clipboardList.Title = "Clipboard History"
@@ -191,7 +193,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		// Don't match any of the keys below if we're actively filtering.
-		//txtlog(fmt.Sprintf("%s: key state = %s", time.Now(), m.list.FilterState()))
+		// txtlog(fmt.Sprintf("%s: key state = %s", time.Now(), m.list.FilterState()))
 		if m.list.FilterState() == list.Filtering {
 			break
 		}

@@ -19,8 +19,9 @@ base-level bubbletea app. Here including keybinds only.
 */
 
 type delegateKeyMap struct {
-	choose key.Binding
-	remove key.Binding
+	choose    key.Binding
+	remove    key.Binding
+	togglePin key.Binding
 }
 
 /*
@@ -32,6 +33,7 @@ func (d delegateKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
 		d.choose,
 		d.remove,
+		d.togglePin,
 	}
 }
 
@@ -40,6 +42,7 @@ func (d delegateKeyMap) FullHelp() [][]key.Binding {
 		{
 			d.choose,
 			d.remove,
+			d.togglePin,
 		},
 	}
 }
@@ -54,6 +57,10 @@ func newDelegateKeyMap() *delegateKeyMap {
 		remove: key.NewBinding(
 			key.WithKeys("x", "backspace"),
 			key.WithHelp("x", "delete"),
+		),
+		togglePin: key.NewBinding(
+			key.WithKeys("p"),
+			key.WithHelp("p", "toggle pin"),
 		),
 	}
 }
@@ -71,6 +78,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 		var fullValue string
 		var fp string
 		var desc string
+		var isPinned bool
 
 		if i, ok := m.SelectedItem().(item); ok {
 
@@ -78,6 +86,7 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 			fullValue = i.TitleFull()
 			fp = i.FilePath()
 			desc = strings.Split(i.Description(), ": ")[1]
+			isPinned = i.Pinned()
 		} else {
 			return nil
 		}
@@ -119,13 +128,28 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				}()
 
 				return m.NewStatusMessage(statusMessageStyle("Deleted: " + title))
+
+			case key.Matches(msg, keys.togglePin):
+				if len(m.Items()) == 0 {
+					keys.togglePin.SetEnabled(false)
+				}
+
+				historyFilePath, _ := config.Paths()
+				err := config.TogglePinClipboardItem(historyFilePath, title)
+				utils.HandleError(err)
+
+				if isPinned {
+					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
+				} else {
+					return m.NewStatusMessage(statusMessageStyle("Pinned: " + title))
+				}
 			}
 		}
 
 		return nil
 	}
 
-	help := []key.Binding{keys.choose, keys.remove}
+	help := []key.Binding{keys.choose, keys.remove, keys.togglePin}
 
 	d.ShortHelpFunc = func() []key.Binding {
 		return help
