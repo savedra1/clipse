@@ -1,4 +1,5 @@
-<a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a>   ![GitHub last commit](https://img.shields.io/github/last-commit/savedra1/clipse)
+<a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a> [![Last Commit](https://img.shields.io/github/last-commit/savedra1/website)](https://github.com/savedra1/website)
+
 
 <p align="centre">
   <img src="./resources/examples/demo.gif?raw=true" width=65% alt="gif" />
