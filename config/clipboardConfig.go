@@ -275,7 +275,7 @@ func AddClipboardItem(configFile, text, imgPath string) error {
 }
 
 // This pins and unpins an item in the clipboard
-func TogglePinClipboardItem(configFile string, title string) error {
+func TogglePinClipboardItem(configFile string, timeStamp string) error {
 	var data ClipboardHistory
 
 	fileData, err := os.ReadFile(configFile)
@@ -289,7 +289,7 @@ func TogglePinClipboardItem(configFile string, title string) error {
 	}
 
 	for i := range data.ClipboardHistory {
-		if data.ClipboardHistory[i].Value == title {
+		if data.ClipboardHistory[i].Recorded == timeStamp {
 			// Toggle the pinned state
 			data.ClipboardHistory[i].Pinned = !data.ClipboardHistory[i].Pinned
 			break

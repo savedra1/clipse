@@ -50,7 +50,6 @@ func (i item) TitleFull() string   { return i.titleFull }
 func (i item) Description() string { return i.description }
 func (i item) FilePath() string    { return i.filePath }
 func (i item) FilterValue() string { return i.title }
-func (i item) Pinned() bool        { return i.pinned }
 
 type listKeyMap struct {
 	// default keybind definitions
@@ -91,6 +90,8 @@ type model struct {
 	list         list.Model      // list items
 	keys         *listKeyMap     // keybindings
 	delegateKeys *delegateKeyMap // custom key bindings
+	pinned       bool            // pinned status
+	togglePinned bool
 }
 
 func NewModel() model {
@@ -110,14 +111,14 @@ func NewModel() model {
 			titleFull:   entry.Value,
 			description: "Date copied: " + entry.Recorded,
 			filePath:    entry.FilePath,
-			pinned:      entry.Pinned,
 		}
 		entryItems = append(entryItems, item)
 	}
 
 	// Setup list
 
-	del := newItemDelegate(delegateKeys)
+	m := model{}
+	del := m.newItemDelegate(delegateKeys)
 	ct := config.GetTheme()
 	if ct.UseCustom {
 		del.Styles.DimmedDesc = del.Styles.DimmedDesc.
@@ -173,6 +174,7 @@ func NewModel() model {
 		list:         clipboardList,
 		keys:         listKeys,
 		delegateKeys: delegateKeys,
+		pinned:       false, // by default, the view would show the non-pinned items
 	}
 }
 
@@ -235,4 +237,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string { // Render app in terminal using client libs
 	return appStyle.Render(m.list.View())
+}
+
+func filterItemsByPinned(clipboardItems []config.ClipboardItem, togglePinned bool) []list.Item {
+	var filteredItems []list.Item
+
+	for _, entry := range clipboardItems {
+		shortenedVal := utils.Shorten(entry.Value)
+		item := item{
+			title:       shortenedVal,
+			titleFull:   entry.Value,
+			description: "Date copied: " + entry.Recorded,
+			filePath:    entry.FilePath,
+			pinned:      entry.Pinned,
+		}
+
+		if !togglePinned || entry.Pinned {
+			filteredItems = append(filteredItems, item)
+		}
+	}
+
+	return filteredItems
 }

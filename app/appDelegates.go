@@ -19,9 +19,10 @@ base-level bubbletea app. Here including keybinds only.
 */
 
 type delegateKeyMap struct {
-	choose    key.Binding
-	remove    key.Binding
-	togglePin key.Binding
+	choose       key.Binding
+	remove       key.Binding
+	togglePin    key.Binding
+	togglePinned key.Binding
 }
 
 /*
@@ -34,6 +35,7 @@ func (d delegateKeyMap) ShortHelp() []key.Binding {
 		d.choose,
 		d.remove,
 		d.togglePin,
+		d.togglePinned,
 	}
 }
 
@@ -43,6 +45,7 @@ func (d delegateKeyMap) FullHelp() [][]key.Binding {
 			d.choose,
 			d.remove,
 			d.togglePin,
+			d.togglePinned,
 		},
 	}
 }
@@ -62,10 +65,14 @@ func newDelegateKeyMap() *delegateKeyMap {
 			key.WithKeys("p"),
 			key.WithHelp("p", "toggle pin"),
 		),
+		togglePinned: key.NewBinding(
+			key.WithKeys("tab"),
+			key.WithHelp("tab", "toggle pinned items"),
+		),
 	}
 }
 
-func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
+func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 	/* This is where the additional keybinding actions are defined:
 	   - enter/reurn: copies selected item to the clipboard and adds a status message
 	   - backspace/delete: removes item from list view and json file
@@ -78,7 +85,6 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 		var fullValue string
 		var fp string
 		var desc string
-		var isPinned bool
 
 		if i, ok := m.SelectedItem().(item); ok {
 
@@ -86,7 +92,6 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 			fullValue = i.TitleFull()
 			fp = i.FilePath()
 			desc = strings.Split(i.Description(), ": ")[1]
-			isPinned = i.Pinned()
 		} else {
 			return nil
 		}
@@ -135,14 +140,42 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 				}
 
 				historyFilePath, _ := config.Paths()
-				err := config.TogglePinClipboardItem(historyFilePath, title)
+				err := config.TogglePinClipboardItem(historyFilePath, desc)
 				utils.HandleError(err)
 
-				if isPinned {
+				if parentModel.pinned {
+					parentModel.pinned = false
 					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
 				} else {
+					parentModel.pinned = true
 					return m.NewStatusMessage(statusMessageStyle("Pinned: " + title))
 				}
+
+			case key.Matches(msg, keys.togglePinned):
+				if len(m.Items()) == 0 {
+					keys.togglePinned.SetEnabled(false)
+					return nil
+				}
+
+				if parentModel.togglePinned {
+					parentModel.togglePinned = false
+					m.Title = "Clipboard History"
+				} else {
+					parentModel.togglePinned = true
+					m.Title = "Pinned Clipboard History"
+				}
+
+				clipboardItems := config.GetHistory() //* this could become a function
+				filteredItems := filterItemsByPinned(clipboardItems, parentModel.togglePinned)
+
+				for i := len(m.Items()) - 1; i >= 0; i-- { // clear all items (maybe an inbuilt func for this)
+					m.RemoveItem(i)
+				}
+
+				for _, item := range filteredItems { // adds all required items
+					m.InsertItem(len(m.Items()), item)
+				}
+
 			}
 		}
 

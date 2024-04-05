@@ -1,16 +1,16 @@
 package main
 
 import (
+	"flag"
+	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/savedra1/clipse/app"
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/handlers"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
-
-	"flag"
-	"fmt"
-	"os"
-	"strconv"
 
 	"github.com/atotto/clipboard"
 	tea "github.com/charmbracelet/bubbletea"
