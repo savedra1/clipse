@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/utils"
 
@@ -36,10 +38,24 @@ var (
 				Render
 )
 
+func pinnedStyle() string {
+	var color string
+	pinChar := " "
+	config := config.GetTheme()
+
+	if config.UseCustom {
+		color = config.PinIndicatorColor
+	} else {
+		color = "#FF0000"
+	}
+	return lipgloss.NewStyle().Foreground(lipgloss.Color(color)).SetString(pinChar).Render()
+}
+
 type item struct {
 	// (Each Row in clipboard view)
 	title       string
 	titleFull   string
+	timeStamp   string
 	description string
 	filePath    string
 	pinned      bool
@@ -47,6 +63,7 @@ type item struct {
 
 func (i item) Title() string       { return i.title }
 func (i item) TitleFull() string   { return i.titleFull }
+func (i item) TimeStamp() string   { return i.timeStamp }
 func (i item) Description() string { return i.description }
 func (i item) FilePath() string    { return i.filePath }
 func (i item) FilterValue() string { return i.title }
@@ -103,17 +120,7 @@ func NewModel() model {
 
 	// Make initial list of items
 	clipboardItems := config.GetHistory()
-	var entryItems []list.Item
-	for _, entry := range clipboardItems {
-		shortenedVal := utils.Shorten(entry.Value)
-		item := item{
-			title:       shortenedVal,
-			titleFull:   entry.Value,
-			description: "Date copied: " + entry.Recorded,
-			filePath:    entry.FilePath,
-		}
-		entryItems = append(entryItems, item)
-	}
+	entryItems := filterItemsByPinned(clipboardItems, false)
 
 	// Setup list
 
@@ -174,12 +181,27 @@ func NewModel() model {
 		list:         clipboardList,
 		keys:         listKeys,
 		delegateKeys: delegateKeys,
-		pinned:       false, // by default, the view would show the non-pinned items
 	}
 }
 
 func (m model) Init() tea.Cmd { // initialise app
 	return tea.EnterAltScreen
+}
+
+// This updates the TUI when an item is pinned/unpinned
+func (m *model) togglePinUpdate() {
+	index := m.list.Index()
+	if i, ok := m.list.SelectedItem().(item); ok {
+		if i.pinned == false {
+			i.pinned = true // set pinned status to true
+			i.description = fmt.Sprintf("Date copied: %s %s", i.timeStamp, pinnedStyle())
+			m.list.SetItem(index, i)
+		} else {
+			i.pinned = false
+			i.description = fmt.Sprintf("Date copied: %s", i.timeStamp)
+			m.list.SetItem(index, i)
+		}
+	}
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -225,6 +247,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 
 		}
+		switch msg.String() {
+		case "p":
+			m.togglePinUpdate()
+		}
 	}
 
 	// This will also call our delegate's update function.
@@ -239,7 +265,7 @@ func (m model) View() string { // Render app in terminal using client libs
 	return appStyle.Render(m.list.View())
 }
 
-func filterItemsByPinned(clipboardItems []config.ClipboardItem, togglePinned bool) []list.Item {
+func filterItemsByPinned(clipboardItems []config.ClipboardItem, isPinned bool) []list.Item {
 	var filteredItems []list.Item
 
 	for _, entry := range clipboardItems {
@@ -250,9 +276,14 @@ func filterItemsByPinned(clipboardItems []config.ClipboardItem, togglePinned boo
 			description: "Date copied: " + entry.Recorded,
 			filePath:    entry.FilePath,
 			pinned:      entry.Pinned,
+			timeStamp:   entry.Recorded,
 		}
 
-		if !togglePinned || entry.Pinned {
+		if entry.Pinned {
+			item.description = fmt.Sprintf("Date copied: %s %s", entry.Recorded, pinnedStyle())
+		}
+
+		if !isPinned || entry.Pinned {
 			filteredItems = append(filteredItems, item)
 		}
 	}

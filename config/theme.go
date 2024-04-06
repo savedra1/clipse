@@ -21,6 +21,7 @@ type CustomTheme struct {
 	TitleFore          string `json:"TitleFore"`
 	TitleBack          string `json:"Titleback"`
 	StatusMsg          string `json:"StatusMsg"`
+	PinIndicatorColor  string `json:"PinIndicatorColor"`
 }
 
 func GetTheme() CustomTheme {
@@ -38,12 +39,11 @@ func GetTheme() CustomTheme {
 	var theme CustomTheme
 	if err := json.NewDecoder(file).Decode(&theme); err != nil {
 		fmt.Println("Error decoding JSON for custom_theme.json. Try creating this file manually instead. Err:", err)
-		//handleError(err) // No need to terminate program here as default theme can be kept
+		// handleError(err) // No need to terminate program here as default theme can be kept
 	}
 
 	// Extract clipboard history items
 	return theme
-
 }
 
 func initTheme(fp string) error {

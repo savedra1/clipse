@@ -2,7 +2,6 @@ package app
 
 import (
 	"os"
-	"strings"
 
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/shell"
@@ -91,7 +90,8 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 			title = i.Title()
 			fullValue = i.TitleFull()
 			fp = i.FilePath()
-			desc = strings.Split(i.Description(), ": ")[1]
+			// desc = strings.Split(i.Description(), ": ")[1]
+			desc = i.TimeStamp()
 		} else {
 			return nil
 		}
@@ -128,7 +128,7 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 					if currentContent == fullValue {
 						clipboard.WriteAll("")
 					}
-					err := config.DeleteJsonItem(historyFilePath, strings.TrimSpace(desc)) // This func will also delete the temoraily stored image if filepath present
+					err := config.DeleteJsonItem(historyFilePath, desc) // This func will also delete the temoraily stored image if filepath present
 					utils.HandleError(err)
 				}()
 
@@ -140,21 +140,23 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 				}
 
 				historyFilePath, _ := config.Paths()
-				err := config.TogglePinClipboardItem(historyFilePath, desc)
+
+				isPinned, err := config.TogglePinClipboardItem(historyFilePath, desc)
 				utils.HandleError(err)
 
-				if parentModel.pinned {
+				if parentModel.pinned && isPinned {
 					parentModel.pinned = false
 					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
-				} else {
+				} else if !isPinned {
 					parentModel.pinned = true
 					return m.NewStatusMessage(statusMessageStyle("Pinned: " + title))
+				} else {
+					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
 				}
 
 			case key.Matches(msg, keys.togglePinned):
 				if len(m.Items()) == 0 {
 					keys.togglePinned.SetEnabled(false)
-					return nil
 				}
 
 				if parentModel.togglePinned {
@@ -165,10 +167,15 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 					m.Title = "Pinned Clipboard History"
 				}
 
-				clipboardItems := config.GetHistory() //* this could become a function
+				clipboardItems := config.GetHistory()
 				filteredItems := filterItemsByPinned(clipboardItems, parentModel.togglePinned)
 
-				for i := len(m.Items()) - 1; i >= 0; i-- { // clear all items (maybe an inbuilt func for this)
+				if len(filteredItems) == 0 {
+					m.Title = "Clipboard History"
+					return m.NewStatusMessage(statusMessageStyle("No pinned items"))
+				}
+
+				for i := len(m.Items()) - 1; i >= 0; i-- { // clear all items
 					m.RemoveItem(i)
 				}
 
@@ -182,7 +189,7 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 		return nil
 	}
 
-	help := []key.Binding{keys.choose, keys.remove, keys.togglePin}
+	help := []key.Binding{keys.choose, keys.remove, keys.togglePin, keys.togglePinned}
 
 	d.ShortHelpFunc = func() []key.Binding {
 		return help
