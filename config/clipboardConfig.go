@@ -265,7 +265,12 @@ func AddClipboardItem(configFile, text, imgPath string) error {
 	data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
 
 	if len(data.ClipboardHistory) > maxLen {
-		data.ClipboardHistory = data.ClipboardHistory[:maxLen]
+		for i := len(data.ClipboardHistory) - 1; i >= 0; i-- { // remove the first unpinned entry starting with the oldest
+			if !data.ClipboardHistory[i].Pinned {
+				data.ClipboardHistory = append(data.ClipboardHistory[:i], data.ClipboardHistory[i+1:]...)
+				break
+			}
+		}
 	}
 
 	if err = saveDataToFile(configFile, data); err != nil {
