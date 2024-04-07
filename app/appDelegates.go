@@ -144,11 +144,9 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 				isPinned, err := config.TogglePinClipboardItem(historyFilePath, desc)
 				utils.HandleError(err)
 
-				if parentModel.pinned && isPinned {
-					parentModel.pinned = false
+				if isPinned {
 					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
 				} else if !isPinned {
-					parentModel.pinned = true
 					return m.NewStatusMessage(statusMessageStyle("Pinned: " + title))
 				} else {
 					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
