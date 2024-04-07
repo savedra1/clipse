@@ -35,7 +35,7 @@ func KillExisting() error {
 	return nil
 }
 
-func KillExistingFG() {
+func KillExistingFG() error {
 	/*
 		Only kill other clipboard GUI windows to prevent
 		file conflicts.
@@ -45,7 +45,9 @@ func KillExistingFG() {
 	//fmt.Println("current:", currentPS)
 	cmd := exec.Command("sh", "-c", "pgrep -a clipse")
 	output, err := cmd.Output()
-	utils.HandleError(err)
+	if err != nil || output == nil { // allows local usage when no clipse ps
+		return fmt.Errorf("no clipse processes are running")
+	}
 	/*
 		EG Output returns as:
 		156842 ./clipse --listen-shell >/dev/null 2>&1 &
@@ -58,6 +60,8 @@ func KillExistingFG() {
 			KillProcess(strings.Split(ps, " ")[0])
 		}
 	}
+
+	return nil
 }
 
 /* Not currently used

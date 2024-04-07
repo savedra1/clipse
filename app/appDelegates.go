@@ -2,7 +2,6 @@ package app
 
 import (
 	"os"
-	"strings"
 
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/shell"
@@ -19,8 +18,10 @@ base-level bubbletea app. Here including keybinds only.
 */
 
 type delegateKeyMap struct {
-	choose key.Binding
-	remove key.Binding
+	choose       key.Binding
+	remove       key.Binding
+	togglePin    key.Binding
+	togglePinned key.Binding
 }
 
 /*
@@ -32,6 +33,8 @@ func (d delegateKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
 		d.choose,
 		d.remove,
+		d.togglePin,
+		d.togglePinned,
 	}
 }
 
@@ -40,6 +43,8 @@ func (d delegateKeyMap) FullHelp() [][]key.Binding {
 		{
 			d.choose,
 			d.remove,
+			d.togglePin,
+			d.togglePinned,
 		},
 	}
 }
@@ -55,10 +60,18 @@ func newDelegateKeyMap() *delegateKeyMap {
 			key.WithKeys("x", "backspace"),
 			key.WithHelp("x", "delete"),
 		),
+		togglePin: key.NewBinding(
+			key.WithKeys("p"),
+			key.WithHelp("p", "toggle pin"),
+		),
+		togglePinned: key.NewBinding(
+			key.WithKeys("tab"),
+			key.WithHelp("tab", "toggle pinned items"),
+		),
 	}
 }
 
-func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
+func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 	/* This is where the additional keybinding actions are defined:
 	   - enter/reurn: copies selected item to the clipboard and adds a status message
 	   - backspace/delete: removes item from list view and json file
@@ -77,7 +90,8 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 			title = i.Title()
 			fullValue = i.TitleFull()
 			fp = i.FilePath()
-			desc = strings.Split(i.Description(), ": ")[1]
+			// desc = strings.Split(i.Description(), ": ")[1]
+			desc = i.TimeStamp()
 		} else {
 			return nil
 		}
@@ -114,18 +128,68 @@ func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 					if currentContent == fullValue {
 						clipboard.WriteAll("")
 					}
-					err := config.DeleteJsonItem(historyFilePath, strings.TrimSpace(desc)) // This func will also delete the temoraily stored image if filepath present
+					err := config.DeleteJsonItem(historyFilePath, desc) // This func will also delete the temoraily stored image if filepath present
 					utils.HandleError(err)
 				}()
 
 				return m.NewStatusMessage(statusMessageStyle("Deleted: " + title))
+
+			case key.Matches(msg, keys.togglePin):
+				if len(m.Items()) == 0 {
+					keys.togglePin.SetEnabled(false)
+				}
+
+				historyFilePath, _ := config.Paths()
+
+				isPinned, err := config.TogglePinClipboardItem(historyFilePath, desc)
+				utils.HandleError(err)
+
+				if parentModel.pinned && isPinned {
+					parentModel.pinned = false
+					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
+				} else if !isPinned {
+					parentModel.pinned = true
+					return m.NewStatusMessage(statusMessageStyle("Pinned: " + title))
+				} else {
+					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
+				}
+
+			case key.Matches(msg, keys.togglePinned):
+				if len(m.Items()) == 0 {
+					keys.togglePinned.SetEnabled(false)
+				}
+
+				if parentModel.togglePinned {
+					parentModel.togglePinned = false
+					m.Title = "Clipboard History"
+				} else {
+					parentModel.togglePinned = true
+					m.Title = "Pinned Clipboard History"
+				}
+
+				clipboardItems := config.GetHistory()
+				filteredItems := filterItemsByPinned(clipboardItems, parentModel.togglePinned)
+
+				if len(filteredItems) == 0 {
+					m.Title = "Clipboard History"
+					return m.NewStatusMessage(statusMessageStyle("No pinned items"))
+				}
+
+				for i := len(m.Items()) - 1; i >= 0; i-- { // clear all items
+					m.RemoveItem(i)
+				}
+
+				for _, item := range filteredItems { // adds all required items
+					m.InsertItem(len(m.Items()), item)
+				}
+
 			}
 		}
 
 		return nil
 	}
 
-	help := []key.Binding{keys.choose, keys.remove}
+	help := []key.Binding{keys.choose, keys.remove, keys.togglePin, keys.togglePinned}
 
 	d.ShortHelpFunc = func() []key.Binding {
 		return help

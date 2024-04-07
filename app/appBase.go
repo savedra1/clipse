@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/utils"
 
@@ -36,16 +38,32 @@ var (
 				Render
 )
 
+func pinnedStyle() string {
+	var color string
+	pinChar := " "
+	config := config.GetTheme()
+
+	if config.UseCustom {
+		color = config.PinIndicatorColor
+	} else {
+		color = "#FF0000"
+	}
+	return lipgloss.NewStyle().Foreground(lipgloss.Color(color)).SetString(pinChar).Render()
+}
+
 type item struct {
 	// (Each Row in clipboard view)
 	title       string
 	titleFull   string
+	timeStamp   string
 	description string
 	filePath    string
+	pinned      bool
 }
 
 func (i item) Title() string       { return i.title }
 func (i item) TitleFull() string   { return i.titleFull }
+func (i item) TimeStamp() string   { return i.timeStamp }
 func (i item) Description() string { return i.description }
 func (i item) FilePath() string    { return i.filePath }
 func (i item) FilterValue() string { return i.title }
@@ -61,7 +79,6 @@ type listKeyMap struct {
 
 func newListKeyMap() *listKeyMap {
 	return &listKeyMap{
-
 		toggleSpinner: key.NewBinding(
 			key.WithKeys("s"),
 			key.WithHelp("s", "toggle spinner"),
@@ -90,6 +107,8 @@ type model struct {
 	list         list.Model      // list items
 	keys         *listKeyMap     // keybindings
 	delegateKeys *delegateKeyMap // custom key bindings
+	pinned       bool            // pinned status
+	togglePinned bool
 }
 
 func NewModel() model {
@@ -101,21 +120,12 @@ func NewModel() model {
 
 	// Make initial list of items
 	clipboardItems := config.GetHistory()
-	var entryItems []list.Item
-	for _, entry := range clipboardItems {
-		shortenedVal := utils.Shorten(entry.Value)
-		item := item{
-			title:       shortenedVal,
-			titleFull:   entry.Value,
-			description: "Date copied: " + entry.Recorded,
-			filePath:    entry.FilePath,
-		}
-		entryItems = append(entryItems, item)
-	}
+	entryItems := filterItemsByPinned(clipboardItems, false)
 
 	// Setup list
 
-	del := newItemDelegate(delegateKeys)
+	m := model{}
+	del := m.newItemDelegate(delegateKeys)
 	ct := config.GetTheme()
 	if ct.UseCustom {
 		del.Styles.DimmedDesc = del.Styles.DimmedDesc.
@@ -151,8 +161,8 @@ func NewModel() model {
 			Render
 	}
 
-	//c := lipgloss.Color("#6f03fc")
-	//delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(c)
+	// c := lipgloss.Color("#6f03fc")
+	// delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(c)
 
 	clipboardList := list.New(entryItems, del, 0, 0)
 	clipboardList.Title = "Clipboard History"
@@ -178,6 +188,22 @@ func (m model) Init() tea.Cmd { // initialise app
 	return tea.EnterAltScreen
 }
 
+// This updates the TUI when an item is pinned/unpinned
+func (m *model) togglePinUpdate() {
+	index := m.list.Index()
+	if i, ok := m.list.SelectedItem().(item); ok {
+		if i.pinned == false {
+			i.pinned = true // set pinned status to true
+			i.description = fmt.Sprintf("Date copied: %s %s", i.timeStamp, pinnedStyle())
+			m.list.SetItem(index, i)
+		} else {
+			i.pinned = false
+			i.description = fmt.Sprintf("Date copied: %s", i.timeStamp)
+			m.list.SetItem(index, i)
+		}
+	}
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	/* this is where the base logic is held for what action to take from
 	   the predefined key bindings
@@ -191,7 +217,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		// Don't match any of the keys below if we're actively filtering.
-		//txtlog(fmt.Sprintf("%s: key state = %s", time.Now(), m.list.FilterState()))
+		// txtlog(fmt.Sprintf("%s: key state = %s", time.Now(), m.list.FilterState()))
 		if m.list.FilterState() == list.Filtering {
 			break
 		}
@@ -221,6 +247,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 
 		}
+		switch msg.String() {
+		case "p":
+			m.togglePinUpdate()
+		}
 	}
 
 	// This will also call our delegate's update function.
@@ -233,4 +263,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string { // Render app in terminal using client libs
 	return appStyle.Render(m.list.View())
+}
+
+func filterItemsByPinned(clipboardItems []config.ClipboardItem, isPinned bool) []list.Item {
+	var filteredItems []list.Item
+
+	for _, entry := range clipboardItems {
+		shortenedVal := utils.Shorten(entry.Value)
+		item := item{
+			title:       shortenedVal,
+			titleFull:   entry.Value,
+			description: "Date copied: " + entry.Recorded,
+			filePath:    entry.FilePath,
+			pinned:      entry.Pinned,
+			timeStamp:   entry.Recorded,
+		}
+
+		if entry.Pinned {
+			item.description = fmt.Sprintf("Date copied: %s %s", entry.Recorded, pinnedStyle())
+		}
+
+		if !isPinned || entry.Pinned {
+			filteredItems = append(filteredItems, item)
+		}
+	}
+
+	return filteredItems
 }
