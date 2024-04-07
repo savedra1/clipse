@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/savedra1/clipse/app"
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/handlers"
@@ -13,7 +14,6 @@ import (
 	"github.com/savedra1/clipse/utils"
 
 	"github.com/atotto/clipboard"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 var (
@@ -75,7 +75,7 @@ func main() {
 }
 
 func handleNoFlags(historyFilePath string) {
-	shell.KillExistingFG()
+	_ = shell.KillExistingFG() // err ignored to mitigate panic when no existinmg clipse ps
 	if len(os.Args) > 1 {
 		_, err := strconv.Atoi(os.Args[1]) // check for valid PPID by attempting conversion to an int
 		// above line causes canic so cannot catch this error effictively
