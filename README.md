@@ -399,7 +399,6 @@ The maximum item storage limit is currently hardcoded at **100**. However, there
 ## Contributing 🙏
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
-- Pinned items view
 - Image previews in TUI view rather than `<BINARY FILE>`
 - Customisable max history limit
 - System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
@@ -423,7 +422,6 @@ I would love to receive contributions to this project and welcome PRs from anyon
 ## TODO
 - __[bug]__ Tmp image files not deleting on some machines
 - Extra Config file for item limit, keybinds and clise dir 
-- Pinned/favourite items
 - Solution for auto-closing terminal window on MacOs
 - image preview
 - integrating xclip+wl-clip into binary with gcc
