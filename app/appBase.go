@@ -107,7 +107,6 @@ type model struct {
 	list         list.Model      // list items
 	keys         *listKeyMap     // keybindings
 	delegateKeys *delegateKeyMap // custom key bindings
-	pinned       bool            // pinned status
 	togglePinned bool
 }
 
