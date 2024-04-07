@@ -68,6 +68,7 @@ func initTheme(fp string) error {
 			TitleFore:          "#ffffff",
 			TitleBack:          "#434C5E",
 			StatusMsg:          "#ffffff",
+			PinIndicatorColor:  "#ff0000",
 		}
 
 		jsonData, err := json.MarshalIndent(baseConfig, "", "    ")
