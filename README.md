@@ -201,7 +201,7 @@ buildGoModule rec {
 
 **Installing with yay**
 ```shell
-yay -S example-package
+yay -S clipse
 ```
 
 **Installing from pkg source**
