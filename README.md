@@ -407,7 +407,8 @@ I would love to receive contributions to this project and welcome PRs from anyon
 - Better debugging
 - Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
 - Custom key binds added to config file 
-- Customisable config file storage paths 
+- Customisable config file storage paths
+- Cross compile binaries for `wl-clipboard`/`xclip` to remove dependency
 
 ## FAQ 
 
@@ -419,9 +420,3 @@ I would love to receive contributions to this project and welcome PRs from anyon
 
 <br>
 
-## TODO
-- __[bug]__ Tmp image files not deleting on some machines
-- Extra Config file for item limit, keybinds and clise dir 
-- Solution for auto-closing terminal window on MacOs
-- image preview
-- integrating xclip+wl-clip into binary with gcc
