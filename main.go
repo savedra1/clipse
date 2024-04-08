@@ -30,7 +30,7 @@ var (
 )
 
 func main() {
-	lag.Parse()
+	flag.Parse()
 	historyFilePath, clipseDir, imgDir, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)
 
