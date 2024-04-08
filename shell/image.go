@@ -59,3 +59,12 @@ func DeleteImage(imagePath string) error {
 	}
 	return nil
 }
+
+func DeleteAllImages(imgDir string) error {
+	cmd := fmt.Sprintf("rm -f %s/*", imgDir)
+	err := exec.Command("sh", "-c", cmd).Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
