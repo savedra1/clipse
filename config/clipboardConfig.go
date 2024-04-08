@@ -50,7 +50,7 @@ func DisplayServer() string {
 	}
 }
 
-func Init() (string, string, string, bool, error) {
+func Init() (string, string, string, string, bool, error) {
 	/* Ensure $HOME/.config/clipboard_manager/clipboard_history.json
 	exists and create the path if not. Full path returned as string
 	when successful
@@ -100,7 +100,7 @@ func Init() (string, string, string, bool, error) {
 		ie = shell.ImagesEnabled(ds)
 	}
 
-	return historyFilePath, clipseDir, ds, ie, nil
+	return historyFilePath, clipseDir, tmpFileDir, ds, ie, nil
 }
 
 func GetHistory() []ClipboardItem {
@@ -212,7 +212,7 @@ func Paths() (string, string) {
 	return historyFilePath, clipseDir
 }
 
-func ClearHistory(historyFilePath string) error {
+func ClearHistory(historyFilePath, imgDir string) error {
 	/* Sets clipboard_history.json file to:
 	 {
 		 "clipboardHistory": []
@@ -237,6 +237,8 @@ func ClearHistory(historyFilePath string) error {
 	if err := encoder.Encode(baseConfig); err != nil {
 		return err
 	}
+
+	shell.DeleteAllImages(imgDir)
 
 	return nil
 }

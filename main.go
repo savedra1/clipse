@@ -31,7 +31,7 @@ var (
 
 func main() {
 	flag.Parse()
-	historyFilePath, clipseDir, displayServer, imgEnabled, err := config.Init()
+	historyFilePath, clipseDir, imgDir, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)
 
 	switch {
@@ -67,7 +67,7 @@ func main() {
 		handleKill()
 
 	case *clear:
-		handleClear(historyFilePath)
+		handleClear(historyFilePath, imgDir)
 
 	default:
 		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])
@@ -114,9 +114,9 @@ func handleKill() {
 	shell.KillAll(os.Args[0])
 }
 
-func handleClear(historyFilePath string) {
+func handleClear(historyFilePath, imgDir string) {
 	clipboard.WriteAll("")
-	err := config.ClearHistory(historyFilePath)
+	err := config.ClearHistory(historyFilePath, imgDir)
 	utils.HandleError(err)
 }
 
