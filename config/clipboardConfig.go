@@ -18,6 +18,12 @@ general config.
 - dirName defined in constants.go
 */
 
+type Config struct {
+	Sources     []string `json:"sources"`
+	MaxHist     int      `json:"maxList"`
+	HistoryFile string   `json:"historyFile"`
+}
+
 type ClipboardItem struct {
 	Value    string `json:"value"`
 	Recorded string `json:"recorded"`
@@ -59,10 +65,13 @@ func Init() (string, string, string, string, bool, error) {
 	utils.HandleError(err)
 
 	// Construct the path to the config directory
-	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDirName) // the ~/.config/clipboard_manager dir
-	historyFilePath := filepath.Join(clipseDir, historyFileName)              // the path to the clipboard_history.json file
+	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDirName) // the ~/.config/clipse dir
+	configPath := filepath.Join(clipseDir, configFile)                        // the path to the config.json file
+	loadConfig(configPath)
+
+	historyFilePath := filepath.Join(clipseDir, defaultHistoryFile)           // the path to the clipboard_history.json file
 	tmpFileDir := filepath.Join(clipseDir, tmpDir)                            // where tmporary image files are stored
-	themePath := filepath.Join(clipseDir, themeFile)                          // explicit path to theme.json file
+	themePath := filepath.Join(clipseDir, defaultThemeFile)                   // explicit path to theme.json file
 
 	initTheme(themePath)
 
@@ -82,7 +91,7 @@ func Init() (string, string, string, string, bool, error) {
 		}
 
 	} else if err != nil {
-		fmt.Println("Unable to check if config file exists. Please update binary permisisons.")
+		fmt.Println("Unable to check if history file exists. Please update binary permisisons.")
 		os.Exit(1)
 	}
 
@@ -207,7 +216,7 @@ func Paths() (string, string) {
 	utils.HandleError(err)
 	// Construct the path to the config directory
 	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDirName)
-	historyFilePath := filepath.Join(clipseDir, historyFileName)
+	historyFilePath := filepath.Join(clipseDir, defaultHistoryFile)
 
 	return historyFilePath, clipseDir
 }
@@ -243,10 +252,10 @@ func ClearHistory(historyFilePath, imgDir string) error {
 	return nil
 }
 
-func AddClipboardItem(configFile, text, imgPath string) error {
+func AddClipboardItem(historyFile, text, imgPath string) error {
 	var data ClipboardHistory
 
-	fileData, err := os.ReadFile(configFile)
+	fileData, err := os.ReadFile(historyFile)
 	if err != nil {
 		return err
 	}
@@ -266,7 +275,7 @@ func AddClipboardItem(configFile, text, imgPath string) error {
 	// Append the new item to the beginning of the array to appear at top of list
 	data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
 
-	if len(data.ClipboardHistory) > maxLen {
+	if len(data.ClipboardHistory) > clipseConfig.MaxHist {
 		for i := len(data.ClipboardHistory) - 1; i >= 0; i-- { // remove the first unpinned entry starting with the oldest
 			if !data.ClipboardHistory[i].Pinned {
 				data.ClipboardHistory = append(data.ClipboardHistory[:i], data.ClipboardHistory[i+1:]...)
@@ -275,7 +284,7 @@ func AddClipboardItem(configFile, text, imgPath string) error {
 		}
 	}
 
-	if err = saveDataToFile(configFile, data); err != nil {
+	if err = saveDataToFile(historyFile, data); err != nil {
 		return err
 	}
 	return nil

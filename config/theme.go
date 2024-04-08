@@ -29,7 +29,7 @@ func GetTheme() CustomTheme {
 	clipboard_history.json file
 	*/
 	_, configDir := Paths()
-	fp := filepath.Join(configDir, themeFile)
+	fp := filepath.Join(configDir, defaultThemeFile)
 
 	file, err := os.OpenFile(fp, os.O_RDONLY, 0644)
 	if err != nil {
