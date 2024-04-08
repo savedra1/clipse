@@ -12,17 +12,10 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
-/* File contains logic for parseing the cilpboard data and
-general config.
+/* File contains logic for parsing the cilpboard history.
 - fileName defined in constants.go
 - dirName defined in constants.go
 */
-
-type Config struct {
-	Sources     []string `json:"sources"`
-	MaxHist     int      `json:"maxList"`
-	HistoryFile string   `json:"historyFile"`
-}
 
 type ClipboardItem struct {
 	Value    string `json:"value"`
@@ -275,7 +268,7 @@ func AddClipboardItem(historyFile, text, imgPath string) error {
 	// Append the new item to the beginning of the array to appear at top of list
 	data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
 
-	if len(data.ClipboardHistory) > clipseConfig.MaxHist {
+	if len(data.ClipboardHistory) > ClipseConfig.MaxHist {
 		for i := len(data.ClipboardHistory) - 1; i >= 0; i-- { // remove the first unpinned entry starting with the oldest
 			if !data.ClipboardHistory[i].Pinned {
 				data.ClipboardHistory = append(data.ClipboardHistory[:i], data.ClipboardHistory[i+1:]...)

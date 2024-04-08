@@ -8,7 +8,14 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
-var clipseConfig = Config {}
+type Config struct {
+	SourcePaths []string `json:"sourcePaths"`
+	MaxHist     int      `json:"maxList"`
+	HistoryFile string   `json:"historyFile"`
+}
+
+// Global config object, accessed and used when any configuration is needed.
+var ClipseConfig = Config {}
 
 func loadConfig(configPath string) {
 	_, err := os.Stat(configPath)
@@ -25,8 +32,10 @@ func loadConfig(configPath string) {
 	}
 	
 	confData, err := os.ReadFile(configPath)
-	if err = json.Unmarshal(confData, &clipseConfig); err != nil {
+	if err = json.Unmarshal(confData, &ClipseConfig); err != nil {
 		fmt.Println("Failed to read config. Fallback to default.\nErr: %w", err)
-		clipseConfig = defaultConfig()
+		ClipseConfig = defaultConfig()
+	} else {
+		fmt.Println("CONFIG SUCCESSFULLY LOADED!")
 	}
 }

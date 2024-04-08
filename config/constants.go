@@ -15,7 +15,7 @@ const (
 // Because Go does not support constant Structs :(
 func defaultConfig() Config {
 	return Config {
-		Sources: []string {""},
+		SourcePaths: []string {""},
 		MaxHist: defaultMaxHist,
 		HistoryFile: defaultHistoryFile,
 	}
