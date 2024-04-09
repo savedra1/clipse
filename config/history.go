@@ -268,7 +268,7 @@ func AddClipboardItem(historyFile, text, imgPath string) error {
 	// Append the new item to the beginning of the array to appear at top of list
 	data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
 
-	if len(data.ClipboardHistory) > ClipseConfig.MaxHist {
+	if len(data.ClipboardHistory) > ClipseConfig.MaxHistory {
 		for i := len(data.ClipboardHistory) - 1; i >= 0; i-- { // remove the first unpinned entry starting with the oldest
 			if !data.ClipboardHistory[i].Pinned {
 				data.ClipboardHistory = append(data.ClipboardHistory[:i], data.ClipboardHistory[i+1:]...)
