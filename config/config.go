@@ -51,9 +51,8 @@ func loadConfig(configPath string) {
 	for _, src := range tempConfig.Sources {
 		loadSource(src)
 	}
-
-	// Merge the structs together.
-	// ClipseConfig = tempConfig does not work as it replaces.
+	
+	// mergeStructs(&ClipseConfig, &tempConfig)
 }
 
 func loadSource(path string) {
@@ -71,15 +70,43 @@ func loadSource(path string) {
 	}
 
 	switch src.SourceType {
-	case "config": loadConfig(path)
+	case "config":
+		loadConfig(path)
 	case "theme":
 	case "history":
 	case "":
 		fmt.Printf("Error: \"sourceType\" tag not found in source file: %s. File skipped.\n", path)
 		fmt.Println("Possible values for sourceType:\n\t- config\n\t- theme\n\t- history")
 	default:
-		fmt.Printf("Error: Invalid value \"%s\" in \"sourceType\" tag for source file: %s\n", 
-					src.SourceType, path)
+		fmt.Printf("Error: Invalid value \"%s\" in \"sourceType\" tag for source file: %s\n",
+			src.SourceType, path)
 		fmt.Println("Possible values for sourceType:\n\t- config\n\t- theme\n\t- history")
 	}
 }
+
+// func mergeStructs(dest, src interface{}) {
+// 	destVal := reflect.ValueOf(dest).Elem()
+// 	srcVal := reflect.ValueOf(src).Elem()
+//
+// 	for i := 0; i < srcVal.NumField(); i++ {
+// 		sField := srcVal.Field(i)
+// 		dField := destVal.Field(i)
+//
+// 		switch {
+// 			// If field is a slice, merge them (eg: For getting a merged list of sources)
+// 		case sField.Kind() == reflect.Slice:
+// 			// If the slice in the destination is nil, set it. Else, append.
+// 			if dField.IsNil() {
+// 				dField.Set(reflect.MakeSlice(sField.Type(), sField.Len(), sField.Cap()))
+// 			} else {
+// 				for j := 0; j < sField.Len(); j++ {
+// 					dField = reflect.Append(dField, sField.Index(j))
+// 				}
+// 			}
+//
+// 			// By default, overwrite the dest value with the src value.
+// 		default:
+// 			dField.Set(sField)
+// 		}
+// 	}
+// }
