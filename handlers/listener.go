@@ -57,7 +57,7 @@ MainLoop:
 				if imgEnabled {
 					file := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dt)
 					filePath := filepath.Join(clipsDir, tmpDir, file)
-					title := fmt.Sprintf("<BINARY FILE> %s", file)
+					title := fmt.Sprintf("%s %s", imgIcon, file)
 					if !config.Contains(title) {
 						err := shell.SaveImage(filePath, displayServer)
 						utils.HandleError(err)
