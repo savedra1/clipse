@@ -420,4 +420,3 @@ I would love to receive contributions to this project and welcome PRs from anyon
 - __Is there risk of multiple parallel processes running?__ - _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
 
 <br>
-
