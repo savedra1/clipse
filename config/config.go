@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/savedra1/clipse/utils"
 )
@@ -52,7 +53,8 @@ func loadConfig(configPath string) {
 		loadSource(src)
 	}
 	
-	// mergeStructs(&ClipseConfig, &tempConfig)
+	mergeStructs(&ClipseConfig, &tempConfig)
+	fmt.Printf("%+v\n", ClipseConfig)
 }
 
 func loadSource(path string) {
@@ -84,29 +86,45 @@ func loadSource(path string) {
 	}
 }
 
-// func mergeStructs(dest, src interface{}) {
-// 	destVal := reflect.ValueOf(dest).Elem()
-// 	srcVal := reflect.ValueOf(src).Elem()
-//
-// 	for i := 0; i < srcVal.NumField(); i++ {
-// 		sField := srcVal.Field(i)
-// 		dField := destVal.Field(i)
-//
-// 		switch {
-// 			// If field is a slice, merge them (eg: For getting a merged list of sources)
-// 		case sField.Kind() == reflect.Slice:
-// 			// If the slice in the destination is nil, set it. Else, append.
-// 			if dField.IsNil() {
-// 				dField.Set(reflect.MakeSlice(sField.Type(), sField.Len(), sField.Cap()))
-// 			} else {
-// 				for j := 0; j < sField.Len(); j++ {
-// 					dField = reflect.Append(dField, sField.Index(j))
-// 				}
-// 			}
-//
-// 			// By default, overwrite the dest value with the src value.
-// 		default:
-// 			dField.Set(sField)
-// 		}
-// 	}
-// }
+/*Merges 2 structs together. It has one fatal flaw that I am unsure how to fix:
+It does not let you overrite the destination (dest) with a newer value from 
+source (src) if the src value is the zero value of a primitive. I see the main
+issue arising if the config has a bool option in the future, which will never
+be able to overwrite a true value with a false value.
+
+I can't find a way around this because Go does not have optional types, nor are
+primitives nilable, so there is no explicit "not a value" that we can check.
+
+One fix would be for the Config struct's members to be pointers to primitives,
+or be interfaces, but I am not too sure about this method.
+*/
+func mergeStructs(dest, src interface{}) {
+	destVal := reflect.ValueOf(dest).Elem()
+	srcVal := reflect.ValueOf(src).Elem()
+
+	for i := 0; i < srcVal.NumField(); i++ {
+		sField := srcVal.Field(i)
+		dField := destVal.Field(i)
+
+		switch {
+			// If field is a slice, merge them (eg: For getting a merged list of sources)
+		case sField.Kind() == reflect.Slice:
+			// If the slice in the destination is nil, set it. Else, append.
+			if dField.IsNil() {
+				dField.Set(sField)
+			} else {
+				for j := 0; j < sField.Len(); j++ {
+					dField.Set(reflect.Append(dField, sField.Index(j)))
+				}
+			}
+
+			// if source is nil, we don't copy anything. Move on to next field.
+		case sField.IsZero():
+			continue
+
+			// By default, overwrite the dest value with the src value.
+		default:
+			dField.Set(sField)
+		}
+	}
+}
