@@ -75,9 +75,10 @@ MainLoop:
 	return nil
 }
 
-// Function to explicity await boot is no longer required as err returned
-// from clipboard read operation can be ignored in Mainloop
 /*
+Function to explicity await boot is no longer required as err returned
+from clipboard read operation can be ignored in Mainloop
+
 func bootLoaded() bool {
 	var loaded bool
 	startTime := time.Now()
