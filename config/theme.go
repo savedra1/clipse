@@ -32,7 +32,6 @@ func GetTheme() CustomTheme {
 	*/
 	// Just choose the first theme in the list. Change to allow selecting
 	// from multiple themes in the future maybe.
-	fmt.Println(themePaths)
 	fp := themePaths[0]
 
 	file, err := os.OpenFile(fp, os.O_RDONLY, 0644)

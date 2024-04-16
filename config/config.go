@@ -56,8 +56,12 @@ func loadConfig(configPath string) {
 		fmt.Println("Failed to read config. Skipping.\nErr: %w", err)
 	}
 
-	for _, src := range tempConfig.Sources {
-		loadSource(src)
+	for i := range tempConfig.Sources {
+		// Expand all cases of `~` in source, and call the loadSource func.
+		src := &tempConfig.Sources[i]
+		*src = utils.ExpandHome(*src)
+
+		loadSource(*src)
 	}
 
 	// ClipseConfig contains all the settings from all sources. Store sources in temp var.
