@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 type CustomTheme struct {
@@ -24,12 +23,17 @@ type CustomTheme struct {
 	PinIndicatorColor  string `json:"PinIndicatorColor"`
 }
 
+// For now, reload each time the window is opened. Near future, on file change.
+var themePaths []string
+
 func GetTheme() CustomTheme {
 	/* returns the clipboardHistory array from the
 	clipboard_history.json file
 	*/
-	_, configDir := Paths()
-	fp := filepath.Join(configDir, defaultThemeFile)
+	// Just choose the first theme in the list. Change to allow selecting
+	// from multiple themes in the future maybe.
+	fmt.Println(themePaths)
+	fp := themePaths[0]
 
 	file, err := os.OpenFile(fp, os.O_RDONLY, 0644)
 	if err != nil {

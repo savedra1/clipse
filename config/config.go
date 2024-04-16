@@ -90,7 +90,7 @@ func loadSource(path string) {
 	case "config":
 		loadConfig(path)
 	case "theme":
-	case "history":
+		themePaths = append(themePaths, path)
 	case "":
 		fmt.Printf("Error: \"sourceType\" tag not found in source file: %s. File skipped.\n", path)
 		fmt.Println("Possible values for sourceType:\n\t- config\n\t- theme\n\t- history")
