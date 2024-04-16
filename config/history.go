@@ -62,7 +62,7 @@ func Init() (string, string, string, string, bool, error) {
 	configPath := filepath.Join(clipseDir, configFile)                        // the path to the config.json file
 	configInit(configPath)
 
-	historyFilePath := filepath.Join(clipseDir, defaultHistoryFile)           // the path to the clipboard_history.json file
+	historyFilePath := filepath.Join(clipseDir, ClipseConfig.HistoryFile)     // the path to the clipboard_history.json file
 	tmpFileDir := filepath.Join(clipseDir, tmpDir)                            // where tmporary image files are stored
 	themePath := filepath.Join(clipseDir, defaultThemeFile)                   // explicit path to theme.json file
 
@@ -209,7 +209,7 @@ func Paths() (string, string) {
 	utils.HandleError(err)
 	// Construct the path to the config directory
 	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDirName)
-	historyFilePath := filepath.Join(clipseDir, defaultHistoryFile)
+	historyFilePath := filepath.Join(clipseDir, ClipseConfig.HistoryFile)
 
 	return historyFilePath, clipseDir
 }
