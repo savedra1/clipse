@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
 
@@ -23,8 +24,47 @@ type source struct {
 // Global config object, accessed and used when any configuration is needed.
 var ClipseConfig = defaultConfig()
 
-func configInit(path string) {
-	loadConfig(path)
+func Init() (string, string, bool, error) {
+	/* Ensure $HOME/.config/clipboard_manager/clipboard_history.json
+	exists and create the path if not. Full path returned as string
+	when successful
+	*/
+	userHome, err := os.UserHomeDir()
+	utils.HandleError(err)
+
+	// Construct the path to the config directory
+	clipseDir := filepath.Join(userHome, ".config", clipseDir) // the ~/.config/clipse dir
+	configPath := filepath.Join(clipseDir, configFile)                    // the path to the config.json file
+
+	// Does Config dir exist, if no make it.
+	_, err = os.Stat(clipseDir)
+	if os.IsNotExist(err) {
+		err = createDir(clipseDir)
+		utils.HandleError(err)
+	}
+
+	// load the config in.
+	loadConfig(configPath)
+
+	// The history path is absolute at this point. Create it if it does not exist
+	initHistoryFile(ClipseConfig.HistoryFilePath)
+
+	// Create TempDir for images if it does not exist.
+	_, err = os.Stat(ClipseConfig.TempDirPath)
+	if os.IsNotExist(err) {
+		err = createDir(ClipseConfig.TempDirPath)
+		utils.HandleError(err)
+	}
+
+	ds := DisplayServer()
+	var ie bool // imagesEnabled?
+	if ds == "unknown" {
+		ie = false
+	} else {
+		ie = shell.ImagesEnabled(ds)
+	}
+
+	return clipseDir, ds, ie, nil
 }
 
 func loadConfig(configPath string) {

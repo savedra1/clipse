@@ -28,6 +28,37 @@ type ClipboardHistory struct {
 	ClipboardHistory []ClipboardItem `json:"clipboardHistory"`
 }
 
+func initHistoryFile(historyFilePath string) error {
+	/* Used to create the clipboard_history.json file
+	in relative path.
+	*/
+	_, err := os.Stat(historyFilePath) // File already exist?
+	if os.IsNotExist(err) {
+		baseConfig := ClipboardHistory{
+			ClipboardHistory: []ClipboardItem{},
+		}
+
+		jsonData, err := json.MarshalIndent(baseConfig, "", "    ")
+		if err != nil {
+			return err
+		}
+		err = os.WriteFile(historyFilePath, jsonData, 0644)
+
+		if err != nil {
+			fmt.Println("Failed to create:", historyFilePath)
+			os.Exit(1)
+		}
+
+		fmt.Println("Clipboard history file not found. Created one at:", historyFilePath)
+
+	} else if err != nil {
+		fmt.Println("Unable to check if history file exists. Please update binary permisisons.")
+		os.Exit(1)
+	}
+
+	return nil
+}
+
 func DisplayServer() string {
 	/* Determine runtime and return appropriate window server.
 	used to determine which dependency is required for handling
@@ -47,64 +78,6 @@ func DisplayServer() string {
 	default:
 		return "unknown"
 	}
-}
-
-func Init() (string, string, bool, error) {
-	/* Ensure $HOME/.config/clipboard_manager/clipboard_history.json
-	exists and create the path if not. Full path returned as string
-	when successful
-	*/
-	currentUser, err := user.Current()
-	utils.HandleError(err)
-
-	// Construct the path to the config directory
-	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDir) // the ~/.config/clipse dir
-	configPath := filepath.Join(clipseDir, configFile)                    // the path to the config.json file
-	configInit(configPath)
-
-	historyFilePath := ClipseConfig.HistoryFilePath // the path to the clipboard_history.json file
-	tmpFileDir := filepath.Join(clipseDir, defaultTempDir)                 // where tmporary image files are stored
-
-	// if config has a dir path, use that instead.
-	if ClipseConfig.TempDirPath == "" {
-		tmpFileDir = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), clipseDir)
-	}
-
-	_, err = os.Stat(historyFilePath) // File already exist?
-	if os.IsNotExist(err) {
-
-		_, err = os.Stat(clipseDir) // Config dir at least exists?
-		if os.IsNotExist(err) {
-			err = createDir(clipseDir)
-			utils.HandleError(err)
-		}
-
-		err = createHistoryFile(historyFilePath) // Attempts creation of file now that dir path exists
-		if err != nil {
-			fmt.Println("Failed to create:", historyFilePath)
-			os.Exit(1)
-		}
-
-	} else if err != nil {
-		fmt.Println("Unable to check if history file exists. Please update binary permisisons.")
-		os.Exit(1)
-	}
-
-	_, err = os.Stat(tmpFileDir)
-	if os.IsNotExist(err) { // create temp files dir within main config
-		err = createDir(tmpFileDir)
-		utils.HandleError(err)
-	}
-
-	ds := DisplayServer()
-	var ie bool // imagesEnabled?
-	if ds == "unknown" {
-		ie = false
-	} else {
-		ie = shell.ImagesEnabled(ds)
-	}
-
-	return clipseDir, ds, ie, nil
 }
 
 func GetHistory() []ClipboardItem {
@@ -177,27 +150,6 @@ func createDir(dirPath string) error {
 		fmt.Println("Error creating directory:", err)
 		os.Exit(1)
 	}
-	return nil
-}
-
-func createHistoryFile(historyFilePath string) error {
-	/* Used to create the clipboard_history.json file
-	in relative path.
-	*/
-
-	baseConfig := ClipboardHistory{
-		ClipboardHistory: []ClipboardItem{},
-	}
-
-	jsonData, err := json.MarshalIndent(baseConfig, "", "    ")
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile(historyFilePath, jsonData, 0644)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
