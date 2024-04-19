@@ -49,7 +49,7 @@ func DisplayServer() string {
 	}
 }
 
-func Init() (string, string, string, string, bool, error) {
+func Init() (string, string, bool, error) {
 	/* Ensure $HOME/.config/clipboard_manager/clipboard_history.json
 	exists and create the path if not. Full path returned as string
 	when successful
@@ -62,12 +62,12 @@ func Init() (string, string, string, string, bool, error) {
 	configPath := filepath.Join(clipseDir, configFile)                    // the path to the config.json file
 	configInit(configPath)
 
-	historyFilePath := filepath.Join(clipseDir, ClipseConfig.HistoryFile) // the path to the clipboard_history.json file
-	tmpFileDir := filepath.Join(clipseDir, defaultTmpDir)                 // where tmporary image files are stored
+	historyFilePath := ClipseConfig.HistoryFilePath // the path to the clipboard_history.json file
+	tmpFileDir := filepath.Join(clipseDir, defaultTempDir)                 // where tmporary image files are stored
 
 	// if config has a dir path, use that instead.
-	if ClipseConfig.TempDir == "" {
-		tmpFileDir = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDir), clipseDir)
+	if ClipseConfig.TempDirPath == "" {
+		tmpFileDir = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), clipseDir)
 	}
 
 	_, err = os.Stat(historyFilePath) // File already exist?
@@ -104,15 +104,14 @@ func Init() (string, string, string, string, bool, error) {
 		ie = shell.ImagesEnabled(ds)
 	}
 
-	return ClipseConfig.HistoryFile, clipseDir, ClipseConfig.TempDir, ds, ie, nil
+	return clipseDir, ds, ie, nil
 }
 
 func GetHistory() []ClipboardItem {
 	/* returns the clipboardHistory array from the
 	clipboard_history.json file
 	*/
-	historyFilePath, _ := Paths()
-	file, err := os.OpenFile(historyFilePath, os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.OpenFile(ClipseConfig.HistoryFilePath, os.O_RDWR|os.O_CREATE, 0644)
 	utils.HandleError(err)
 
 	var data ClipboardHistory
@@ -211,7 +210,7 @@ func Paths() (string, string) {
 	utils.HandleError(err)
 	// Construct the path to the config directory
 	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDir)
-	historyFilePath := filepath.Join(clipseDir, ClipseConfig.HistoryFile)
+	historyFilePath := ClipseConfig.HistoryFilePath
 
 	return historyFilePath, clipseDir
 }

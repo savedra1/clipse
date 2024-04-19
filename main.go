@@ -31,13 +31,13 @@ var (
 
 func main() {
 	flag.Parse()
-	historyFilePath, clipseDir, imgDir, displayServer, imgEnabled, err := config.Init()
+	clipseDir, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)
 
 	switch {
 
 	case flag.NFlag() == 0:
-		handleNoFlags(historyFilePath)
+		handleNoFlags(config.ClipseConfig.HistoryFilePath)
 
 	case flag.NFlag() > 1:
 		fmt.Printf("Too many flags provided. Use %s --help for more info.", os.Args[0])
@@ -49,7 +49,7 @@ func main() {
 		fmt.Println(os.Args[0], version)
 
 	case *add:
-		handleAdd(historyFilePath)
+		handleAdd(config.ClipseConfig.HistoryFilePath)
 
 	case *copy:
 		handleCopy()
@@ -61,13 +61,13 @@ func main() {
 		handleListen()
 
 	case *listenShell:
-		handleListenShell(historyFilePath, clipseDir, displayServer, imgEnabled)
+		handleListenShell(config.ClipseConfig.HistoryFilePath, clipseDir, displayServer, imgEnabled)
 
 	case *kill:
 		handleKill()
 
 	case *clear:
-		handleClear(historyFilePath, imgDir)
+		handleClear(config.ClipseConfig.HistoryFilePath, config.ClipseConfig.TempDirPath)
 
 	default:
 		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])

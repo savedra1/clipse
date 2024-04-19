@@ -5,16 +5,15 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 
 	"github.com/savedra1/clipse/utils"
 )
 
 type Config struct {
-	Sources     []string `json:"sources"`
-	MaxHistory  int      `json:"maxHistory"`
-	HistoryFile string   `json:"historyFile"`
-	TempDir     string   `json:"tempDir"`
+	Sources         []string `json:"sources"`
+	MaxHistory      int      `json:"maxHistory"`
+	HistoryFilePath string   `json:"historyFile"`
+	TempDirPath     string   `json:"tempDir"`
 }
 
 type source struct {
@@ -22,15 +21,10 @@ type source struct {
 }
 
 // Global config object, accessed and used when any configuration is needed.
-var ClipseConfig = Config{}
+var ClipseConfig = defaultConfig()
 
 func configInit(path string) {
 	loadConfig(path)
-
-	// If no config is loaded, i.e. all config files were invalid, load default.
-	if reflect.DeepEqual(ClipseConfig, Config{}) {
-		ClipseConfig = defaultConfig()
-	}
 }
 
 func loadConfig(configPath string) {
@@ -52,7 +46,7 @@ func loadConfig(configPath string) {
 	//
 	// This means that the last instance is the most signigicant.
 	var tempConfig Config
-	
+
 	configDir := filepath.Dir(configPath)
 
 	confData, err := os.ReadFile(configPath)
@@ -80,8 +74,8 @@ func loadConfig(configPath string) {
 	ClipseConfig.Sources = tempConfig.Sources
 
 	// Expand HistoryFile and TempDir paths
-	ClipseConfig.HistoryFile = utils.ExpandRel(utils.ExpandHome(ClipseConfig.HistoryFile), configDir)
-	ClipseConfig.TempDir = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDir), configDir)
+	ClipseConfig.HistoryFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.HistoryFilePath), configDir)
+	ClipseConfig.TempDirPath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), configDir)
 }
 
 func loadSource(path string) {
