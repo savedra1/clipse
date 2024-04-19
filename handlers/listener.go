@@ -57,7 +57,7 @@ MainLoop:
 				if imgEnabled {
 					file := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dt)
 					filePath := filepath.Join(clipsDir, tmpDir, file)
-					title := fmt.Sprintf("<BINARY FILE> %s", file)
+					title := fmt.Sprintf("%s %s", imgIcon, file)
 					if !config.Contains(title) {
 						err := shell.SaveImage(filePath, displayServer)
 						utils.HandleError(err)
@@ -75,9 +75,10 @@ MainLoop:
 	return nil
 }
 
-// Function to explicity await boot is no longer required as err returned
-// from clipboard read operation can be ignored in Mainloop
 /*
+Function to explicity await boot is no longer required as err returned
+from clipboard read operation can be ignored in Mainloop
+
 func bootLoaded() bool {
 	var loaded bool
 	startTime := time.Now()

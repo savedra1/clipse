@@ -399,15 +399,16 @@ The maximum item storage limit is currently hardcoded at **100**. However, there
 ## Contributing 🙏
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
-- Image previews in TUI view rather than `<BINARY FILE>`
-- Customisable max history limit
+- Image previews in TUI view
+- Customisations for: 
+  - max history limit
+  - config file paths
+  - key bindings
 - System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
 - Packages for apt, dnf, brew etc  
 - Theme adjustments made available via CLI 
 - Better debugging
 - Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
-- Custom key binds added to config file 
-- Customisable config file storage paths
 - Cross compile binaries for `wl-clipboard`/`xclip` to remove dependency
 
 ## FAQ 
@@ -420,3 +421,7 @@ I would love to receive contributions to this project and welcome PRs from anyon
 
 <br>
 
+### TODO
+
+- Publish v0.0.7 (nix/aur/other)
+- Update instructions to remove use of $PPID and display new features

@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/savedra1/clipse/app"
@@ -17,7 +16,7 @@ import (
 )
 
 var (
-	version     = "v1.0.0"
+	version     = "v0.0.7"
 	help        = flag.Bool("help", false, "Show help message.")
 	v           = flag.Bool("v", false, "Show app version.")
 	add         = flag.Bool("a", false, "Add the following arg to the clipboard history.")
@@ -27,6 +26,7 @@ var (
 	listenShell = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
 	kill        = flag.Bool("kill", false, "Kill any existing background processes.")
 	clear       = flag.Bool("clear", false, "Remove all contents from the clipboard's history.")
+	forceClose  = flag.Bool("fc", false, "Forces the terminal session to quick by taking the $PPID var as an arg. EG `clipse -fc $PPID`")
 )
 
 func main() {
@@ -37,7 +37,12 @@ func main() {
 	switch {
 
 	case flag.NFlag() == 0:
-		handleNoFlags(config.ClipseConfig.HistoryFilePath)
+		if len(os.Args) > 2 {
+			fmt.Println("Too many args provided. See usage:")
+			flag.PrintDefaults()
+			return
+		}
+		launchTUI()
 
 	case flag.NFlag() > 1:
 		fmt.Printf("Too many flags provided. Use %s --help for more info.", os.Args[0])
@@ -69,21 +74,16 @@ func main() {
 	case *clear:
 		handleClear(config.ClipseConfig.HistoryFilePath, config.ClipseConfig.TempDirPath)
 
+	case *forceClose:
+		handleForceClose()
+
 	default:
 		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])
 	}
 }
 
-func handleNoFlags(historyFilePath string) {
+func launchTUI() {
 	_ = shell.KillExistingFG() // err ignored to mitigate panic when no existinmg clipse ps
-	if len(os.Args) > 1 {
-		_, err := strconv.Atoi(os.Args[1]) // check for valid PPID by attempting conversion to an int
-		// above line causes canic so cannot catch this error effictively
-		if err != nil {
-			fmt.Printf("Invalid PPID supplied: %s\nPPID must be integer. use var `$PPID`", os.Args[1])
-			return
-		}
-	}
 	_, err := tea.NewProgram(app.NewModel()).Run()
 	utils.HandleError(err)
 }
@@ -137,4 +137,21 @@ func handlePaste() {
 	if currentItem != "" {
 		fmt.Println(currentItem)
 	}
+}
+
+func handleForceClose() {
+	if len(os.Args) < 3 {
+		fmt.Printf("No PPID provided. Usage: %s' -fc $PPID'", os.Args[0])
+		return
+	} else if len(os.Args) > 3 {
+		fmt.Printf("Too many args. Usage: %s' -fc $PPID'", os.Args[0])
+		return
+	}
+
+	if !utils.IsInt(os.Args[2]) {
+		fmt.Printf("Invalid PPID supplied: %s\nPPID must be integer. use var `$PPID` as the arg.", os.Args[2])
+		return
+	}
+
+	launchTUI()
 }

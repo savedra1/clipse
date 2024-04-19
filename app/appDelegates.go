@@ -75,7 +75,8 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 	/* This is where the additional keybinding actions are defined:
 	   - enter/reurn: copies selected item to the clipboard and adds a status message
 	   - backspace/delete: removes item from list view and json file
-
+	   - p: pins/unpins an item
+	   - tab: toggles pinned items
 	*/
 	d := list.NewDefaultDelegate()
 
@@ -110,8 +111,17 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 					utils.HandleError(err)
 				}
 
-				if len(os.Args) > 1 {
-					shell.KillProcess(os.Args[1])
+				if len(os.Args) > 2 {
+					if utils.IsInt(os.Args[2]) {
+						shell.KillProcess(os.Args[2])
+					}
+				} else if len(os.Args) > 1 {
+					if os.Args[1] == "keep" {
+						return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))
+					}
+				} else {
+					_ = tea.Quit()
+					os.Exit(0)
 				}
 
 				return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))

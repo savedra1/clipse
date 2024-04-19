@@ -5,4 +5,5 @@ import "time"
 const (
 	tmpDir       = "tmp_files"
 	pollInterval = 100 * time.Millisecond / 10
+	imgIcon      = "📷" // alternatives: ["🎨",  "🖼️"] // rotation based on file type?
 )
