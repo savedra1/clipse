@@ -58,15 +58,12 @@ func Init() (string, string, string, string, bool, error) {
 	utils.HandleError(err)
 
 	// Construct the path to the config directory
-	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDirName) // the ~/.config/clipse dir
-	configPath := filepath.Join(clipseDir, configFile)                        // the path to the config.json file
+	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDir) // the ~/.config/clipse dir
+	configPath := filepath.Join(clipseDir, configFile)                    // the path to the config.json file
 	configInit(configPath)
 
-	historyFilePath := filepath.Join(clipseDir, ClipseConfig.HistoryFile)     // the path to the clipboard_history.json file
-	tmpFileDir := filepath.Join(clipseDir, tmpDir)                            // where tmporary image files are stored
-	themePath := filepath.Join(clipseDir, defaultThemeFile)                   // explicit path to theme.json file
-
-	initTheme(themePath)
+	historyFilePath := filepath.Join(clipseDir, ClipseConfig.HistoryFile) // the path to the clipboard_history.json file
+	tmpFileDir := filepath.Join(clipseDir, tmpDir)                        // where tmporary image files are stored
 
 	_, err = os.Stat(historyFilePath) // File already exist?
 	if os.IsNotExist(err) {
@@ -208,7 +205,7 @@ func Paths() (string, string) {
 	currentUser, err := user.Current()
 	utils.HandleError(err)
 	// Construct the path to the config directory
-	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDirName)
+	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDir)
 	historyFilePath := filepath.Join(clipseDir, ClipseConfig.HistoryFile)
 
 	return historyFilePath, clipseDir

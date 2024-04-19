@@ -12,7 +12,7 @@ const (
 	defaultHistoryFile = "clipboard_history.json"
 	defaultThemeFile   = "custom_theme.json"
 	configFile         = "config.json"
-	clipseDirName      = "clipse"
+	clipseDir          = "clipse"
 	tmpDir             = "tmp_files"
 	listenCmd          = "--listen-shell"
 	defaultMaxHist     = 100
@@ -25,7 +25,7 @@ func defaultConfig() Config {
 	utils.HandleError(err)
 
 	return Config{
-		Sources:     []string{filepath.Join(currentUser.HomeDir, baseDir, clipseDirName, defaultThemeFile)},
+		Sources:     []string{filepath.Join(currentUser.HomeDir, baseDir, clipseDir, defaultThemeFile)},
 		MaxHistory:  defaultMaxHist,
 		HistoryFile: defaultHistoryFile,
 	}
