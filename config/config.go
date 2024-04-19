@@ -14,6 +14,7 @@ type Config struct {
 	Sources     []string `json:"sources"`
 	MaxHistory  int      `json:"maxHistory"`
 	HistoryFile string   `json:"historyFile"`
+	TempDir     string   `json:"tempDir"`
 }
 
 type source struct {
@@ -51,6 +52,8 @@ func loadConfig(configPath string) {
 	//
 	// This means that the last instance is the most signigicant.
 	var tempConfig Config
+	
+	configDir := filepath.Dir(configPath)
 
 	confData, err := os.ReadFile(configPath)
 	if err = json.Unmarshal(confData, &tempConfig); err != nil {
@@ -60,14 +63,14 @@ func loadConfig(configPath string) {
 	for i := range tempConfig.Sources {
 		// Expand all cases of `~` in source, and call the loadSource func.
 		src := &tempConfig.Sources[i]
-		*src = utils.ExpandRel(utils.ExpandHome(*src), filepath.Dir(configPath))
+		*src = utils.ExpandRel(utils.ExpandHome(*src), configDir)
 
 		loadSource(*src)
 	}
 
 	// ClipseConfig contains all the settings from all sources. Store sources in temp var.
 	tempConfig.Sources = append(tempConfig.Sources, ClipseConfig.Sources...)
-	
+
 	// All other configs have loaded, load this one.
 	if err = json.Unmarshal(confData, &ClipseConfig); err != nil {
 		fmt.Println("Failed to read config. Skipping.\nErr: %w", err)
@@ -75,6 +78,10 @@ func loadConfig(configPath string) {
 
 	// Recover source files list.
 	ClipseConfig.Sources = tempConfig.Sources
+
+	// Expand HistoryFile and TempDir paths
+	ClipseConfig.HistoryFile = utils.ExpandRel(utils.ExpandHome(ClipseConfig.HistoryFile), configDir)
+	ClipseConfig.TempDir = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDir), configDir)
 }
 
 func loadSource(path string) {

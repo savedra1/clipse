@@ -63,7 +63,12 @@ func Init() (string, string, string, string, bool, error) {
 	configInit(configPath)
 
 	historyFilePath := filepath.Join(clipseDir, ClipseConfig.HistoryFile) // the path to the clipboard_history.json file
-	tmpFileDir := filepath.Join(clipseDir, tmpDir)                        // where tmporary image files are stored
+	tmpFileDir := filepath.Join(clipseDir, defaultTmpDir)                 // where tmporary image files are stored
+
+	// if config has a dir path, use that instead.
+	if ClipseConfig.TempDir == "" {
+		tmpFileDir = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDir), clipseDir)
+	}
 
 	_, err = os.Stat(historyFilePath) // File already exist?
 	if os.IsNotExist(err) {
@@ -99,7 +104,7 @@ func Init() (string, string, string, string, bool, error) {
 		ie = shell.ImagesEnabled(ds)
 	}
 
-	return historyFilePath, clipseDir, tmpFileDir, ds, ie, nil
+	return ClipseConfig.HistoryFile, clipseDir, ClipseConfig.TempDir, ds, ie, nil
 }
 
 func GetHistory() []ClipboardItem {

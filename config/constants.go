@@ -13,7 +13,7 @@ const (
 	defaultThemeFile   = "custom_theme.json"
 	configFile         = "config.json"
 	clipseDir          = "clipse"
-	tmpDir             = "tmp_files"
+	defaultTmpDir      = "tmp_files"
 	listenCmd          = "--listen-shell"
 	defaultMaxHist     = 100
 	maxChar            = 65
