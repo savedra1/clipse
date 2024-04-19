@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 
 	"github.com/savedra1/clipse/utils"
@@ -59,7 +60,7 @@ func loadConfig(configPath string) {
 	for i := range tempConfig.Sources {
 		// Expand all cases of `~` in source, and call the loadSource func.
 		src := &tempConfig.Sources[i]
-		*src = utils.ExpandHome(*src)
+		*src = utils.ExpandRel(utils.ExpandHome(*src), filepath.Dir(configPath))
 
 		loadSource(*src)
 	}

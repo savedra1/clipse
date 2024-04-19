@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -37,7 +38,7 @@ func GetTime() string {
 	return strings.TrimSpace(strings.Split(time.Now().UTC().String(), "+0000")[0])
 }
 
-// Expands the path to include the homr directory if the path is prefixed
+// Expands the path to include the home directory if the path is prefixed
 // with `~`. If it isn't prefixed with `~`, the path is returned as-is.
 func ExpandHome(relPath string) string {
 	if len(relPath) == 0 {
@@ -53,6 +54,19 @@ func ExpandHome(relPath string) string {
 	HandleError(err)
 	
 	return filepath.Join(curUserHome, relPath[1:])
+}
+
+func ExpandRel(relPath, absPath string) string {
+	// Already absolute.
+	if filepath.IsAbs(relPath) {
+		return relPath
+	}
+
+	absRelPath, err := filepath.Abs(filepath.Join(absPath, relPath))
+	if err != nil {
+		fmt.Println("Current working directory is INVALID! How did you manage this?")
+	}
+	return absRelPath
 }
 
 /* NOT IN USE - Remove bad chars - can cause issues with fuzzy finder
