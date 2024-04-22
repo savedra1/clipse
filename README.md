@@ -13,9 +13,9 @@
 - [Installation](#installation)
 - [Set up](#set-up)
 - [Configuration](#configuration)
-- [All commands](#all-commands-💻)
-- [How it works](#how-it-works-🤔)
-- [Contributing](#contributing-🙏)
+- [All commands](#all-commands-)
+- [How it works](#how-it-works-)
+- [Contributing](#contributing-)
 - [FAQs](#faq)
 
 <br>
