@@ -12,9 +12,10 @@
 - [Why use clipse?](#why-use-clipse)
 - [Installation](#installation)
 - [Set up](#set-up)
-- [All commands](#all-commands-💻)
-- [How it works](#how-it-works-🤔)
-- [Contributing](#contributing-🙏)
+- [Configuration](#configuration)
+- [All commands](#all-commands-)
+- [How it works](#how-it-works-)
+- [Contributing](#contributing-)
 - [FAQs](#faq)
 
 <br>
@@ -334,6 +335,45 @@ Every system/window manager is different and hard to determine exactly how to ac
 - Run the `clipse -listen` / `clipse --listen-shell` command on startup
 - Bind the `clipse $PPID` command to a key that opens a terminal session (ideally in a window)
 
+## Configuration
+
+Configuration is still quite limited in `clipse`, however this will change as `clipse` evolves and grows. Currently, clipse supports the following configuration:
+- Setting custom paths for:
+  - The clipboard history file
+  - The clipboard binaries directory (copied images and other binary data is stored in here)
+- Providing paths to as many themes as desired (Currently the first one is loaded with no way to change it in code. This might change in the future)
+- Setting a custom max history limit
+- Capability to split the config into multiple files, and referencing each from a base config file
+
+`clipse` looks for a base config file in `$HOME/.config/clipse/config.json`, and creates a default file if it does not find anything. The default config looks like this:
+```json
+{
+    "sources": [
+        "custom_theme.json"
+    ],
+    "maxHistory": 100,
+    "historyFile": "clipboard_history.json",
+    "tempDir": "tmp_files"
+}
+```
+
+Note that all the paths provided (the theme, `historyFile`, and `tempDir`) are all relative paths. They are relative to the location of the config file that holds them. Thus, a file `config.json` at location `$HOME/.config/clipse/config.json` will have all relative paths defined in it relative to its directory of `$HOME/.config/clipse/`.
+
+Absolute paths starting with `/`, paths relative to the user home dir using `~`, or any environment variables like `$HOME` and `$XDG_CONFIG_HOME` are also valid paths.
+
+### Source files
+The `sources` componenet in the config file is powerful, as it allows you to extend configuration by referencing multiple other files in it. 
+Do note that any files loaded this way have to be either a `config` or a `theme` file, with an additional `sourceType` parameter that tells clipse what kind of file it is.
+example:
+```json
+{
+    "sourceType": "config",
+    "sources": []
+}
+```
+
+Any files loaded via this `sources` array will be loaded sequentially. The first file is the least significant and subsequent files are more significant, with the current file (the one that contains the `sources` list) being the most significant. This means if config options are set in multiple source files, the most significant value is used.
+
 ## All commands 💻
 
 `clipse` is more than just a TUI. It also offers a number of CLI commands for managing clipboard content directly from the terminal. 
@@ -399,17 +439,17 @@ The maximum item storage limit is currently hardcoded at **100**. However, there
 ## Contributing 🙏
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
-- Image previews in TUI view
-- Customisations for: 
-  - max history limit
-  - config file paths
-  - key bindings
-- System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
-- Packages for apt, dnf, brew etc  
-- Theme adjustments made available via CLI 
-- Better debugging
-- Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
-- Cross compile binaries for `wl-clipboard`/`xclip` to remove dependency
+- [ ] Image previews in TUI view
+- [ ] Customisations for: 
+  - [x] ~~max history limit~~
+  - [x] ~~config file paths~~
+  - [ ] key bindings
+- [ ] System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
+- [ ] Packages for apt, dnf, brew etc  
+- [ ] Theme adjustments made available via CLI 
+- [ ] Better debugging
+- [ ] Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
+- [ ] Cross compile binaries for `wl-clipboard`/`xclip` to remove dependency
 
 ## FAQ 
 

@@ -31,7 +31,7 @@ var (
 
 func main() {
 	flag.Parse()
-	historyFilePath, clipseDir, imgDir, displayServer, imgEnabled, err := config.Init()
+	clipseDir, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)
 
 	switch {
@@ -54,7 +54,7 @@ func main() {
 		fmt.Println(os.Args[0], version)
 
 	case *add:
-		handleAdd(historyFilePath)
+		handleAdd(config.ClipseConfig.HistoryFilePath)
 
 	case *copy:
 		handleCopy()
@@ -66,13 +66,13 @@ func main() {
 		handleListen()
 
 	case *listenShell:
-		handleListenShell(historyFilePath, clipseDir, displayServer, imgEnabled)
+		handleListenShell(config.ClipseConfig.HistoryFilePath, clipseDir, displayServer, imgEnabled)
 
 	case *kill:
 		handleKill()
 
 	case *clear:
-		handleClear(historyFilePath, imgDir)
+		handleClear(config.ClipseConfig.HistoryFilePath, config.ClipseConfig.TempDirPath)
 
 	case *forceClose:
 		handleForceClose()

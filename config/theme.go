@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/savedra1/clipse/utils"
 )
 
 type CustomTheme struct {
@@ -24,12 +26,27 @@ type CustomTheme struct {
 	PinIndicatorColor  string `json:"PinIndicatorColor"`
 }
 
+// For now, reload each time the window is opened. Near future, on file change.
+var themePaths []string
+
 func GetTheme() CustomTheme {
 	/* returns the clipboardHistory array from the
 	clipboard_history.json file
 	*/
-	_, configDir := Paths()
-	fp := filepath.Join(configDir, themeFile)
+
+	// If no themes are specified, create a default theme file and populate it.
+	if len(themePaths) == 0 {
+		homeDir, err := os.UserHomeDir()
+		utils.HandleError(err)
+		defaultThemePath := filepath.Join(homeDir, baseDir, clipseDir, defaultThemeFile)
+
+		initDefaultTheme(defaultThemePath)
+		themePaths = append(themePaths, defaultThemePath)
+	}
+
+	// Just choose the first theme in the list. Change to allow selecting
+	// from multiple themes in the future maybe.
+	fp := themePaths[0]
 
 	file, err := os.OpenFile(fp, os.O_RDONLY, 0644)
 	if err != nil {
@@ -46,7 +63,7 @@ func GetTheme() CustomTheme {
 	return theme
 }
 
-func initTheme(fp string) error {
+func initDefaultTheme(fp string) error {
 	/*
 	  Creates custom_theme.json file is not found in path
 	  and sets base config.
