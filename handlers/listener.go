@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"path/filepath"
+
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
@@ -8,7 +10,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
@@ -24,7 +25,7 @@ runListener is essentially a while loop to be created as a system background pro
 		killall clipse
 */
 
-func RunListener(historyFilePath, clipsDir, displayServer string, imgEnabled bool) error {
+func RunListener(clipsDir, displayServer string, imgEnabled bool) error {
 	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -50,19 +51,20 @@ MainLoop:
 			switch dt {
 			case "text":
 				if input != "" && !config.Contains(input) {
-					err := config.AddClipboardItem(historyFilePath, input, "null")
+					err := config.AddClipboardItem(input, "null")
 					utils.HandleError(err)
 				}
 			case "png", "jpeg":
-				if imgEnabled {
-					file := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dt)
-					filePath := filepath.Join(clipsDir, tmpDir, file)
-					title := fmt.Sprintf("%s %s", imgIcon, file)
+				if imgEnabled { // need to add something here to only check the same media image once to save CPU
+					fileName := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dt)
+					title := fmt.Sprintf("%s %s", imgIcon, fileName)
 					if !config.Contains(title) {
+						filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
 						err := shell.SaveImage(filePath, displayServer)
-						utils.HandleError(err)
-
-						err = config.AddClipboardItem(historyFilePath, title, filePath)
+						if err != nil {
+							fmt.Println("failed to save media data to tmp dir")
+						}
+						err = config.AddClipboardItem(title, filePath)
 						utils.HandleError(err)
 					}
 				}
