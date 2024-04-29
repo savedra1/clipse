@@ -132,13 +132,12 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 				if len(m.Items()) == 0 {
 					keys.remove.SetEnabled(false)
 				}
-				historyFilePath, _ := config.Paths()
 				go func() { // stop cached clipboard item repopulating
 					currentContent, _ := clipboard.ReadAll()
 					if currentContent == fullValue {
 						clipboard.WriteAll("")
 					}
-					err := config.DeleteJsonItem(historyFilePath, desc) // This func will also delete the temoraily stored image if filepath present
+					err := config.DeleteJsonItem(desc) // This func will also delete the temoraily stored image if filepath present
 					utils.HandleError(err)
 				}()
 
@@ -149,9 +148,7 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 					keys.togglePin.SetEnabled(false)
 				}
 
-				historyFilePath, _ := config.Paths()
-
-				isPinned, err := config.TogglePinClipboardItem(historyFilePath, desc)
+				isPinned, err := config.TogglePinClipboardItem(desc)
 				utils.HandleError(err)
 
 				if isPinned {

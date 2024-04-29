@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 type CustomTheme struct {
@@ -25,13 +24,12 @@ type CustomTheme struct {
 }
 
 func GetTheme() CustomTheme {
-	/* returns the clipboardHistory array from the
-	clipboard_history.json file
-	*/
-	_, configDir := Paths()
-	fp := filepath.Join(configDir, themeFile)
+	_, err := os.Stat(ClipseConfig.ThemeFilePath)
+	if os.IsNotExist(err) {
+		initDefaultTheme()
+	}
 
-	file, err := os.OpenFile(fp, os.O_RDONLY, 0644)
+	file, err := os.OpenFile(ClipseConfig.ThemeFilePath, os.O_RDONLY, 0644)
 	if err != nil {
 		file.Close()
 	}
@@ -46,12 +44,12 @@ func GetTheme() CustomTheme {
 	return theme
 }
 
-func initTheme(fp string) error {
+func initDefaultTheme() error {
 	/*
 	  Creates custom_theme.json file is not found in path
 	  and sets base config.
 	*/
-	_, err := os.Stat(fp)
+	_, err := os.Stat(ClipseConfig.ThemeFilePath)
 	if os.IsNotExist(err) {
 
 		baseConfig := CustomTheme{
@@ -76,7 +74,7 @@ func initTheme(fp string) error {
 			return err
 		}
 
-		err = os.WriteFile(fp, jsonData, 0644)
+		err = os.WriteFile(ClipseConfig.ThemeFilePath, jsonData, 0644)
 		if err != nil {
 			return err
 		}

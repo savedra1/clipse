@@ -31,7 +31,7 @@ var (
 
 func main() {
 	flag.Parse()
-	historyFilePath, clipseDir, imgDir, displayServer, imgEnabled, err := config.Init()
+	clipseDir, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)
 
 	switch {
@@ -54,7 +54,7 @@ func main() {
 		fmt.Println(os.Args[0], version)
 
 	case *add:
-		handleAdd(historyFilePath)
+		handleAdd()
 
 	case *copy:
 		handleCopy()
@@ -66,13 +66,13 @@ func main() {
 		handleListen()
 
 	case *listenShell:
-		handleListenShell(historyFilePath, clipseDir, displayServer, imgEnabled)
+		handleListenShell(clipseDir, displayServer, imgEnabled)
 
 	case *kill:
 		handleKill()
 
 	case *clear:
-		handleClear(historyFilePath, imgDir)
+		handleClear()
 
 	case *forceClose:
 		handleForceClose()
@@ -88,7 +88,7 @@ func launchTUI() {
 	utils.HandleError(err)
 }
 
-func handleAdd(historyFilePath string) {
+func handleAdd() {
 	var input string
 	if len(os.Args) < 3 {
 		input = utils.GetStdin()
@@ -96,7 +96,7 @@ func handleAdd(historyFilePath string) {
 		input = os.Args[2]
 	}
 
-	err := config.AddClipboardItem(historyFilePath, input, "null")
+	err := config.AddClipboardItem(input, "null")
 	utils.HandleError(err)
 }
 
@@ -105,8 +105,8 @@ func handleListen() {
 	shell.RunNohupListener() // hardcoded as const
 }
 
-func handleListenShell(historyFilePath, clipseDir, displayServer string, imgEnabled bool) {
-	err := handlers.RunListener(historyFilePath, clipseDir, displayServer, imgEnabled)
+func handleListenShell(clipseDir, displayServer string, imgEnabled bool) {
+	err := handlers.RunListener(clipseDir, displayServer, imgEnabled)
 	utils.HandleError(err)
 }
 
@@ -114,9 +114,9 @@ func handleKill() {
 	shell.KillAll(os.Args[0])
 }
 
-func handleClear(historyFilePath, imgDir string) {
+func handleClear() {
 	clipboard.WriteAll("")
-	err := config.ClearHistory(historyFilePath, imgDir)
+	err := config.ClearHistory()
 	utils.HandleError(err)
 }
 

@@ -11,12 +11,12 @@ func HandleError(err error) {
 	if err != nil {
 		debug.PrintStack()
 		log.Fatalln(err)
-		errLog(fmt.Sprintf("%s", err))
+		ErrLog(fmt.Sprintf("%s", err))
 		os.Exit(1)
 	}
 }
 
-func errLog(msg string) {
+func ErrLog(msg string) {
 	file, err := os.OpenFile("~/.config/clipse/errLog.txt", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("Failed to open ~/.config/clipse/errLog.txt: %s", err))
