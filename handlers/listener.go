@@ -25,7 +25,7 @@ runListener is essentially a while loop to be created as a system background pro
 */
 
 var prevClipboardContent string // used to store clipboard content to avoid re-checking media data unnecessarily
-var currentDataType string      // used to determine which poll interval to use based on current clipboard data format
+var dataType string             // used to determine which poll interval to use based on current clipboard data format
 
 func RunListener(clipsDir, displayServer string, imgEnabled bool) error {
 	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
@@ -42,7 +42,7 @@ func RunListener(clipsDir, displayServer string, imgEnabled bool) error {
 			if input != prevClipboardContent {
 				clipboardData <- input // Pass clipboard data to main goroutine
 			}
-			if currentDataType == "text" {
+			if dataType == "text" {
 				time.Sleep(defaultPollInterval)
 			} else {
 				time.Sleep(mediaPollInterval)
@@ -57,9 +57,8 @@ MainLoop:
 			if input == "" {
 				continue
 			}
-			dt := utils.DataType(input)
-			currentDataType = dt // update var to determine interval time
-			switch dt {
+			dataType = utils.DataType(input)
+			switch dataType {
 			case "text":
 				if input != "" && !config.Contains(input) {
 					err := config.AddClipboardItem(input, "null")
@@ -67,7 +66,7 @@ MainLoop:
 				}
 			case "png", "jpeg":
 				if imgEnabled { // need to add something here to only check the same media image once to save CPU
-					fileName := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dt)
+					fileName := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dataType)
 					title := fmt.Sprintf("%s %s", imgIcon, fileName)
 					if !config.Contains(title) {
 						filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
@@ -87,26 +86,3 @@ MainLoop:
 
 	return nil
 }
-
-/*
-Function to explicity await boot is no longer required as err returned
-from clipboard read operation can be ignored in Mainloop
-
-func bootLoaded() bool {
-	var loaded bool
-	startTime := time.Now()
-	for {
-		if time.Since(startTime) >= 60*time.Second {
-			loaded = false
-			break
-		}
-		_, err := clipboard.ReadAll()
-		if err == nil {
-			loaded = true
-			break
-		}
-		time.Sleep(time.Second)
-	}
-	return loaded
-}
-*/
