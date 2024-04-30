@@ -1,18 +1,17 @@
 package handlers
 
 import (
+	"fmt"
+	"os"
+	"os/signal"
 	"path/filepath"
+	"strconv"
+	"syscall"
+	"time"
 
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
-
-	"fmt"
-	"os"
-	"os/signal"
-	"strconv"
-	"syscall"
-	"time"
 
 	"github.com/atotto/clipboard"
 )
@@ -24,6 +23,9 @@ runListener is essentially a while loop to be created as a system background pro
 		pkill -f clipse
 		killall clipse
 */
+
+var prevClipboardContent string // used to store clipboard content to avoid re-checking media data unnecessarily
+var currentDataType string      // used to determine which poll interval to use based on current clipboard data format
 
 func RunListener(clipsDir, displayServer string, imgEnabled bool) error {
 	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
@@ -37,8 +39,14 @@ func RunListener(clipsDir, displayServer string, imgEnabled bool) error {
 	go func() {
 		for {
 			input, _ := clipboard.ReadAll() // ignoring err here to prevent system crash if input ever not recognised
-			clipboardData <- input          // Pass clipboard data to main goroutine
-			time.Sleep(pollInterval)        // pollInterval defined in constants.go
+			if input != prevClipboardContent {
+				clipboardData <- input // Pass clipboard data to main goroutine
+			}
+			if currentDataType == "text" {
+				time.Sleep(defaultPollInterval)
+			} else {
+				time.Sleep(mediaPollInterval)
+			}
 		}
 	}()
 
@@ -46,8 +54,11 @@ MainLoop:
 	for {
 		select {
 		case input := <-clipboardData:
+			if input == "" {
+				continue
+			}
 			dt := utils.DataType(input)
-
+			currentDataType = dt // update var to determine interval time
 			switch dt {
 			case "text":
 				if input != "" && !config.Contains(input) {
