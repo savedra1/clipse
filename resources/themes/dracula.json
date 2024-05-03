@@ -11,5 +11,6 @@
     "SelectedDescBorder": "#8BE9FD",
     "TitleFore": "#F8F8F2",
     "Titleback": "#282A36",
-    "StatusMsg": "#BD93F9"
+    "StatusMsg": "#BD93F9",
+    "PinIndicatorColor": "#ff5555"
 }
