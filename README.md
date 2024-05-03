@@ -119,7 +119,15 @@ Easily recall, add, and delete clipboard history via a smooth TUI experience bui
 
 </p>
 
-Items can be pinned using the `p` key and toggled using `tab`, these pinned items will be not be removed form your history unless explicity deleted with `backpace`/`x` in the TUI or `clipse -clear`. Content can also be added explicitly from the command line using the `-a` or `-c` flags. This would allow you to easily pipe any CLI output directly into your history with commands like:
+Items can be pinned using the `p` key and toggled using `tab`, these pinned items will be not be removed from your history unless explicity deleted with `backpace`/`x` in the TUI or `clipse -clear`. 
+
+<p align="left">
+
+  <img src="./resources/examples/pinned.png?raw=true" alt="Gruvbox" />
+
+</p>
+
+Content can also be added explicitly from the command line using the `-a` or `-c` flags. This would allow you to easily pipe any CLI output directly into your history with commands like:
 
 ```shell
 
@@ -221,34 +229,34 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
  
 **Linux arm64**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.7_linux_arm64.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_linux_arm64.tar.gz -O - | tar -xz 
 ```
 
 **Linux amd64**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.7_linux_amd64.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_linux_amd64.tar.gz -O - | tar -xz 
 ```
 
 **Linux 836**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.7_linux_836.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_linux_836.tar.gz -O - | tar -xz 
 ```
 
 **Darwin arm64**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.7_darwin_arm64.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_darwin_arm64.tar.gz -O - | tar -xz 
 ```
 
 **Darwin amd64**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.7_darwin_amd64.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_darwin_amd64.tar.gz -O - | tar -xz 
 ```
 
 ### Installing with Go
 
 ```shell
 
-go install github.com/savedra1/clipse@v0.0.7
+go install github.com/savedra1/clipse@v0.0.71
 
 ```
 
@@ -300,8 +308,7 @@ windowrulev2 = float,class:(floating)                                           
 
 bind = SUPER, V, exec,  <terminal name> --class floating -e <shell-env>  -c 'clipse'  # bind the open clipboard operation to a nice key. 
 
-                                                                                      # Example: bind = SUPER, V, exec, alacritty --class floating -e zsh -c 'clipse $PPID'
-
+                                                                                      # Example: bind = SUPER, V, exec, alacritty --class floating -e zsh -c 'clipse'
 ```
 
 [Hyprland reference](https://wiki.hyprland.org/Configuring/Window-Rules/)
@@ -454,5 +461,6 @@ I would love to receive contributions to this project and welcome PRs from anyon
 
 ### TODO
 
-- Publish v0.0.7 (nix/aur/other)
+- Publish v0.0.71 (nix/aur/other)
+
 
