@@ -20,6 +20,11 @@
 
 <br>
 
+### Previous releases
+
+If using a previous release of `clipse`, please reference the relevant README from the CHANGELOG dir.
+- [v0.0.6](#)
+
 # About 📋
 `clipse` is a highly configurable, TUI-based clipboard manager application written in Go with minimal dependency. Though the app is optimised for a linux OS using a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get [your desired clipboard behavior](https://www.youtube.com/watch?v=ZE2F8Mj0_I0). Further instructions for setting this up can be found below. 
 
@@ -102,6 +107,8 @@ Simply leaving this file alone or setting the `useCustomTheme` value to `false` 
 
 </p>
 
+You can also easily specifiy source config like custom paths and max history limit in the apps `config.json` file. For more information see [Configuration](#configuration) section.  
+
 ### 2. Usability ✨
 
 Easily recall, add, and delete clipboard history via a smooth TUI experience built with Go's excellent [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) library. A simple fuzzy finder, callable with the `/` key can easily match content from a theoretically unlimited amount of time in the past: 
@@ -112,7 +119,7 @@ Easily recall, add, and delete clipboard history via a smooth TUI experience bui
 
 </p>
 
-Items can be permanently deleted from the list by simply hitting `backspace` when the item is selected, as seen in the [demo video](https://youtu.be/ZE2F8Mj0_I0), and can be added explicitly from the command line using the `-a` flag. This would allow you to easily pipe any CLI output directly into your history with commands like:
+Items can be pinned using the `p` key and toggled using `tab`, these pinned items will be not be removed form your history unless explicity deleted with `backpace`/`x` in the TUI or `clipse -clear`. Content can also be added explicitly from the command line using the `-a` or `-c` flags. This would allow you to easily pipe any CLI output directly into your history with commands like:
 
 ```shell
 
@@ -214,34 +221,34 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
  
 **Linux arm64**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_linux_arm64.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.7_linux_arm64.tar.gz -O - | tar -xz 
 ```
 
 **Linux amd64**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_linux_amd64.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.7_linux_amd64.tar.gz -O - | tar -xz 
 ```
 
 **Linux 836**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_linux_836.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.7_linux_836.tar.gz -O - | tar -xz 
 ```
 
 **Darwin arm64**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_darwin_arm64.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.7_darwin_arm64.tar.gz -O - | tar -xz 
 ```
 
 **Darwin amd64**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.6_darwin_amd64.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.7_darwin_amd64.tar.gz -O - | tar -xz 
 ```
 
 ### Installing with Go
 
 ```shell
 
-go install github.com/savedra1/clipse@v0.0.6
+go install github.com/savedra1/clipse@v0.0.7
 
 ```
 
@@ -265,11 +272,9 @@ As mentioned earlier, to get the most out of `clipse` you'll want to bind the tw
 
 ```shell
 
-clipse $PPID
+clipse
 
-```
-
-Passing in the `$PPID` variable as an arg to the main command ensures the TUI will close the terminal session in which it's hosted on the `choose` event, despite the environment in which it's called. Without passing in `$PPID`, your TUI selection will enter _persistent mode_ where the window will not close automatically after selection. The `$PPID` var is also not available in every terminal environment. If you find the program enters persistent mode even when passing this in you will need to find the correct var to use instead. EG, `$fish_pid`. 
+``` 
 
 The second command doesn't need to be bound to a key combination, but rather to the system boot to run the background listener on start-up:
 
@@ -289,13 +294,13 @@ Add the following lines to your Hyprland config file:
 
 ```shell
 
-exec-once = clipse -listen                                                                 # run listener on startup
+exec-once = clipse -listen                                                            # run listener on startup
 
-windowrulev2 = float,class:(floating)                                                      # ensure you have defined a floating window class
+windowrulev2 = float,class:(floating)                                                 # ensure you have defined a floating window class
 
-bind = SUPER, V, exec,  <terminal name> --class floating -e <shell-env>  -c 'clipse $PPID' # bind the open clipboard operation to a nice key. 
+bind = SUPER, V, exec,  <terminal name> --class floating -e <shell-env>  -c 'clipse'  # bind the open clipboard operation to a nice key. 
 
-                                                                                           # Example: bind = SUPER, V, exec, alacritty --class floating -e zsh -c 'clipse $PPID'
+                                                                                      # Example: bind = SUPER, V, exec, alacritty --class floating -e zsh -c 'clipse $PPID'
 
 ```
 
@@ -307,9 +312,9 @@ Add the following commands to your `.config/i3/config` file:
 
 ```shell
 
-exec --no-startup-id clipse -listen                                                                 # run listener on startup
+exec --no-startup-id clipse -listen                                                           # run listener on startup
 
-bindsym $mod+V exec --no-startup-id urxvt -e "$SHELL" -c "i3-msg 'floating enable' && clipse $PPID" # Bind floating shell with TUI selection to something nice 
+bindsym $mod+V exec --no-startup-id urxvt -e "$SHELL" -c "i3-msg 'floating enable' && clipse" # Bind floating shell with TUI selection to something nice 
 
 ``` 
 
@@ -321,9 +326,9 @@ Add the following config to your `~/.config/sway/config` file:
 
 ```shell
 
-exec clipse -listen                                                                                                                           # run the background listener on startup
+exec clipse -listen                                                                                                                     # run the background listener on startup
 
-bindsym $mod+V exec <terminal name> -e sh -c "swaymsg floating enable, move position center; swaymsg resize set 80ppt 80ppt && clipse $PPID"  # Bind floating shell with TUI selection to something nice
+bindsym $mod+V exec <terminal name> -e sh -c "swaymsg floating enable, move position center; swaymsg resize set 80ppt 80ppt && clipse"  # Bind floating shell with TUI selection to something nice
 
 ```
 [Sway reference](https://wiki.archlinux.org/title/sway#:~:text=To%20enable%20floating%20windows%20or,enable%20floating%20windows%2Fwindow%20assignments.)
@@ -333,16 +338,19 @@ bindsym $mod+V exec <terminal name> -e sh -c "swaymsg floating enable, move posi
 Every system/window manager is different and hard to determine exactly how to achieve the more ‘GUI-like’ behaviour. If using something not mentioned above, just refer to your systems documentation to find how to:
 
 - Run the `clipse -listen` / `clipse --listen-shell` command on startup
-- Bind the `clipse $PPID` command to a key that opens a terminal session (ideally in a window)
+- Bind the `clipse` command to a key that opens a terminal session (ideally in a window)
+
+If you're not calling `clipse` with a command like `exec <terminal name> -e sh -c` and want to force the terminal window to close on selection of an item, use the `-fc` arg to pass in the `$PPID` variable so the program can force kill the shell session. EG `clipse -fc $PPID`. _Note that the $PPID variable is not available in every terminal environment, like fish terminal where you'd need to use $fish_pid instead._
 
 ## Configuration
 
-System configuration is still quite limited in `clipse`, however this will change as `clipse` evolves and grows. Currently, clipse supports the following configuration:
+The configuration capabilities of `clipse` will change as `clipse` evolves and grows. Currently, clipse supports the following configuration:
 - Setting custom paths for:
   - The clipboard history file
   - The clipboard binaries directory (copied images and other binary data is stored in here)
   - The clipboard UI theme file
 - Setting a custom max history limit 
+- Custom themes
 
 `clipse` looks for a base config file in `$HOME/.config/clipse/config.json`, and creates a default file if it does not find anything. The default config looks like this:
 ```json
@@ -384,7 +392,7 @@ clipse -p             # Prints the current clipboard content to the console.
 
 # TUI management commands
 
-clipse $PPID          # Open Clipboard TUI
+clipse -fc $PPID      # Open Clipboard TUI in 'force kill' mode 
 
 clipse -listen        # Run a background listener process
 
@@ -395,6 +403,8 @@ clipse -help          # Display menu option
 clipse -v             # Get version
 
 clipse -clear         # Wipe all clipboard history and current system clipboard value
+
+clipse keep           # Keep the TUI open after selecting an item to copy
 
 clipse -kill          # Kill any existing background processes
 
@@ -414,11 +424,9 @@ You can view the full list of key bind commands when in the TUI by hitting the `
 
 When the app is run for the first time it creates a `/home/$USER/.config/clipse` dir with a `clipboard_hostory.json` file, a `custom_theme.json` file, and `tmp_files` folder for storing image data. After the `clipse -listen` command is executed, a background process will be watching for clipboard activity and adding any changes to the `clipboard_hstory.json` file. 
 
-The TUI that displays the clipboard history should then be called with the `clipse $PPID` command. Passing in the terminal's PPID is irregular, but allows the terminal-based app to close itself from within the program itself, simulating the behavior of a full GUI without the memory overhead. A worthy trade-off in my opinion. 
+The TUI that displays the clipboard history should then be called with the `clipse` command. Operations within the TUI are defined with the [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) framework, allowing for efficient concurrency and a smooth UX. `Delete` operations will remove the selected item from the TUI view and the storage file, `select` operations will copy the item to the systems clipboard and close the terminal window in which the session is currently hosted.  
 
-Operations within the TUI are defined with the [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) framework, allowing for efficient concurrency and a smooth UX. `Delete` operations will remove the selected item from the TUI view and the storage file, `select` operations will copy the item to the systems clipboard and close the terminal window in which the session is currently hosted.  
-
-The maximum item storage limit is currently hardcoded at **100**. However, there are plans to make this configurable in the future.
+The maximum item storage limit defaults at **100** but can be customised to anything you like in the `config.json` file.
 
 ## Contributing 🙏
 
@@ -428,6 +436,7 @@ I would love to receive contributions to this project and welcome PRs from anyon
   - [x] ~~max history limit~~
   - [x] ~~config file paths~~
   - [ ] key bindings
+- [ ] Auto-forget feature based on where the text was copied
 - [ ] System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
 - [ ] Packages for apt, dnf, brew etc  
 - [ ] Theme adjustments made available via CLI 
@@ -437,9 +446,7 @@ I would love to receive contributions to this project and welcome PRs from anyon
 
 ## FAQ 
 
-- __My terminal window does not close on selection, even when using `clipse $PPID`__ - _Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. The 'close on selection functionality is also not currently available for MacOs as killing the terminals ppid does not close the window - it seems applescript is needed to achieve this._
-
-- __Why is it necessary to pass in the `$PPID` arg?__ - _Although your WM setup may close the window on process completion anyway, this is passed in to maintain consistent behaviour across all WMs and shell environments to ensure the window session can be always be killed. More elegant solutions to this are welcomed as PRs._
+- __My terminal window does not close on selection, even when using `clipse -fc $PPID`__ - _Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. The 'close on selection functionality is also not currently available for MacOs as killing the terminals ppid does not close the window - it seems applescript is needed to achieve this._
 
 - __Is there risk of multiple parallel processes running?__ - _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
 
@@ -448,4 +455,4 @@ I would love to receive contributions to this project and welcome PRs from anyon
 ### TODO
 
 - Publish v0.0.7 (nix/aur/other)
-- Update instructions to remove use of $PPID and display new features
+
