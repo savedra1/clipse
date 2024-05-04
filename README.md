@@ -20,12 +20,10 @@
 
 <br>
 
-## Release information
+### Release information
 
-If moving from `v0.0.6` to `v0.0.71`, you no longer need to pass in the `$PPID` variable. If you want to keep doing this, using the `-fc` flag instead, see [all commands](#all-commands-💻). 
+If moving to a new release of `clipse` please review the [changelog](https://github.com/savedra1/clipse/blob/main/CHANGELOG.md).
 
-If using a previous release of `clipse`, please reference the relevant README from the CHANGELOG dir:
-- [v0.0.6](https://github.com/savedra1/clipse/tree/main/CHANGELOG/v0.0.6)
 
 # About 📋
 `clipse` is a configurable, TUI-based clipboard manager application written in Go with minimal dependency. Though the app is optimised for a linux OS using a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get your desired clipboard behavior. Further instructions for setting this up can be found below. 
@@ -33,7 +31,7 @@ If using a previous release of `clipse`, please reference the relevant README fr
 ### Dependency info and libraries used 
 __[atotto/clipboard](https://github.com/atotto/clipboard)__
 
-This requires a standard system clipboard like *one* of the following:
+This requires a standard system clipboard, something like *one* of the following:
 - wl-clipboard
 - xclip
 - xsel
@@ -79,8 +77,7 @@ A customisable TUI allows you to easily match your system's theme. The app is ba
 
 An example `.config/clipse/custom_theme.json`: 
 
-```
-
+```json
 {
     "useCustomTheme": true,
     "DimmedDesc": "#4C566A",
@@ -94,7 +91,8 @@ An example `.config/clipse/custom_theme.json`:
     "SelectedDescBorder": "#88C0D0",
     "TitleFore": "#D8DEE9",
     "Titleback": "#3B4252",
-    "StatusMsg": "#8FBCBB"
+    "StatusMsg": "#8FBCBB",
+    "PinIndicatorColor": "#ff0000"
 }
 
 ```
