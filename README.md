@@ -1,6 +1,6 @@
 <a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a> [![Last Commit](https://img.shields.io/github/last-commit/savedra1/clipse)](https://github.com/savedra1/clipse)
 
-https://github.com/savedra1/clipse/assets/99875823/dba11d1c-50df-4f41-83e9-3993d07a5152
+https://github.com/savedra1/clipse/assets/99875823/c9c1998d-e96d-4c75-b7d9-060e39ac40ab
 
 <br>
 
