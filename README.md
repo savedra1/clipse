@@ -2,7 +2,7 @@
 
 
 <p align="centre">
-  <img src="./resources/examples/demo.gif?raw=true" width=65% alt="gif" />
+  <img src="./resources/examples/clipse.gif?raw=true" width=65% alt="gif" />
 </p>
 
 <br>
@@ -20,15 +20,15 @@
 
 <br>
 
-### Previous releases
+## Release information
 
-If using a previous release of `clipse`, please reference the relevant README from the CHANGELOG dir.
-- [v0.0.6](#)
+If moving from `v0.0.6` to `v0.0.71`, you no longer need to pass in the `$PPID` variable. If you want to keep doing this, using the `-fc` flag instead, see [all commands](#all-commands-💻). 
+
+If using a previous release of `clipse`, please reference the relevant README from the CHANGELOG dir:
+- [v0.0.6](https://github.com/savedra1/clipse/tree/main/CHANGELOG/v0.0.6)
 
 # About 📋
-`clipse` is a highly configurable, TUI-based clipboard manager application written in Go with minimal dependency. Though the app is optimised for a linux OS using a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get [your desired clipboard behavior](https://www.youtube.com/watch?v=ZE2F8Mj0_I0). Further instructions for setting this up can be found below. 
-
-[Click here to see a video demo for clipse](https://www.youtube.com/watch?v=ZE2F8Mj0_I0)
+`clipse` is a configurable, TUI-based clipboard manager application written in Go with minimal dependency. Though the app is optimised for a linux OS using a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get your desired clipboard behavior. Further instructions for setting this up can be found below. 
 
 ### Dependency info and libraries used 
 __[atotto/clipboard](https://github.com/atotto/clipboard)__
@@ -153,7 +153,7 @@ Due to Go's inbuilt garbage collection system and the way the application is bui
 
 ### 4. Versatility 🌐
 
-The `clipse` binary, installable from the repo, can run on pretty much any Unix-based OS, though currently optimized for linux. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown in [my example](https://youtu.be/ZE2F8Mj0_I0) using [Hyprland window manager](https://hyprland.org/) on __NixOs__.
+The `clipse` binary, installable from the repo, can run on pretty much any Unix-based OS, though currently optimized for linux. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown at the top of the page using [Hyprland window manager](https://hyprland.org/) on __NixOs__.
 
 **Note that working with image files will require one of the following dependencies to be installd on your system**:
 
@@ -191,13 +191,13 @@ Building unstable `clipse` as a system package may depend on your nix environemn
 
 buildGoModule rec {
   pname = "clipse";
-  version = "0.0.6";
+  version = "0.0.71";
 
   src = fetchFromGitHub {
     owner = "savedra1";
     repo = "clipse";
     rev = "v${version}";
-    hash = "sha256-DLvYTPlLkp98zCzmbeL68B7mHl7RY3ee9rL30vYm5Ow=";
+    hash = "sha256-88GuYGJO5AgWae6LyMO/TpGqtk2yS7pDPS0MkgmJUQ4=";
   };
 
   vendorHash = "sha256-GIUEx4h3xvLySjBAQKajby2cdH8ioHkv8aPskHN0V+w=";
@@ -210,6 +210,7 @@ buildGoModule rec {
     maintainers = [ lib.maintainers.savedra1 ];
   };
 }
+
 ```
 
 ### Installing on Arch
@@ -234,22 +235,22 @@ wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.7
 
 **Linux amd64**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_linux_amd64.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_linux_amd64.tar.gz -O - | tar -xz 
 ```
 
 **Linux 836**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_linux_836.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_linux_836.tar.gz -O - | tar -xz 
 ```
 
 **Darwin arm64**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_darwin_arm64.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_darwin_arm64.tar.gz -O - | tar -xz 
 ```
 
 **Darwin amd64**:
 ```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_darwin_amd64.tar.gz -O - | tar -xz 
+wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_darwin_amd64.tar.gz -O - | tar -xz 
 ```
 
 ### Installing with Go
@@ -458,9 +459,5 @@ I would love to receive contributions to this project and welcome PRs from anyon
 - __Is there risk of multiple parallel processes running?__ - _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
 
 <br>
-
-### TODO
-
-- Publish v0.0.71 (nix/aur/other)
 
 

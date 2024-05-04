@@ -2,7 +2,7 @@
 
 
 <p align="centre">
-  <img src="./resources/examples/demo.gif?raw=true" width=65% alt="gif" />
+  <img src="../resources/examples/clipse.gif?raw=true" width=65% alt="gif" />
 </p>
 
 <br>
