@@ -17,8 +17,6 @@ https://github.com/savedra1/clipse/assets/99875823/c9c1998d-e96d-4c75-b7d9-060e3
 - [Contributing](#contributing-)
 - [FAQs](#faq)
 
-<br>
-
 ### Release information
 
 If moving to a new release of `clipse` please review the [changelog](https://github.com/savedra1/clipse/blob/main/CHANGELOG.md).
@@ -211,7 +209,7 @@ buildGoModule rec {
 ```
 
 ### Installing on Arch
-[The AUR package can be found here](https://aur.archlinux.org/packages/clipse)
+Thank you [mcdenkijin](https://www.reddit.com/user/mcdenkijin/) for creating the AUR package!  
 
 **Installing with yay**
 ```shell
@@ -401,7 +399,7 @@ clipse -fc $PPID      # Open Clipboard TUI in 'force kill' mode
 
 clipse -listen        # Run a background listener process
 
-clipse --listen-shell # Run a listener process in the current terminal
+clipse --listen-shell # Run a listener process in the current terminal (useful for debugging)
 
 clipse -help          # Display menu option
 
@@ -409,7 +407,7 @@ clipse -v             # Get version
 
 clipse -clear         # Wipe all clipboard history and current system clipboard value
 
-clipse keep           # Keep the TUI open after selecting an item to copy
+clipse keep           # Keep the TUI open after selecting an item to copy (useful for debugging)
 
 clipse -kill          # Kill any existing background processes
 
@@ -437,14 +435,16 @@ The maximum item storage limit defaults at **100** but can be customised to anyt
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
 - [ ] Image previews in TUI view
+- [x] ~~Pinned items~~
 - [ ] Customisations for: 
   - [x] ~~max history limit~~
   - [x] ~~config file paths~~
   - [ ] key bindings
 - [ ] Auto-forget feature based on where the text was copied
+- [ ] Instructions for how to get the terminal session to force close on __MacOS__
 - [ ] System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
 - [ ] Packages for apt, dnf, brew etc  
-- [ ] Theme adjustments made available via CLI 
+- [ ] Theme/config adjustments made available via CLI 
 - [ ] Better debugging
 - [ ] Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
 - [ ] Cross compile binaries for `wl-clipboard`/`xclip` to remove dependency
@@ -456,5 +456,3 @@ I would love to receive contributions to this project and welcome PRs from anyon
 - __Is there risk of multiple parallel processes running?__ - _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
 
 <br>
-
-
