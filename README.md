@@ -425,9 +425,9 @@ You can view the full list of key bind commands when in the TUI by hitting the `
 
 ## How it works 🤔
 
-When the app is run for the first time it creates a `/home/$USER/.config/clipse` dir with a `clipboard_hostory.json` file, a `custom_theme.json` file, and `tmp_files` folder for storing image data. After the `clipse -listen` command is executed, a background process will be watching for clipboard activity and adding any changes to the `clipboard_hstory.json` file. 
+When the app is run for the first time it creates a `/home/$USER/.config/clipse` dir containing `config.json`, `clipboard_history.json`, `custom_theme.json` and a dir called `tmp_files` for storing image data. After the `clipse -listen` command is executed, a background process will be watching for clipboard activity and adding any changes to the `clipboard_hstory.json` file, unless a differnet path is specified in `config.json`. 
 
-The TUI that displays the clipboard history should then be called with the `clipse` command. Operations within the TUI are defined with the [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) framework, allowing for efficient concurrency and a smooth UX. `Delete` operations will remove the selected item from the TUI view and the storage file, `select` operations will copy the item to the systems clipboard and close the terminal window in which the session is currently hosted.  
+The TUI that displays the clipboard history with the defined theme should then be called with the `clipse` command. Operations within the TUI are defined with the [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) framework, allowing for efficient concurrency and a smooth UX. `delete` operations will remove the selected item from the TUI view and the storage file, `select` operations will copy the item to the systems clipboard and exit the program.  
 
 The maximum item storage limit defaults at **100** but can be customised to anything you like in the `config.json` file.
 
