@@ -19,9 +19,9 @@ import (
    - Color scheme of text
    - Font
    - Key bindings
-   - List sructure
+   - List structure
    - Help menu
-   - Defualt actions
+   - Default actions
 */
 
 var (
@@ -183,7 +183,7 @@ func NewModel() model {
 	}
 }
 
-func (m model) Init() tea.Cmd { // initialise app
+func (m model) Init() tea.Cmd { // initialize app
 	return tea.EnterAltScreen
 }
 

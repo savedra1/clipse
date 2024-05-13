@@ -23,7 +23,7 @@ If moving to a new release of `clipse` please review the [changelog](https://git
 
 
 # About 📋
-`clipse` is a configurable, TUI-based clipboard manager application written in Go with minimal dependency. Though the app is optimised for a linux OS using a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get your desired clipboard behavior. Further instructions for setting this up can be found below. 
+`clipse` is a configurable, TUI-based clipboard manager application written in Go with minimal dependency. Though the app is optimized for a Linux OS using a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get your desired clipboard behavior. Further instructions for setting this up can be found below.
 
 ### Dependency info and libraries used 
 __[atotto/clipboard](https://github.com/atotto/clipboard)__
@@ -46,7 +46,7 @@ Does not require any additional dependency.
 
 ### 1. Configurability 🧰 
 
-A customisable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is editable from a `.config/clipse/custom_theme.json` file that gets created when the program is run for the first time. Some example themes (based on my terminal)...
+A customizable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is editable from a `.config/clipse/custom_theme.json` file that gets created when the program is run for the first time. Some example themes (based on my terminal)...
 
 **Nord**
 
@@ -102,7 +102,7 @@ Simply leaving this file alone or setting the `useCustomTheme` value to `false` 
 
 </p>
 
-You can also easily specifiy source config like custom paths and max history limit in the apps `config.json` file. For more information see [Configuration](#configuration) section.  
+You can also easily specify source config like custom paths and max history limit in the apps `config.json` file. For more information see [Configuration](#configuration) section.  
 
 ### 2. Usability ✨
 
@@ -114,7 +114,7 @@ Easily recall, add, and delete clipboard history via a smooth TUI experience bui
 
 </p>
 
-Items can be pinned using the `p` key and toggled using `tab`, these pinned items will be not be removed from your history unless explicity deleted with `backpace`/`x` in the TUI or `clipse -clear`. 
+Items can be pinned using the `p` key and toggled using `tab`, these pinned items will be not be removed from your history unless explicitly deleted with `backpace`/`x` in the TUI or `clipse -clear`. 
 
 <p align="left">
 
@@ -122,7 +122,7 @@ Items can be pinned using the `p` key and toggled using `tab`, these pinned item
 
 </p>
 
-Content can also be added explicitly from the command line using the `-a` or `-c` flags. This would allow you to easily pipe any CLI output directly into your history with commands like:
+Content can also be added explicitly from the command-line using the `-a` or `-c` flags. This would allow you to easily pipe any CLI output directly into your history with commands like:
 
 ```shell
 
@@ -148,11 +148,11 @@ Due to Go's inbuilt garbage collection system and the way the application is bui
 
 ### 4. Versatility 🌐
 
-The `clipse` binary, installable from the repo, can run on pretty much any Unix-based OS, though currently optimized for linux. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown at the top of the page using [Hyprland window manager](https://hyprland.org/) on __NixOs__.
+The `clipse` binary, installable from the repository, can run on pretty much any Unix-based OS, though currently optimized for Linux. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown at the top of the page using [Hyprland window manager](https://hyprland.org/) on __NixOs__.
 
-**Note that working with image files will require one of the following dependencies to be installd on your system**:
+**Note that working with image files will require one of the following dependencies to be installed on your system**:
 
-- Linux (X11) & MacOs: [xclip](https://github.com/astrand/xclip)
+- Linux (X11) & macOS: [xclip](https://github.com/astrand/xclip)
 - Linux (Wayland): [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
 
 # Setup & installation 🏗️
@@ -177,7 +177,7 @@ nix shell github:NixOS/nixpkgs#clipse
 
 **System package**
 
-Building unstable `clipse` as a system package may depend on your nix environemnt. I would suggest referencing [this article](https://discourse.nixos.org/t/installing-only-a-single-package-from-unstable/5598) for best practice. The derivation can also be built from source using the following: 
+Building unstable `clipse` as a system package may depend on your nix environment. I would suggest referencing [this article](https://discourse.nixos.org/t/installing-only-a-single-package-from-unstable/5598) for best practice. The derivation can also be built from source using the following: 
 ```c
 { lib
 , buildGoModule
@@ -338,7 +338,7 @@ bindsym $mod+V exec <terminal name> -e sh -c "swaymsg floating enable, move posi
 
 ### Other
 
-Every system/window manager is different and hard to determine exactly how to achieve the more ‘GUI-like’ behaviour. If using something not mentioned above, just refer to your systems documentation to find how to:
+Every system/window manager is different and hard to determine exactly how to achieve the more ‘GUI-like’ behavior. If using something not mentioned above, just refer to your systems documentation to find how to:
 
 - Run the `clipse -listen` / `clipse --listen-shell` command on startup
 - Bind the `clipse` command to a key that opens a terminal session (ideally in a window)
@@ -425,33 +425,33 @@ You can view the full list of key bind commands when in the TUI by hitting the `
 
 ## How it works 🤔
 
-When the app is run for the first time it creates a `/home/$USER/.config/clipse` dir containing `config.json`, `clipboard_history.json`, `custom_theme.json` and a dir called `tmp_files` for storing image data. After the `clipse -listen` command is executed, a background process will be watching for clipboard activity and adding any changes to the `clipboard_hstory.json` file, unless a differnet path is specified in `config.json`. 
+When the app is run for the first time it creates a `/home/$USER/.config/clipse` dir containing `config.json`, `clipboard_history.json`, `custom_theme.json` and a dir called `tmp_files` for storing image data. After the `clipse -listen` command is executed, a background process will be watching for clipboard activity and adding any changes to the `clipboard_history.json` file, unless a different path is specified in `config.json`.
 
-The TUI that displays the clipboard history with the defined theme should then be called with the `clipse` command. Operations within the TUI are defined with the [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) framework, allowing for efficient concurrency and a smooth UX. `delete` operations will remove the selected item from the TUI view and the storage file, `select` operations will copy the item to the systems clipboard and exit the program.  
+The TUI that displays the clipboard history with the defined theme should then be called with the `clipse` command. Operations within the TUI are defined with the [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) framework, allowing for efficient concurrency and a smooth UX. `delete` operations will remove the selected item from the TUI view and the storage file, `select` operations will copy the item to the systems clipboard and exit the program.
 
-The maximum item storage limit defaults at **100** but can be customised to anything you like in the `config.json` file.
+The maximum item storage limit defaults at **100** but can be customized to anything you like in the `config.json` file.
 
 ## Contributing 🙏
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
 - [ ] Image previews in TUI view
 - [x] ~~Pinned items~~
-- [ ] Customisations for: 
+- [ ] Customisations for:
   - [x] ~~max history limit~~
   - [x] ~~config file paths~~
   - [ ] key bindings
 - [ ] Auto-forget feature based on where the text was copied
-- [ ] Instructions for how to get the terminal session to force close on __MacOS__
+- [ ] Instructions for how to get the terminal session to force close on __macOS__
 - [ ] System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
-- [ ] Packages for apt, dnf, brew etc  
-- [ ] Theme/config adjustments made available via CLI 
+- [ ] Packages for apt, dnf, brew etc
+- [ ] Theme/config adjustments made available via CLI
 - [ ] Better debugging
 - [ ] Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
 - [ ] Cross compile binaries for `wl-clipboard`/`xclip` to remove dependency
 
-## FAQ 
+## FAQ
 
-- __My terminal window does not close on selection, even when using `clipse -fc $PPID`__ - _Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. The 'close on selection functionality is also not currently available for MacOs as killing the terminals ppid does not close the window - it seems applescript is needed to achieve this._
+- __My terminal window does not close on selection, even when using `clipse -fc $PPID`__ - _Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. The 'close on selection functionality is also not currently available for macOS as killing the terminals ppid does not close the window - it seems AppleScript is needed to achieve this._
 
 - __Is there risk of multiple parallel processes running?__ - _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
 
