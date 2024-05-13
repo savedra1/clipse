@@ -12,7 +12,7 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
-/* File contains logic for parsing the cilpboard history.
+/* File contains logic for parsing the clipboard history.
 - fileName defined in constants.go
 - dirName defined in constants.go
 */
@@ -52,7 +52,7 @@ func initHistoryFile() error {
 		//fmt.Println("Created history file:", ClipseConfig.HistoryFilePath)
 
 	} else if err != nil {
-		fmt.Println("Unable to check if history file exists. Please update binary permisisons.")
+		fmt.Println("Unable to check if history file exists. Please update binary permissions.")
 		os.Exit(1)
 	}
 
@@ -129,7 +129,7 @@ func DeleteJsonItem(item string) error {
 	}
 	updatedJSON, err := json.Marshal(updatedData)
 	if err != nil {
-		return fmt.Errorf("error marshalling JSON: %w", err)
+		return fmt.Errorf("error marshaling JSON: %w", err)
 	}
 
 	// Write the updated JSON back to the file
@@ -171,7 +171,7 @@ func ClearHistory() error {
 		 "clipboardHistory": []
 	 }
 	*/
-	file, err := os.OpenFile(ClipseConfig.HistoryFilePath, os.O_RDWR|os.O_CREATE, 0644) // Permisisons specified for file to allow write
+	file, err := os.OpenFile(ClipseConfig.HistoryFilePath, os.O_RDWR|os.O_CREATE, 0644) // Permissions specified for file to allow write
 	if err != nil {
 		return err
 	}

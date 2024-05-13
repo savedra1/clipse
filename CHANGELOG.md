@@ -5,4 +5,4 @@
 - feat: custom paths for source files and temp dir 
 - Bug fix: high CPU usage when image files copies
 - Bug fix: `clipse -clear` not deleting all temp files
-- feat: replace `<BINARY FILE>` imgage indicator with 📷
+- feat: replace `<BINARY FILE>` image indicator with 📷

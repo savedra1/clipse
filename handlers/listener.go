@@ -38,7 +38,7 @@ func RunListener(clipsDir, displayServer string, imgEnabled bool) error {
 	// Goroutine to monitor clipboard
 	go func() {
 		for {
-			input, _ := clipboard.ReadAll() // ignoring err here to prevent system crash if input ever not recognised
+			input, _ := clipboard.ReadAll() // ignoring err here to prevent system crash if input ever not recognized
 			if input != prevClipboardContent {
 				clipboardData <- input // Pass clipboard data to main goroutine
 			}

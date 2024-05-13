@@ -72,7 +72,7 @@ func ExpandRel(relPath, absPath string) string {
 /* NOT IN USE - Remove bad chars - can cause issues with fuzzy finder
 func cleanString(s string) string {
 	regex := regexp.MustCompile("[^a-zA-Z0-9 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~]+")
-	sanitised := regex.ReplaceAllString(s, "")
-	sl := strings.ReplaceAll(sanitised, "\n", "\\n")
+	sanitized := regex.ReplaceAllString(s, "")
+	sl := strings.ReplaceAll(sanitized, "\n", "\\n")
 	return strings.ReplaceAll(sl, "  ", " ")         // remove trailing space
 }*/
