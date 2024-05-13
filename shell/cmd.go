@@ -8,9 +8,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/savedra1/clipse/utils"
-
 	ps "github.com/mitchellh/go-ps"
+
+	"github.com/savedra1/clipse/utils"
 )
 
 func KillExisting() error {

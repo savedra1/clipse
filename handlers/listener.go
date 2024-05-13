@@ -9,11 +9,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/atotto/clipboard"
+
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
-
-	"github.com/atotto/clipboard"
 )
 
 /*
