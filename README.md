@@ -338,7 +338,7 @@ bindsym $mod+V exec <terminal name> -e sh -c "swaymsg floating enable, move posi
 
 ### MacOs
 
-The native terminal on MacOs will not close once the `clipse` program completes, even when using the `-fc` argument. You will therefore need to use a differnet terminal environment like [Alacritty](https://alacritty.org/) to acheive the "close on selction" effect. The bindings used to open the TUI will then need to be defined in your settings/window manager. 
+The native terminal on MacOs will not close once the `clipse` program completes, even when using the `-fc` argument. You will therefore need to use a different terminal environment like [Alacritty](https://alacritty.org/) to achieve the "close on selection" effect. The bindings used to open the TUI will then need to be defined in your settings/window manager. 
 
 ### Other
 
