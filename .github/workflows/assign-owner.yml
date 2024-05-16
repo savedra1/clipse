@@ -13,4 +13,4 @@ jobs:
         uses: AveryCameronUofR/add-reviewer-gh-action@1.0.3
         with: 
           reviewers: "savedra1"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ACTIONS_TOKEN }}
