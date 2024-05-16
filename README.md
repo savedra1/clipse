@@ -336,6 +336,10 @@ bindsym $mod+V exec <terminal name> -e sh -c "swaymsg floating enable, move posi
 ```
 [Sway reference](https://wiki.archlinux.org/title/sway#:~:text=To%20enable%20floating%20windows%20or,enable%20floating%20windows%2Fwindow%20assignments.)
 
+### MacOs
+
+The native terminal on MacOs will not close once the `clipse` program completes, even when using the `-fc` argument. You will therefore need to use a differnet terminal environment like [Alacritty](https://alacritty.org/) to acheive the "close on selction" effect. The bindings used to open the TUI will then need to be defined in your settings/window manager. 
+
 ### Other
 
 Every system/window manager is different and hard to determine exactly how to achieve the more ‘GUI-like’ behavior. If using something not mentioned above, just refer to your systems documentation to find how to:
@@ -441,7 +445,8 @@ I would love to receive contributions to this project and welcome PRs from anyon
   - [x] ~~config file paths~~
   - [ ] key bindings
 - [ ] Auto-forget feature based on where the text was copied
-- [ ] Instructions for how to get the terminal session to force close on __macOS__
+- [ ] Multi-select feature for copying multiple items at once
+- [ ] Categorized pinned items with _potentially_ different tabs/views  
 - [ ] System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
 - [ ] Packages for apt, dnf, brew etc
 - [ ] Theme/config adjustments made available via CLI
@@ -454,5 +459,17 @@ I would love to receive contributions to this project and welcome PRs from anyon
 - __My terminal window does not close on selection, even when using `clipse -fc $PPID`__ - _Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. The 'close on selection functionality is also not currently available for macOS as killing the terminals ppid does not close the window - it seems AppleScript is needed to achieve this._
 
 - __Is there risk of multiple parallel processes running?__ - _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
+
+- __High CPU usage?__ - When an image file has an irregular binary data pattern it can cause a lot of strain on the program when `clipse` reads its history file (even when the TUI is not open). If this happens, you will need to remove the image file from the TUI or buy using `clipse -clear` to remove all files if you don't want to spend the time figuring out which one is causing the issue. See issue #33 for an example.
+
+- __My copied entries are not recorded when starting the clipse listener on boot with a systemd service__ - There may be a few ways around this but the workaround discovered in issue #41 was to use a `.desktop` file, stored in `~/.config/autostart/`. Eg:
+  ```shell
+  [Desktop Entry]
+  Name=clipse
+  Comment=Clipse event listener autostart.
+  Exec=/home/brayan/Applications/bin/clipse/clipse_0.0.71_linux_amd64/clipse --listen %f
+  Terminal=false
+  Type=Application
+  ```
 
 <br>
