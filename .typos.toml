@@ -1,0 +1,10 @@
+[default]
+locale = "en-us"
+
+[files]
+# excluded file
+# go.sum and go.mod contains URLs with hash, they can provide false positive
+extend-exclude = [
+	"go.sum", "go.mod", # these files are specific to Go, they shouldn't get parsed for typos
+	"resources/test_data/*.csv" # lorem ipsum are of course invalid
+	]
