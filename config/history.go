@@ -49,7 +49,7 @@ func initHistoryFile() error {
 			os.Exit(1)
 		}
 
-		//fmt.Println("Created history file:", ClipseConfig.HistoryFilePath)
+		// fmt.Println("Created history file:", ClipseConfig.HistoryFilePath)
 
 	} else if err != nil {
 		fmt.Println("Unable to check if history file exists. Please update binary permissions.")
