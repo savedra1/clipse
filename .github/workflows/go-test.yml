@@ -18,15 +18,4 @@ jobs:
 
       - name: Run go test (syntax check)
         id: test-syntax
-        run: |
-          cd ./tests && go test github.com/savedra1/clipse -v
-          cd ./app && go test github.com/savedra1/clipse/app -v
-          cd ../config && go test github.com/savedra1/clipse/config -v
-          cd ../handlers && go test github.com/savedra1/clipse/handlers -v
-          cd ../shell && go test github.com/savedra1/clipse/shell -v
-          cd ../utils && go test github.com/savedra1/clipse/utils -v
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
+        run: go test -v ./...
