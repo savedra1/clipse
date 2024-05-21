@@ -18,7 +18,4 @@ jobs:
 
       - name: Run go test (syntax check)
         id: test-syntax
-        run: |
-          go test -v ./...
-      
-      
+        run: go test -v ./...
