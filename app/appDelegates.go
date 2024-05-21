@@ -3,14 +3,14 @@ package app
 import (
 	"os"
 
-	"github.com/savedra1/clipse/config"
-	"github.com/savedra1/clipse/shell"
-	"github.com/savedra1/clipse/utils"
-
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+
+	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/shell"
+	"github.com/savedra1/clipse/utils"
 )
 
 /* This is were we define additional config to add to our

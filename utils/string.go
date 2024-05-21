@@ -52,7 +52,7 @@ func ExpandHome(relPath string) string {
 
 	curUserHome, err := os.UserHomeDir()
 	HandleError(err)
-	
+
 	return filepath.Join(curUserHome, relPath[1:])
 }
 
