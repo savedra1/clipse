@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/atotto/clipboard"
 	tea "github.com/charmbracelet/bubbletea"
+
 	"github.com/savedra1/clipse/app"
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/handlers"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
-
-	"github.com/atotto/clipboard"
 )
 
 var (

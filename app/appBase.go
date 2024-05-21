@@ -3,13 +3,13 @@ package app
 import (
 	"fmt"
 
-	"github.com/savedra1/clipse/config"
-	"github.com/savedra1/clipse/utils"
-
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/utils"
 )
 
 /* This is where the base level configuration for the
