@@ -163,22 +163,28 @@ See below for instructions on getting clipse installed and configured effectivel
 
 ### Installing on NixOs
 
-As a new package, `clipse` is still currently on the `Unstable` branch of `nixpkgs`. You can use the following methods to install...
+Due to how irregularly the stable branch of Nixpkgs is updated, you may find the unstable package is more up to date. The Nix package for `clipse` can be found [here](https://search.nixos.org/packages?channel=24.05&from=0&size=50&sort=relevance&type=packages&query=clipse)
 
-**Direct install** __(recommended)__ 
-```shell
-nix-env -f channel:nixpkgs-unstable -iA clipse
+**Direct install**
+```nix
+nix-env -iA nixpkgs.clipse # OS == NixOs
+nix-env -f channel:nixpkgs -iA clipse # OS != NixOs
 ```
 
 **Nix shell**
-```shell
-nix shell github:NixOS/nixpkgs#clipse
+```nix
+nix shell -p clipse
 ```
 
 **System package**
+```nix
+environment.systemPackages = [
+    pkgs.clipse
+  ];
+```
 
-Building unstable `clipse` as a system package may depend on your nix environment. I would suggest referencing [this article](https://discourse.nixos.org/t/installing-only-a-single-package-from-unstable/5598) for best practice. The derivation can also be built from source using the following: 
-```c
+If building `clipse` from the unstable branch as a system package, I would suggest referencing [this article](https://discourse.nixos.org/t/installing-only-a-single-package-from-unstable/5598) for best practice. The derivation can also be built from source using the following: 
+```nix
 { lib
 , buildGoModule
 , fetchFromGitHub
@@ -209,7 +215,7 @@ buildGoModule rec {
 ```
 
 ### Installing on Arch
-Thank you [mcdenkijin](https://www.reddit.com/user/mcdenkijin/) for creating the AUR package!  
+Shout out to [mcdenkijin](https://www.reddit.com/user/mcdenkijin/) for creating the AUR package!  
 
 **Installing with yay**
 ```shell
@@ -222,31 +228,47 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
 ```
 
 ### Installing with wget
- 
-**Linux arm64**:
-```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_linux_arm64.tar.gz -O - | tar -xz 
-```
 
-**Linux amd64**:
-```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_linux_amd64.tar.gz -O - | tar -xz 
-```
+<details>
+  <summary><b>Linux arm64</b></summary>
 
-**Linux 836**:
-```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_linux_836.tar.gz -O - | tar -xz 
-```
+  ```shell
+  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_linux_arm64.tar.gz -O - | tar -xz
+  ```
+</details>
 
-**Darwin arm64**:
-```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_darwin_arm64.tar.gz -O - | tar -xz 
-```
+<details>
+  <summary><b>Linux amd64</b></summary>
 
-**Darwin amd64**:
-```shell
-wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_darwin_amd64.tar.gz -O - | tar -xz 
-```
+  ```shell
+  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_linux_amd64.tar.gz -O - | tar -xz
+  ```
+</details>
+
+<details>
+  <summary><b>Linux 836</b></summary>
+
+  ```shell
+  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_linux_836.tar.gz -O - | tar -xz
+  ```
+</details>
+
+<details>
+  <summary><b>Darwin arm64</b></summary>
+
+  ```shell
+  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_darwin_arm64.tar.gz -O - | tar -xz
+  ```
+</details>
+
+<details>
+  <summary><b>Darwin amd64</b></summary>
+
+  ```shell
+  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_darwin_amd64.tar.gz -O - | tar -xz
+  ```
+</details>
+
 
 ### Installing with Go
 
@@ -447,12 +469,17 @@ I would love to receive contributions to this project and welcome PRs from anyon
 - [ ] Auto-forget feature based on where the text was copied
 - [ ] Multi-select feature for copying multiple items at once
 - [ ] Categorized pinned items with _potentially_ different tabs/views  
-- [ ] System paste option (building functionality to paste the chosen item directly into the next place of focus after the TUI closes)
+- [ ] System paste option _(building functionality to paste the chosen item directly into the next place of focus after the TUI closes)_
 - [ ] Packages for apt, dnf, brew etc
 - [ ] Theme/config adjustments made available via CLI
-- [ ] Better debugging
+- [ ] Better debugging / debug mode _(eg `clipse --debug` / debug file / system alert on panic)_
 - [ ] Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
 - [ ] Cross compile binaries for `wl-clipboard`/`xclip` to remove dependency
+- [ ] TUI / theming enhancements:
+  - [ ] Menu theme
+  - [ ] Filter theme
+  - [ ] Clear TUI view on select and close _(mirror close effect from `q` or `esc`)_
+- [ ] Private mode _(eg `clipse --pause 1` )_
 
 ## FAQ
 
