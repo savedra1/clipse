@@ -120,8 +120,7 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 						return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))
 					}
 				} else {
-					_ = tea.Quit()
-					os.Exit(0)
+					return tea.Quit
 				}
 
 				return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))
