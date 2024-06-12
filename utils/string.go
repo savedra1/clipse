@@ -35,7 +35,7 @@ func GetStdin() string {
 }
 
 func GetTime() string {
-	return strings.TrimSpace(strings.Split(time.Now().UTC().String(), "+0000")[0])
+	return strings.TrimSpace(strings.Split(time.Now().String(), "+")[0])
 }
 
 // Expands the path to include the home directory if the path is prefixed
