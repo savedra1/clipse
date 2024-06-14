@@ -130,6 +130,7 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 				m.RemoveItem(index)
 				if len(m.Items()) == 0 {
 					keys.remove.SetEnabled(false)
+					m.SetShowStatusBar(false)
 				}
 				go func() { // stop cached clipboard item repopulating
 					currentContent, _ := clipboard.ReadAll()

@@ -26,13 +26,7 @@ import (
 
 var (
 	// base styling config using lipgloss
-	appStyle = lipgloss.NewStyle().Padding(1, 2)
-
-	titleStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFFFFF")).
-			Background(lipgloss.Color("#434C5E")).
-			Padding(0, 1)
-
+	appStyle           = lipgloss.NewStyle().Padding(1, 2)
 	statusMessageStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
 				Render
@@ -107,7 +101,7 @@ type model struct {
 	list         list.Model      // list items
 	keys         *listKeyMap     // keybindings
 	delegateKeys *delegateKeyMap // custom key bindings
-	togglePinned bool
+	togglePinned bool            // pinned indicator
 }
 
 func NewModel() model {
@@ -122,7 +116,6 @@ func NewModel() model {
 	entryItems := filterItemsByPinned(clipboardItems, false)
 
 	// Setup list
-
 	m := model{}
 	del := m.newItemDelegate(delegateKeys)
 	ct := config.GetTheme()
@@ -150,22 +143,13 @@ func NewModel() model {
 			Foreground(lipgloss.Color(ct.SelectedTitle)).
 			BorderForeground(lipgloss.Color(ct.SelectedBorder))
 
-		titleStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.TitleFore)).
-			Background(lipgloss.Color(ct.TitleBack)).
-			Padding(0, 1)
-
 		statusMessageStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.AdaptiveColor{Light: ct.StatusMsg, Dark: ct.StatusMsg}).
 			Render
 	}
 
-	// c := lipgloss.Color("#6f03fc")
-	// delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(c)
-
 	clipboardList := list.New(entryItems, del, 0, 0)
 	clipboardList.Title = "Clipboard History"
-	clipboardList.Styles.Title = titleStyle
 	clipboardList.AdditionalFullHelpKeys = func() []key.Binding {
 		return []key.Binding{
 			listKeys.toggleSpinner,
@@ -174,6 +158,43 @@ func NewModel() model {
 			listKeys.togglePagination,
 			listKeys.toggleHelpMenu,
 		}
+	}
+
+	if ct.UseCustom { // add additional customizations after delegate created
+		clipboardList.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterPrompt))
+		clipboardList.FilterInput.TextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterText))
+		clipboardList.Styles.StatusBarFilterCount = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterInfo))
+		clipboardList.FilterInput.Cursor.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterCursor))
+		clipboardList.Styles.StatusEmpty = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterInfo))
+
+		clipboardList.Help.Styles.ShortKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
+		clipboardList.Help.Styles.ShortDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
+		clipboardList.Help.Styles.FullKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
+		clipboardList.Help.Styles.FullDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
+
+		clipboardList.Paginator.ActiveDot = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(ct.PageActiveDot)).Render("•")
+		clipboardList.Paginator.InactiveDot = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(ct.PageInactiveDot)).Render("•")
+
+		clipboardList.Styles.StatusBar = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(ct.TitleInfo)).PaddingBottom(1).PaddingLeft(2)
+		clipboardList.Styles.Title = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(ct.TitleFore)).Background(lipgloss.Color(ct.TitleBack)).Padding(0, 1)
+
+		clipboardList.Styles.DividerDot = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(ct.DividerDot)).SetString("•").PaddingLeft(1).PaddingRight(1)
+		clipboardList.Help.FullSeparator = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
+		clipboardList.Help.ShortSeparator = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
+	}
+
+	clipboardList.Styles.NoItems = lipgloss.NewStyle().
+		Foreground(lipgloss.Color(ct.TitleInfo)).PaddingBottom(1).PaddingLeft(2)
+
+	if len(clipboardItems) < 1 {
+		clipboardList.SetShowStatusBar(false)
 	}
 
 	return model{
@@ -191,7 +212,7 @@ func (m model) Init() tea.Cmd { // initialize app
 func (m *model) togglePinUpdate() {
 	index := m.list.Index()
 	if i, ok := m.list.SelectedItem().(item); ok {
-		if i.pinned == false {
+		if !i.pinned {
 			i.pinned = true // set pinned status to true
 			i.description = fmt.Sprintf("Date copied: %s %s", i.timeStamp, pinnedStyle())
 			m.list.SetItem(index, i)
@@ -216,7 +237,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		// Don't match any of the keys below if we're actively filtering.
-		// txtlog(fmt.Sprintf("%s: key state = %s", time.Now(), m.list.FilterState()))
 		if m.list.FilterState() == list.Filtering {
 			break
 		}

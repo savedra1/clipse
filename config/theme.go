@@ -8,19 +8,29 @@ import (
 
 type CustomTheme struct {
 	UseCustom          bool   `json:"useCustomTheme"`
-	DimmedDesc         string `json:"DimmedDesc"`
-	DimmedTitle        string `json:"DimmedTitle"`
-	FilteredMatch      string `json:"FilteredMatch"`
-	NormalDesc         string `json:"NormalDesc"`
-	NormalTitle        string `json:"NormalTitle"`
-	SelectedDesc       string `json:"SelectedDesc"`
-	SelectedTitle      string `json:"SelectedTitle"`
-	SelectedBorder     string `json:"SelectedBorder"`
-	SelectedDescBorder string `json:"SelectedDescBorder"`
 	TitleFore          string `json:"TitleFore"`
-	TitleBack          string `json:"Titleback"`
+	TitleBack          string `json:"TitleBack"`
+	TitleInfo          string `json:"TitleInfo"`
+	NormalTitle        string `json:"NormalTitle"`
+	DimmedTitle        string `json:"DimmedTitle"`
+	SelectedTitle      string `json:"SelectedTitle"`
+	NormalDesc         string `json:"NormalDesc"`
+	DimmedDesc         string `json:"DimmedDesc"`
+	SelectedDesc       string `json:"SelectedDesc"`
 	StatusMsg          string `json:"StatusMsg"`
 	PinIndicatorColor  string `json:"PinIndicatorColor"`
+	SelectedBorder     string `json:"SelectedBorder"`
+	SelectedDescBorder string `json:"SelectedDescBorder"`
+	FilteredMatch      string `json:"FilteredMatch"`
+	FilterPrompt       string `json:"FilterPrompt"`
+	FilterInfo         string `json:"FilterInfo"`
+	FilterText         string `json:"FilterText"`
+	FilterCursor       string `json:"FilterCursor"`
+	HelpKey            string `json:"HelpKey"`
+	HelpDesc           string `json:"HelpDesc"`
+	PageActiveDot      string `json:"PageActiveDot"`
+	PageInactiveDot    string `json:"PageInactiveDot"`
+	DividerDot         string `json:"DividerDot"`
 }
 
 func GetTheme() CustomTheme {
@@ -54,19 +64,29 @@ func initDefaultTheme() error {
 
 		baseConfig := CustomTheme{
 			UseCustom:          false,
-			DimmedDesc:         "#ffffff",
-			DimmedTitle:        "#ffffff",
-			FilteredMatch:      "#ffffff",
-			NormalDesc:         "#ffffff",
-			NormalTitle:        "#ffffff",
-			SelectedDesc:       "#ffffff",
-			SelectedTitle:      "#ffffff",
-			SelectedBorder:     "#ffffff",
-			SelectedDescBorder: "#ffffff",
 			TitleFore:          "#ffffff",
 			TitleBack:          "#434C5E",
+			TitleInfo:          "#ffffff",
+			NormalTitle:        "#ffffff",
+			DimmedTitle:        "#ffffff",
+			SelectedTitle:      "#ffffff",
+			NormalDesc:         "#ffffff",
+			DimmedDesc:         "#ffffff",
+			SelectedDesc:       "#ffffff",
 			StatusMsg:          "#ffffff",
 			PinIndicatorColor:  "#ff0000",
+			SelectedBorder:     "#ffffff",
+			SelectedDescBorder: "#ffffff",
+			FilteredMatch:      "#ffffff",
+			FilterPrompt:       "#ffffff",
+			FilterInfo:         "#ffffff",
+			FilterText:         "#ffffff",
+			FilterCursor:       "#ffffff",
+			HelpKey:            "#ffffff",
+			HelpDesc:           "#ffffff",
+			PageActiveDot:      "#ffffff",
+			PageInactiveDot:    "#ffffff",
+			DividerDot:         "#ffffff",
 		}
 
 		jsonData, err := json.MarshalIndent(baseConfig, "", "    ")
