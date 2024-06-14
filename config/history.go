@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/user"
-	"path/filepath"
 	"runtime"
 
 	"github.com/savedra1/clipse/shell"
@@ -78,20 +76,6 @@ func DisplayServer() string {
 	default:
 		return "unknown"
 	}
-}
-
-func Paths() (string, string) {
-	/* Returns full path string for clipboard file.
-	useful when needing to be accessed form a
-	bubbletea method.
-	*/
-	currentUser, err := user.Current()
-	utils.HandleError(err)
-	// Construct the path to the config directory
-	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDir)
-	historyFilePath := ClipseConfig.HistoryFilePath
-
-	return historyFilePath, clipseDir
 }
 
 func GetHistory() []ClipboardItem {
@@ -266,7 +250,7 @@ func AddClipboardItem(text, fp string) error {
 // This pins and unpins an item in the clipboard
 func TogglePinClipboardItem(timeStamp string) (bool, error) {
 	data := fileContents()
-	var pinned bool // gets the pinned state of the item
+	var pinned bool
 
 	for i := range data.ClipboardHistory {
 		if data.ClipboardHistory[i].Recorded == timeStamp {
@@ -286,7 +270,6 @@ func TogglePinClipboardItem(timeStamp string) (bool, error) {
 // Contains checks if a string exists in the most recent 3 items
 func Contains(str string) bool {
 	data := GetHistory()
-
 	if len(data) > 3 {
 		data = data[:3]
 	}
