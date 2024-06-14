@@ -139,7 +139,7 @@ func DeleteJsonItem(item string) error {
 	/* Accessed by bubbletea method on backspace keybinding:
 	Deletes selected item from json file.
 	*/
-	var data ClipboardHistory = fileContents()
+	data := fileContents()
 	var updatedClipboardHistory []ClipboardItem
 
 	for _, entry := range data.ClipboardHistory {
@@ -265,8 +265,8 @@ func AddClipboardItem(text, fp string) error {
 
 // This pins and unpins an item in the clipboard
 func TogglePinClipboardItem(timeStamp string) (bool, error) {
-	var data ClipboardHistory = fileContents()
-	var pinned bool // gets the pinned state of the iteem
+	data := fileContents()
+	var pinned bool // gets the pinned state of the item
 
 	for i := range data.ClipboardHistory {
 		if data.ClipboardHistory[i].Recorded == timeStamp {
