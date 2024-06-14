@@ -26,7 +26,7 @@ func Init() (string, string, bool, error) {
 		exists and create the path if not.
 	*/
 
-	userHome, err := userHome()
+	userHome, err := os.UserConfigDir()
 	if err != nil {
 		return "", "", false, fmt.Errorf("failed to read home dir.\nerror: %s", err)
 	}
@@ -93,11 +93,4 @@ func loadConfig(configPath string) {
 	ClipseConfig.HistoryFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.HistoryFilePath), configDir)
 	ClipseConfig.TempDirPath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), configDir)
 	ClipseConfig.ThemeFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.ThemeFilePath), configDir)
-}
-
-func userHome() (string, error) {
-	if dir := os.Getenv("XDG_CONFIG_HOME"); dir != "" {
-		return dir, nil
-	}
-	return os.UserConfigDir()
 }
