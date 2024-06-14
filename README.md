@@ -475,10 +475,10 @@ I would love to receive contributions to this project and welcome PRs from anyon
 - [ ] Better debugging / debug mode _(eg `clipse --debug` / debug file / system alert on panic)_
 - [ ] Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
 - [ ] Cross compile binaries for `wl-clipboard`/`xclip` to remove dependency
-- [ ] TUI / theming enhancements:
-  - [ ] Menu theme
-  - [ ] Filter theme
-  - [ ] Clear TUI view on select and close _(mirror close effect from `q` or `esc`)_
+- [x] TUI / theming enhancements:
+  - [x] ~~Menu theme~~
+  - [x] ~~Filter theme~~
+  - [x] ~~Clear TUI view on select and close _(mirror close effect from `q` or `esc`)_~~
 - [ ] Private mode _(eg `clipse --pause 1` )_
 
 ## FAQ
@@ -487,7 +487,7 @@ I would love to receive contributions to this project and welcome PRs from anyon
 
 - __Is there risk of multiple parallel processes running?__ - _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
 
-- __High CPU usage?__ - When an image file has an irregular binary data pattern it can cause a lot of strain on the program when `clipse` reads its history file (even when the TUI is not open). If this happens, you will need to remove the image file from the TUI or buy using `clipse -clear` to remove all files if you don't want to spend the time figuring out which one is causing the issue. See issue #33 for an example.
+- __High CPU usage?__ - When an image file has an irregular binary data pattern it can cause a lot of strain on the program when `clipse` reads its history file (even when the TUI is not open). If this happens, you will need to remove the image file from the TUI or buy using `clipse -clear` or `clipse -clear-images` to remove all files if you don't want to spend the time figuring out which one is causing the issue. See issue #33 for an example.
 
 - __My copied entries are not recorded when starting the clipse listener on boot with a systemd service__ - There may be a few ways around this but the workaround discovered in issue #41 was to use a `.desktop` file, stored in `~/.config/autostart/`. Eg:
   ```shell
