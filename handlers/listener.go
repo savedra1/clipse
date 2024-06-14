@@ -40,7 +40,8 @@ func RunListener(clipsDir, displayServer string, imgEnabled bool) error {
 		for {
 			input, _ := clipboard.ReadAll() // ignoring err here to prevent system crash if input ever not recognized
 			if input != prevClipboardContent {
-				clipboardData <- input // Pass clipboard data to main goroutine
+				clipboardData <- input       // Pass clipboard data to main goroutine
+				prevClipboardContent = input // update previous content
 			}
 			if dataType == "text" {
 				time.Sleep(defaultPollInterval)
