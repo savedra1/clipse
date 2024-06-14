@@ -1,7 +1,6 @@
 package config
 
 const (
-	baseDir            = ".config"
 	defaultHistoryFile = "clipboard_history.json"
 	defaultThemeFile   = "custom_theme.json"
 	configFile         = "config.json"

@@ -21,16 +21,19 @@ type Config struct {
 var ClipseConfig = defaultConfig()
 
 func Init() (string, string, bool, error) {
-	/* Ensure $HOME/.config/clipse/clipboard_history.json
-	exists and create the path if not. Full path returned as string
-	when successful
+	/*
+		Ensure $HOME/.config/clipse/clipboard_history.json OR $XDG_CONFIG_HOME
+		exists and create the path if not.
 	*/
-	userHome, err := os.UserHomeDir()
-	utils.HandleError(err)
+
+	userHome, err := userHome()
+	if err != nil {
+		return "", "", false, fmt.Errorf("failed to read home dir.\nerror: %s", err)
+	}
 
 	// Construct the path to the config directory
-	clipseDir := filepath.Join(userHome, ".config", clipseDir) // the ~/.config/clipse dir
-	configPath := filepath.Join(clipseDir, configFile)         // the path to the config.json file
+	clipseDir := filepath.Join(userHome, clipseDir)    // the ~/.config/clipse dir
+	configPath := filepath.Join(clipseDir, configFile) // the path to the config.json file
 
 	// Does Config dir exist, if no make it.
 	_, err = os.Stat(clipseDir)
@@ -90,4 +93,11 @@ func loadConfig(configPath string) {
 	ClipseConfig.HistoryFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.HistoryFilePath), configDir)
 	ClipseConfig.TempDirPath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), configDir)
 	ClipseConfig.ThemeFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.ThemeFilePath), configDir)
+}
+
+func userHome() (string, error) {
+	if dir := os.Getenv("XDG_CONFIG_HOME"); dir != "" {
+		return dir, nil
+	}
+	return os.UserConfigDir()
 }
