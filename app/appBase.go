@@ -177,8 +177,8 @@ func NewModel() model {
 		clipboardList.Paginator.InactiveDot = lipgloss.NewStyle().
 			Foreground(lipgloss.Color(ct.PageInactiveDot)).Render("•")
 
-		clipboardList.Styles.StatusBar = lipgloss.
-			NewStyle().Foreground(lipgloss.Color(ct.TitleInfo)).PaddingBottom(1).PaddingLeft(2)
+		clipboardList.Styles.StatusBar = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(ct.TitleInfo)).PaddingBottom(1).PaddingLeft(2)
 		clipboardList.Styles.Title = lipgloss.NewStyle().
 			Foreground(lipgloss.Color(ct.TitleFore)).Background(lipgloss.Color(ct.TitleBack)).Padding(0, 1)
 
@@ -188,6 +188,13 @@ func NewModel() model {
 			Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
 		clipboardList.Help.ShortSeparator = lipgloss.NewStyle().
 			Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
+	}
+
+	clipboardList.Styles.NoItems = lipgloss.NewStyle().
+		Foreground(lipgloss.Color(ct.TitleInfo)).PaddingBottom(1).PaddingLeft(2)
+
+	if len(clipboardItems) < 1 {
+		clipboardList.SetShowStatusBar(false)
 	}
 
 	return model{
