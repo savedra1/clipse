@@ -80,6 +80,20 @@ func DisplayServer() string {
 	}
 }
 
+func Paths() (string, string) {
+	/* Returns full path string for clipboard file.
+	useful when needing to be accessed form a
+	bubbletea method.
+	*/
+	currentUser, err := user.Current()
+	utils.HandleError(err)
+	// Construct the path to the config directory
+	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDir)
+	historyFilePath := ClipseConfig.HistoryFilePath
+
+	return historyFilePath, clipseDir
+}
+
 func GetHistory() []ClipboardItem {
 	/* returns the clipboardHistory array from the
 	clipboard_history.json file
@@ -96,22 +110,36 @@ func GetHistory() []ClipboardItem {
 	return data.ClipboardHistory
 }
 
+func fileContents() ClipboardHistory {
+	file, err := os.OpenFile(ClipseConfig.HistoryFilePath, os.O_RDWR|os.O_CREATE, 0644)
+	utils.HandleError(err)
+
+	var data ClipboardHistory
+
+	err = json.NewDecoder(file).Decode(&data)
+	utils.HandleError(err)
+
+	return data
+}
+
+func WriteUpdate(data ClipboardHistory) error {
+	updatedJSON, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("error marshaling JSON: %w", err)
+	}
+
+	if err := os.WriteFile(ClipseConfig.HistoryFilePath, updatedJSON, 0644); err != nil {
+		return fmt.Errorf("error writing file: %w", err)
+	}
+
+	return nil
+}
+
 func DeleteJsonItem(item string) error {
 	/* Accessed by bubbletea method on backspace keybinding:
 	Deletes selected item from json file.
 	*/
-
-	fileContent, err := os.ReadFile(ClipseConfig.HistoryFilePath)
-	if err != nil {
-		return fmt.Errorf("error reading file: %w", err)
-	}
-
-	var data ClipboardHistory
-
-	if err := json.Unmarshal(fileContent, &data); err != nil {
-		return fmt.Errorf("error unmarshalling JSON: %w", err)
-	}
-
+	var data ClipboardHistory = fileContents()
 	var updatedClipboardHistory []ClipboardItem
 
 	for _, entry := range data.ClipboardHistory {
@@ -119,7 +147,7 @@ func DeleteJsonItem(item string) error {
 			updatedClipboardHistory = append(updatedClipboardHistory, entry)
 		} else {
 			if entry.FilePath != "null" {
-				err = shell.DeleteImage(entry.FilePath)
+				err := shell.DeleteImage(entry.FilePath)
 				utils.HandleError(err)
 			}
 		}
@@ -127,16 +155,10 @@ func DeleteJsonItem(item string) error {
 	updatedData := ClipboardHistory{
 		ClipboardHistory: updatedClipboardHistory,
 	}
-	updatedJSON, err := json.Marshal(updatedData)
+	err := WriteUpdate(updatedData)
 	if err != nil {
-		return fmt.Errorf("error marshaling JSON: %w", err)
+		return nil
 	}
-
-	// Write the updated JSON back to the file
-	if err := os.WriteFile(ClipseConfig.HistoryFilePath, updatedJSON, 0644); err != nil {
-		return fmt.Errorf("error writing file: %w", err)
-	}
-
 	return nil
 }
 
@@ -151,63 +173,69 @@ func createDir(dirPath string) error {
 	return nil
 }
 
-func Paths() (string, string) {
-	/* Returns full path string for clipboard file.
-	useful when needing to be accessed form a
-	bubbletea method.
-	*/
-	currentUser, err := user.Current()
-	utils.HandleError(err)
-	// Construct the path to the config directory
-	clipseDir := filepath.Join(currentUser.HomeDir, ".config", clipseDir)
-	historyFilePath := ClipseConfig.HistoryFilePath
-
-	return historyFilePath, clipseDir
-}
-
-func ClearHistory() error {
-	/* Sets clipboard_history.json file to:
-	 {
-		 "clipboardHistory": []
-	 }
-	*/
-	file, err := os.OpenFile(ClipseConfig.HistoryFilePath, os.O_RDWR|os.O_CREATE, 0644) // Permissions specified for file to allow write
+func ClearHistory(clearType string) error {
+	var data ClipboardHistory
+	switch clearType {
+	case "all":
+		data = ClipboardHistory{
+			ClipboardHistory: []ClipboardItem{},
+		}
+		shell.DeleteAllImages(ClipseConfig.TempDirPath)
+	case "images":
+		data = ClipboardHistory{
+			ClipboardHistory: textItems(),
+		}
+		shell.DeleteAllImages(ClipseConfig.TempDirPath)
+	case "text":
+		data = ClipboardHistory{
+			ClipboardHistory: imageItems(),
+		}
+	default:
+		data = ClipboardHistory{
+			ClipboardHistory: pinnedItems(),
+		}
+	}
+	err := WriteUpdate(data)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-
-	file.Truncate(0)
-	file.Seek(0, 0)
-
-	baseConfig := ClipboardHistory{
-		ClipboardHistory: []ClipboardItem{},
-	}
-
-	// Encode initial history to JSON and write to file
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "    ")
-	if err := encoder.Encode(baseConfig); err != nil {
-		return err
-	}
-
-	shell.DeleteAllImages(ClipseConfig.TempDirPath)
-
 	return nil
 }
 
+func pinnedItems() []ClipboardItem {
+	pinnedItems := []ClipboardItem{}
+	history := GetHistory()
+	for _, item := range history {
+		if item.Pinned {
+			pinnedItems = append(pinnedItems, item)
+		}
+	}
+	return pinnedItems
+}
+
+func imageItems() []ClipboardItem {
+	images := []ClipboardItem{}
+	history := GetHistory()
+	for _, item := range history {
+		if item.FilePath != "null" {
+			images = append(images, item)
+		}
+	}
+	return images
+}
+
+func textItems() []ClipboardItem {
+	textItems := []ClipboardItem{}
+	history := GetHistory()
+	for _, item := range history {
+		if item.FilePath == "null" {
+			textItems = append(textItems, item)
+		}
+	}
+	return textItems
+}
 func AddClipboardItem(text, fp string) error {
-	var data ClipboardHistory
-
-	fileData, err := os.ReadFile(ClipseConfig.HistoryFilePath)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(fileData, &data)
-	if err != nil {
-		return err
-	}
+	var data ClipboardHistory = fileContents()
 
 	item := ClipboardItem{
 		Value:    text,
@@ -220,7 +248,8 @@ func AddClipboardItem(text, fp string) error {
 	data.ClipboardHistory = append([]ClipboardItem{item}, data.ClipboardHistory...)
 
 	if len(data.ClipboardHistory) > ClipseConfig.MaxHistory {
-		for i := len(data.ClipboardHistory) - 1; i >= 0; i-- { // remove the first unpinned entry starting with the oldest
+		for i := len(data.ClipboardHistory) - 1; i >= 0; i-- {
+			// remove the first unpinned entry starting with the oldest
 			if !data.ClipboardHistory[i].Pinned {
 				data.ClipboardHistory = append(data.ClipboardHistory[:i], data.ClipboardHistory[i+1:]...)
 				break
@@ -228,7 +257,7 @@ func AddClipboardItem(text, fp string) error {
 		}
 	}
 
-	if err = saveDataToFile(data); err != nil {
+	if err := WriteUpdate(data); err != nil {
 		return err
 	}
 	return nil
@@ -236,18 +265,8 @@ func AddClipboardItem(text, fp string) error {
 
 // This pins and unpins an item in the clipboard
 func TogglePinClipboardItem(timeStamp string) (bool, error) {
-	var data ClipboardHistory
+	var data ClipboardHistory = fileContents()
 	var pinned bool // gets the pinned state of the iteem
-
-	fileData, err := os.ReadFile(ClipseConfig.HistoryFilePath)
-	if err != nil {
-		return pinned, err
-	}
-
-	err = json.Unmarshal(fileData, &data)
-	if err != nil {
-		return pinned, err
-	}
 
 	for i := range data.ClipboardHistory {
 		if data.ClipboardHistory[i].Recorded == timeStamp {
@@ -258,33 +277,10 @@ func TogglePinClipboardItem(timeStamp string) (bool, error) {
 		}
 	}
 
-	if err = saveDataToFile(data); err != nil {
+	if err := WriteUpdate(data); err != nil {
 		return pinned, err
 	}
-
 	return pinned, nil
-}
-
-// saveDataToFile saves data to a JSON file
-func saveDataToFile(data ClipboardHistory) error {
-	/* Triggered from the system copy action:
-	Adds the copied string to the clipboard_history.json file.
-	*/
-	file, err := os.OpenFile(ClipseConfig.HistoryFilePath, os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-
-	defer file.Close()
-
-	file.Truncate(0)
-	encoder := json.NewEncoder(file)
-	err = encoder.Encode(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // Contains checks if a string exists in the most recent 3 items

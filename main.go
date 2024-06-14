@@ -25,7 +25,10 @@ var (
 	listen      = flag.Bool("listen", false, "Start background process for monitoring clipboard activity.")
 	listenShell = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
 	kill        = flag.Bool("kill", false, "Kill any existing background processes.")
-	clear       = flag.Bool("clear", false, "Remove all contents from the clipboard's history.")
+	clear       = flag.Bool("clear", false, "Remove all contents from the clipboard history except for pinned items.")
+	clearAll    = flag.Bool("clear-all", false, "Remove all contents the clipboard history including pinned items.")
+	clearImages = flag.Bool("clear-images", false, "Removes all images from the clipboard history including pinned images.")
+	clearText   = flag.Bool("clear-text", false, "Removes all text from the clipboard history including pinned text entries.")
 	forceClose  = flag.Bool("fc", false, "Forces the terminal session to quick by taking the $PPID var as an arg. EG `clipse -fc $PPID`")
 )
 
@@ -71,7 +74,7 @@ func main() {
 	case *kill:
 		handleKill()
 
-	case *clear:
+	case *clear, *clearAll, *clearImages, *clearText:
 		handleClear()
 
 	case *forceClose:
@@ -116,7 +119,16 @@ func handleKill() {
 
 func handleClear() {
 	clipboard.WriteAll("")
-	err := config.ClearHistory()
+	var err error
+	if *clearImages {
+		err = config.ClearHistory("images")
+	} else if *clearAll {
+		err = config.ClearHistory("all")
+	} else if *clearText {
+		err = config.ClearHistory("text")
+	} else {
+		err = config.ClearHistory("default") // this string can be anything
+	}
 	utils.HandleError(err)
 }
 
