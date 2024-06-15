@@ -252,11 +252,11 @@ func TogglePinClipboardItem(timeStamp string) (bool, error) {
 	data := fileContents()
 	var pinned bool
 
-	for i := range data.ClipboardHistory {
-		if data.ClipboardHistory[i].Recorded == timeStamp {
-			pinned = data.ClipboardHistory[i].Pinned
+	for i, item := range data.ClipboardHistory {
+		if item.Recorded == timeStamp {
+			pinned = item.Pinned
 			// Toggle the pinned state
-			data.ClipboardHistory[i].Pinned = !data.ClipboardHistory[i].Pinned
+			data.ClipboardHistory[i].Pinned = !item.Pinned
 			break
 		}
 	}
