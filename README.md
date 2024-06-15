@@ -46,7 +46,7 @@ Does not require any additional dependency.
 
 ### 1. Configurability 🧰 
 
-A customizable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is editable from a `.config/clipse/custom_theme.json` file that gets created when the program is run for the first time. Some example themes (based on my terminal)...
+A customizable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is editable from a `custom_theme.json` file that gets created when the program is run for the first time. Some example themes (based on my terminal)...
 
 **Nord**
 
@@ -72,7 +72,7 @@ A customizable TUI allows you to easily match your system's theme. The app is ba
 
 </p>
 
-An example `.config/clipse/custom_theme.json`: 
+An example `custom_theme.json` file: 
 
 ```json
 {
@@ -333,7 +333,7 @@ bind = SUPER, V, exec,  <terminal name> --class floating -e <shell-env>  -c 'cli
 
 ### i3 
 
-Add the following commands to your `.config/i3/config` file:
+Add the following commands to your `~/.config/i3/config` file:
 
 ```shell
 
@@ -381,7 +381,7 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
 - Setting a custom max history limit 
 - Custom themes
 
-`clipse` looks for a base config file in `$HOME/.config/clipse/config.json`, and creates a default file if it does not find anything. The default config looks like this:
+`clipse` looks for a base config file in `$CONFIG_DIR/clipse/config.json` _(`$CONFIG_DIR` being `$XDG_DATA_HOME` or `$HOME/.config`)_, and creates a default file if it does not find anything. The default config looks like this:
 ```json
 {
     "historyFile": "clipboard_history.json",
@@ -391,7 +391,7 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
 }
 ```
 
-Note that all the paths provided (the theme, `historyFile`, and `tempDir`) are all relative paths. They are relative to the location of the config file that holds them. Thus, a file `config.json` at location `$HOME/.config/clipse/config.json` will have all relative paths defined in it relative to its directory of `$HOME/.config/clipse/`.
+Note that all the paths provided (the theme, `historyFile`, and `tempDir`) are all relative paths. They are relative to the location of the config file that holds them. Thus, a file `config.json` at location `$HOME/.config/clipse/config.json` will have all relative paths defined in it relative to its directory of `$HOME/.config/clipse`.
 
 Absolute paths starting with `/`, paths relative to the user home dir using `~`, or any environment variables like `$HOME` and `$XDG_CONFIG_HOME` are also valid paths that can be used in this file instead.
 
