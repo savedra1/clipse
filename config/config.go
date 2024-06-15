@@ -25,7 +25,8 @@ func Init() (string, string, bool, error) {
 		Ensure $HOME/.config/clipse/clipboard_history.json OR $XDG_CONFIG_HOME
 		exists and create the path if not.
 	*/
-
+  
+  // returns $HOME/.config || $XDG_CONFIG_HOME
 	userHome, err := os.UserConfigDir()
 	if err != nil {
 		return "", "", false, fmt.Errorf("failed to read home dir.\nerror: %s", err)
@@ -94,3 +95,4 @@ func loadConfig(configPath string) {
 	ClipseConfig.TempDirPath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), configDir)
 	ClipseConfig.ThemeFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.ThemeFilePath), configDir)
 }
+
