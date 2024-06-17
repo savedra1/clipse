@@ -133,70 +133,17 @@ func NewModel() model {
 	del := m.newItemDelegate(listKeys)
 	ct := config.GetTheme()
 	if ct.UseCustom {
-		del.Styles.DimmedDesc = del.Styles.DimmedDesc.
-			Foreground(lipgloss.Color(ct.DimmedDesc))
-
-		del.Styles.DimmedTitle = del.Styles.DimmedTitle.
-			Foreground(lipgloss.Color(ct.DimmedTitle))
-
-		del.Styles.FilterMatch = del.Styles.FilterMatch.
-			Foreground(lipgloss.Color(ct.FilteredMatch))
-
-		del.Styles.NormalDesc = del.Styles.NormalDesc.
-			Foreground(lipgloss.Color(ct.NormalDesc))
-
-		del.Styles.NormalTitle = del.Styles.NormalTitle.
-			Foreground(lipgloss.Color(ct.NormalTitle))
-
-		del.Styles.SelectedDesc = del.Styles.SelectedDesc.
-			Foreground(lipgloss.Color(ct.SelectedDesc)).
-			BorderForeground(lipgloss.Color(ct.SelectedDescBorder))
-
-		del.Styles.SelectedTitle = del.Styles.SelectedTitle.
-			Foreground(lipgloss.Color(ct.SelectedTitle)).
-			BorderForeground(lipgloss.Color(ct.SelectedBorder))
-
-		statusMessageStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.AdaptiveColor{Light: ct.StatusMsg, Dark: ct.StatusMsg}).
-			Render
+		del = styledDelegate(del, ct)
+		statusMessageStyle = styledStatusMessage(ct)
 	}
 
 	clipboardList := list.New(entryItems, del, 0, 0)
 	clipboardList.Title = "Clipboard History"
-	clipboardList.SetShowHelp(false)
+	clipboardList.SetShowHelp(false) // override with only custom options
 
 	if ct.UseCustom { // add additional customizations after delegate created
-		clipboardList.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterPrompt))
-		clipboardList.FilterInput.TextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterText))
-		clipboardList.Styles.StatusBarFilterCount = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterInfo))
-		clipboardList.FilterInput.Cursor.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterCursor))
-		clipboardList.Styles.StatusEmpty = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterInfo))
-
-		clipboardList.Help.Styles.ShortKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
-		clipboardList.Help.Styles.ShortDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
-		clipboardList.Help.Styles.FullKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
-		clipboardList.Help.Styles.FullDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
-
-		clipboardList.Paginator.ActiveDot = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.PageActiveDot)).Render("•")
-		clipboardList.Paginator.InactiveDot = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.PageInactiveDot)).Render("•")
-
-		clipboardList.Styles.StatusBar = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.TitleInfo)).PaddingBottom(1).PaddingLeft(2)
-		clipboardList.Styles.Title = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.TitleFore)).Background(lipgloss.Color(ct.TitleBack)).Padding(0, 1)
-
-		clipboardList.Styles.DividerDot = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.DividerDot)).SetString("•").PaddingLeft(1).PaddingRight(1)
-		clipboardList.Help.FullSeparator = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
-		clipboardList.Help.ShortSeparator = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
+		clipboardList = styledList(clipboardList, ct)
 	}
-
-	clipboardList.Styles.NoItems = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.TitleInfo)).PaddingBottom(1).PaddingLeft(2)
 
 	if len(clipboardItems) < 1 {
 		clipboardList.SetShowStatusBar(false)
