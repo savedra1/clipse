@@ -195,9 +195,8 @@ func (m model) View() string {
 	parts := strings.Split(listView, "\n")
 
 	var helpView string
-	if m.showFullHelp {
-		helpView = ""
-	} else {
+
+	if !m.showFullHelp {
 		helpView = "  " + m.list.Help.ShortHelpView(m.keys.ShortHelp())
 	}
 
@@ -206,6 +205,7 @@ func (m model) View() string {
 	}
 
 	parts = append(parts, helpView)
+
 	return appStyle.Render(strings.Join(parts, "\n"))
 }
 
@@ -236,14 +236,12 @@ func filterItemsByPinned(clipboardItems []config.ClipboardItem, isPinned bool) [
 }
 
 func pinnedStyle() string {
-	var color string
+	color := "#FF0000"
 	pinChar := " "
 	config := config.GetTheme()
 
 	if config.UseCustom {
 		color = config.PinIndicatorColor
-	} else {
-		color = "#FF0000"
 	}
 	return lipgloss.NewStyle().Foreground(lipgloss.Color(color)).SetString(pinChar).Render()
 }
@@ -251,15 +249,17 @@ func pinnedStyle() string {
 // This updates the TUI when an item is pinned/unpinned
 func (m *model) togglePinUpdate() {
 	index := m.list.Index()
-	if i, ok := m.list.SelectedItem().(item); ok {
-		if !i.pinned {
-			i.pinned = true // set pinned status to true
-			i.description = fmt.Sprintf("Date copied: %s %s", i.timeStamp, pinnedStyle())
-			m.list.SetItem(index, i)
-		} else {
-			i.pinned = false
-			i.description = fmt.Sprintf("Date copied: %s", i.timeStamp)
-			m.list.SetItem(index, i)
-		}
+	i, ok := m.list.SelectedItem().(item)
+	if !ok {
+		return
 	}
+
+	i.description = fmt.Sprintf("Date copied: %s", i.timeStamp)
+	if !i.pinned {
+		i.description = fmt.Sprintf("Date copied: %s %s", i.timeStamp, pinnedStyle())
+	}
+
+	i.pinned = !i.pinned
+	m.list.SetItem(index, i)
+
 }
