@@ -167,21 +167,21 @@ func NewModel() model {
 	clipboardList := list.New(entryItems, del, 0, 0)
 	clipboardList.Title = "Clipboard History" // set hardcoded title
 	clipboardList.SetShowHelp(false)          // override with custom
+	clipboardList.Styles.PaginationStyle = lipgloss.NewStyle().
+		PaddingBottom(1).PaddingLeft(2) // set custom pagination spacing
 	if len(clipboardItems) < 1 {
 		clipboardList.SetShowStatusBar(false)
 	}
 
 	ct := config.GetTheme()
 	if !ct.UseCustom {
-		clipboardList = setDefaultStyling(clipboardList)
-	} else {
-		clipboardList = styledList(clipboardList, ct)
-		clipboardList.SetDelegate(styledDelegate(del, ct))
-		statusMessageStyle = styledStatusMessage(ct)
+		m.list = setDefaultStyling(clipboardList)
+		return m
 	}
 
-	m.list = clipboardList
-
+	statusMessageStyle = styledStatusMessage(ct)
+	clipboardList.SetDelegate(styledDelegate(del, ct))
+	m.list = styledList(clipboardList, ct)
 	return m
 }
 
@@ -204,7 +204,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if key.Matches(msg, m.keys.more) {
 			m.showFullHelp = !m.showFullHelp
 			m.list.SetShowHelp(!m.list.ShowHelp())
-
 		}
 		switch msg.String() {
 		case "p":
