@@ -13,8 +13,8 @@ import (
  */
 
 func Shorten(s string) string {
-	sl := strings.ReplaceAll(s, "\n", "\\n") // make single line
-	if len(sl) <= maxChar {                  // maxChar defined in constants.go
+	sl := strings.TrimSpace(strings.ReplaceAll(s, "\n", "\\n")) // make single line without trailing space
+	if len(sl) <= maxChar {                                     // maxChar defined in constants.go
 		return strings.ReplaceAll(sl, "  ", " ") // remove double spaces
 	}
 	return strings.ReplaceAll(sl[:maxChar-3], "  ", " ") + "..."

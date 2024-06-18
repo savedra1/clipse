@@ -33,11 +33,9 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 		var desc string
 
 		if i, ok := m.SelectedItem().(item); ok {
-
 			title = i.Title()
 			fullValue = i.TitleFull()
 			fp = i.FilePath()
-			// desc = strings.Split(i.Description(), ": ")[1]
 			desc = i.TimeStamp()
 		} else {
 			return nil
@@ -47,7 +45,6 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 		case tea.KeyMsg:
 			switch {
 			case key.Matches(msg, keys.choose):
-
 				if fp != "null" {
 					ds := config.DisplayServer() // eg "wayland"
 					err := shell.CopyImage(fp, ds)
@@ -118,7 +115,7 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 				}
 
 				clipboardItems := config.GetHistory()
-				filteredItems := filterItemsByPinned(clipboardItems, parentModel.togglePinned)
+				filteredItems := filterItems(clipboardItems, parentModel.togglePinned)
 
 				if len(filteredItems) == 0 {
 					m.Title = "Clipboard History"

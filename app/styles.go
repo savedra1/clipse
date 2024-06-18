@@ -9,9 +9,8 @@ import (
 func setDefaultStyling(clipboardList list.Model) list.Model {
 	// align list elements
 	clipboardList.FilterInput.PromptStyle = lipgloss.NewStyle().PaddingTop(1)
-	clipboardList.Styles.PaginationStyle = lipgloss.NewStyle().PaddingBottom(1).PaddingLeft(2)
 	clipboardList.Styles.Title = lipgloss.NewStyle().MarginTop(1)
-	clipboardList.Styles.StatusBar = lipgloss.NewStyle().PaddingBottom(1).PaddingLeft(2)
+	clipboardList.Styles.StatusBar = lipgloss.NewStyle().MarginBottom(1).MarginLeft(2)
 	clipboardList.Styles.DividerDot = lipgloss.NewStyle().PaddingLeft(1).PaddingRight(1)
 	clipboardList.Help.FullSeparator = lipgloss.NewStyle().PaddingLeft(1).PaddingRight(1).Render("•")
 	clipboardList.Help.ShortSeparator = lipgloss.NewStyle().PaddingLeft(1).PaddingRight(1).Render("•")
@@ -41,7 +40,6 @@ func styledDelegate(del list.DefaultDelegate, ct config.CustomTheme) list.Defaul
 }
 
 func styledList(clipboardList list.Model, ct config.CustomTheme) list.Model {
-	clipboardList.Styles.PaginationStyle = lipgloss.NewStyle().PaddingBottom(1).PaddingLeft(2)
 	clipboardList.FilterInput.PromptStyle = lipgloss.NewStyle().
 		Foreground(lipgloss.Color(ct.FilterPrompt)).PaddingTop(1)
 	clipboardList.FilterInput.TextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterText))
@@ -57,9 +55,10 @@ func styledList(clipboardList list.Model, ct config.CustomTheme) list.Model {
 	clipboardList.Paginator.InactiveDot = lipgloss.NewStyle().
 		Foreground(lipgloss.Color(ct.PageInactiveDot)).Render("•")
 	clipboardList.Styles.StatusBar = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.TitleInfo)).PaddingBottom(1).PaddingLeft(2)
+		Foreground(lipgloss.Color(ct.TitleInfo)).MarginBottom(1).MarginLeft(2)
 	clipboardList.Styles.Title = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.TitleFore)).Background(lipgloss.Color(ct.TitleBack)).MarginTop(1)
+		Foreground(lipgloss.Color(ct.TitleFore)).Background(lipgloss.Color(ct.TitleBack)).MarginTop(1).
+		Align(lipgloss.Position(1))
 	clipboardList.Styles.DividerDot = lipgloss.NewStyle().
 		Foreground(lipgloss.Color(ct.DividerDot)).SetString("•").PaddingLeft(1).PaddingRight(1)
 	clipboardList.Help.FullSeparator = lipgloss.NewStyle().

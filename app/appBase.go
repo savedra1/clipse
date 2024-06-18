@@ -113,7 +113,8 @@ func (k keyMap) ShortHelp() []key.Binding {
 // FullHelp returns the key bindings for the full help screen.
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.choose, k.remove, k.togglePin, k.togglePinned},
+		{k.choose, k.remove},
+		{k.togglePin, k.togglePinned},
 		{k.filter, k.quit},
 	}
 }
@@ -154,7 +155,7 @@ func NewModel() model {
 
 	// Make initial list of items
 	clipboardItems := config.GetHistory()
-	entryItems := filterItemsByPinned(clipboardItems, false)
+	entryItems := filterItems(clipboardItems, false)
 
 	// Setup list
 	m := model{
@@ -168,7 +169,7 @@ func NewModel() model {
 	clipboardList.Title = "Clipboard History" // set hardcoded title
 	clipboardList.SetShowHelp(false)          // override with custom
 	clipboardList.Styles.PaginationStyle = lipgloss.NewStyle().
-		PaddingBottom(1).PaddingLeft(2) // set custom pagination spacing
+		MarginBottom(1).MarginLeft(2) // set custom pagination spacing
 	if len(clipboardItems) < 1 {
 		clipboardList.SetShowStatusBar(false)
 	}
@@ -220,24 +221,41 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+	/*
+		there are some render issues that arise when
+		toggling the full help menu. overlaying the
+		full help string seems to fix the issue
+	*/
 	listView := m.list.View()
-	parts := strings.Split(listView, "\n")
 	helpView := m.getHelpView()
-	parts = append(parts, helpView)
-	return appStyle.Render(strings.Join(parts, "\n"))
+
+	// Determine the lines to keep from the listView
+	listLines := strings.Split(listView, "\n")
+	helpLines := strings.Split(helpView, "\n")
+
+	// Choose a fixed position for the help overlay
+	helpOverlayStart := len(listLines) - len(helpLines)
+
+	// Overlay the help view
+	for i := 0; i < len(helpLines); i++ {
+		listLines[helpOverlayStart+i] = helpLines[i]
+	}
+	return appStyle.Render(strings.Join(listLines, "\n"))
 }
 
 func (m model) getHelpView() string {
 	if m.list.FilterState() == list.Filtering {
-		return "  " + m.list.Help.ShortHelpView(m.filterKeys.filterHelp())
+		return lipgloss.NewStyle().
+			PaddingLeft(2).Render(m.list.Help.ShortHelpView(m.filterKeys.filterHelp()))
 	}
 	if m.showFullHelp {
 		return ""
 	}
-	return "  " + m.list.Help.ShortHelpView(m.keys.ShortHelp())
+	return lipgloss.NewStyle().
+		PaddingLeft(2).Render(m.list.Help.ShortHelpView(m.keys.ShortHelp()))
 }
 
-func filterItemsByPinned(clipboardItems []config.ClipboardItem, isPinned bool) []list.Item {
+func filterItems(clipboardItems []config.ClipboardItem, isPinned bool) []list.Item {
 	var filteredItems []list.Item
 
 	for _, entry := range clipboardItems {
