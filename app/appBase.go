@@ -190,6 +190,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	return m, tea.Batch(cmds...)
 }
+
 func (m model) View() string {
 	listView := m.list.View()
 	parts := strings.Split(listView, "\n")
@@ -200,8 +201,18 @@ func (m model) View() string {
 		helpView = "  " + m.list.Help.ShortHelpView(m.keys.ShortHelp())
 	}
 
-	if len(parts) > 0 {
-		parts = parts[:len(parts)-1]
+	// Find the index of the pagination line
+	paginationIndex := -1
+	for i, line := range parts {
+		if strings.Contains(line, "items") {
+			paginationIndex = i
+			break
+		}
+	}
+
+	// Remove the line before the pagination line
+	if paginationIndex > 0 {
+		parts = append(parts[:paginationIndex-1], parts[paginationIndex:]...)
 	}
 
 	parts = append(parts, helpView)
