@@ -35,10 +35,11 @@ var (
 
 type model struct {
 	// model pulls all relevant elems together for rendering
-	list         list.Model // list items
-	keys         *keyMap    // keybindings
-	togglePinned bool       // pinned indicator
-	showFullHelp bool
+	list         list.Model    // list items
+	keys         *keyMap       // keybindings
+	filterKeys   *filterKeyMap // keybindings for filter view
+	togglePinned bool          // pinned indicator
+	showFullHelp bool          // whether full help menu is shown
 }
 
 type item struct {
@@ -121,40 +122,67 @@ func (m model) Init() tea.Cmd { // initialize app
 	return tea.EnterAltScreen
 }
 
+type filterKeyMap struct {
+	apply  key.Binding
+	cancel key.Binding
+}
+
+func newFilterKeymap() *filterKeyMap {
+	return &filterKeyMap{
+		apply: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("↵", "apply"),
+		),
+		cancel: key.NewBinding(
+			key.WithKeys("esc"),
+			key.WithHelp("esc", "cancel"),
+		),
+	}
+}
+
+func (fk filterKeyMap) filterHelp() []key.Binding {
+	return []key.Binding{
+		fk.apply, fk.cancel,
+	}
+}
+
 func NewModel() model {
-	var listKeys = newKeyMap()
+	var (
+		listKeys   = newKeyMap()
+		filterKeys = newFilterKeymap()
+	)
 
 	// Make initial list of items
 	clipboardItems := config.GetHistory()
 	entryItems := filterItemsByPinned(clipboardItems, false)
 
 	// Setup list
-	m := model{}
+	m := model{
+		togglePinned: false,
+		showFullHelp: false,
+		keys:         listKeys,
+		filterKeys:   filterKeys,
+	}
 	del := m.newItemDelegate(listKeys)
-	ct := config.GetTheme()
-	if ct.UseCustom {
-		del = styledDelegate(del, ct)
-		statusMessageStyle = styledStatusMessage(ct)
-	}
-
 	clipboardList := list.New(entryItems, del, 0, 0)
-	clipboardList.Title = "Clipboard History"
-	clipboardList.SetShowHelp(false) // override with only custom options
-
-	if ct.UseCustom { // add additional customizations after delegate created
-		clipboardList = styledList(clipboardList, ct)
-	}
-
+	clipboardList.Title = "Clipboard History" // set hardcoded title
+	clipboardList.SetShowHelp(false)          // override with custom
 	if len(clipboardItems) < 1 {
 		clipboardList.SetShowStatusBar(false)
 	}
 
-	return model{
-		list:         clipboardList,
-		keys:         listKeys,
-		togglePinned: false,
-		showFullHelp: false,
+	ct := config.GetTheme()
+	if !ct.UseCustom {
+		clipboardList = setDefaultStyling(clipboardList)
+	} else {
+		clipboardList = styledList(clipboardList, ct)
+		clipboardList.SetDelegate(styledDelegate(del, ct))
+		statusMessageStyle = styledStatusMessage(ct)
 	}
+
+	m.list = clipboardList
+
+	return m
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -176,6 +204,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if key.Matches(msg, m.keys.more) {
 			m.showFullHelp = !m.showFullHelp
 			m.list.SetShowHelp(!m.list.ShowHelp())
+
 		}
 		switch msg.String() {
 		case "p":
@@ -194,30 +223,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	listView := m.list.View()
 	parts := strings.Split(listView, "\n")
-
-	var helpView string
-
-	if !m.showFullHelp {
-		helpView = "  " + m.list.Help.ShortHelpView(m.keys.ShortHelp())
-	}
-
-	// Find the index of the pagination line
-	paginationIndex := -1
-	for i, line := range parts {
-		if strings.Contains(line, "items") {
-			paginationIndex = i
-			break
-		}
-	}
-
-	// Remove the line before the pagination line
-	if paginationIndex > 0 {
-		parts = append(parts[:paginationIndex-1], parts[paginationIndex:]...)
-	}
-
+	helpView := m.getHelpView()
 	parts = append(parts, helpView)
-
 	return appStyle.Render(strings.Join(parts, "\n"))
+}
+
+func (m model) getHelpView() string {
+	if m.list.FilterState() == list.Filtering {
+		return "  " + m.list.Help.ShortHelpView(m.filterKeys.filterHelp())
+	}
+	if m.showFullHelp {
+		return ""
+	}
+	return "  " + m.list.Help.ShortHelpView(m.keys.ShortHelp())
 }
 
 func filterItemsByPinned(clipboardItems []config.ClipboardItem, isPinned bool) []list.Item {
