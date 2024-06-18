@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -32,17 +33,12 @@ var (
 				Render
 )
 
-func pinnedStyle() string {
-	var color string
-	pinChar := " "
-	config := config.GetTheme()
-
-	if config.UseCustom {
-		color = config.PinIndicatorColor
-	} else {
-		color = "#FF0000"
-	}
-	return lipgloss.NewStyle().Foreground(lipgloss.Color(color)).SetString(pinChar).Render()
+type model struct {
+	// model pulls all relevant elems together for rendering
+	list         list.Model // list items
+	keys         *keyMap    // keybindings
+	togglePinned bool       // pinned indicator
+	showFullHelp bool
 }
 
 type item struct {
@@ -62,54 +58,71 @@ func (i item) Description() string { return i.description }
 func (i item) FilePath() string    { return i.filePath }
 func (i item) FilterValue() string { return i.title }
 
-type listKeyMap struct {
+type keyMap struct {
 	// default keybind definitions
-	toggleSpinner    key.Binding
-	toggleTitleBar   key.Binding
-	toggleStatusBar  key.Binding
-	togglePagination key.Binding
-	toggleHelpMenu   key.Binding
+	filter       key.Binding
+	quit         key.Binding
+	more         key.Binding
+	choose       key.Binding
+	remove       key.Binding
+	togglePin    key.Binding
+	togglePinned key.Binding
 }
 
-func newListKeyMap() *listKeyMap {
-	return &listKeyMap{
-		toggleSpinner: key.NewBinding(
-			key.WithKeys("s"),
-			key.WithHelp("s", "toggle spinner"),
+func newKeyMap() *keyMap {
+	return &keyMap{
+		filter: key.NewBinding(
+			key.WithKeys("/"),
+			key.WithHelp("/", "filter"),
 		),
-		toggleTitleBar: key.NewBinding(
-			key.WithKeys("T"),
-			key.WithHelp("T", "toggle title"),
+		quit: key.NewBinding(
+			key.WithKeys("q"),
+			key.WithHelp("q/esc", "quit"),
 		),
-		toggleStatusBar: key.NewBinding(
-			key.WithKeys("S"),
-			key.WithHelp("S", "toggle status"),
+		more: key.NewBinding(
+			key.WithKeys("?"),
+			key.WithHelp("?", "more"),
 		),
-		togglePagination: key.NewBinding(
-			key.WithKeys("P"),
-			key.WithHelp("P", "toggle pagination"),
+		choose: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("↵", "copy"),
 		),
-		toggleHelpMenu: key.NewBinding(
-			key.WithKeys("H"),
-			key.WithHelp("H", "toggle help"),
+		remove: key.NewBinding(
+			key.WithKeys("x", "backspace"),
+			key.WithHelp("x/⌫", "delete"),
+		),
+		togglePin: key.NewBinding(
+			key.WithKeys("p"),
+			key.WithHelp("p", "pin/unpin"),
+		),
+		togglePinned: key.NewBinding(
+			key.WithKeys("tab"),
+			key.WithHelp("↹", "show pinned"),
 		),
 	}
 }
 
-type model struct {
-	// model pulls all relevant elems together for rendering
-	list         list.Model      // list items
-	keys         *listKeyMap     // keybindings
-	delegateKeys *delegateKeyMap // custom key bindings
-	togglePinned bool            // pinned indicator
+// ShortHelp returns the key bindings for the short help screen.
+func (k keyMap) ShortHelp() []key.Binding {
+	return []key.Binding{
+		k.choose, k.remove, k.filter, k.togglePin, k.togglePinned, k.more,
+	}
+}
+
+// FullHelp returns the key bindings for the full help screen.
+func (k keyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.choose, k.remove, k.togglePin, k.togglePinned},
+		{k.filter, k.quit},
+	}
+}
+
+func (m model) Init() tea.Cmd { // initialize app
+	return tea.EnterAltScreen
 }
 
 func NewModel() model {
-	// new model needs raising to render additional custom keys
-	var (
-		delegateKeys = newDelegateKeyMap()
-		listKeys     = newListKeyMap()
-	)
+	var listKeys = newKeyMap()
 
 	// Make initial list of items
 	clipboardItems := config.GetHistory()
@@ -117,81 +130,20 @@ func NewModel() model {
 
 	// Setup list
 	m := model{}
-	del := m.newItemDelegate(delegateKeys)
+	del := m.newItemDelegate(listKeys)
 	ct := config.GetTheme()
 	if ct.UseCustom {
-		del.Styles.DimmedDesc = del.Styles.DimmedDesc.
-			Foreground(lipgloss.Color(ct.DimmedDesc))
-
-		del.Styles.DimmedTitle = del.Styles.DimmedTitle.
-			Foreground(lipgloss.Color(ct.DimmedTitle))
-
-		del.Styles.FilterMatch = del.Styles.FilterMatch.
-			Foreground(lipgloss.Color(ct.FilteredMatch))
-
-		del.Styles.NormalDesc = del.Styles.NormalDesc.
-			Foreground(lipgloss.Color(ct.NormalDesc))
-
-		del.Styles.NormalTitle = del.Styles.NormalTitle.
-			Foreground(lipgloss.Color(ct.NormalTitle))
-
-		del.Styles.SelectedDesc = del.Styles.SelectedDesc.
-			Foreground(lipgloss.Color(ct.SelectedDesc)).
-			BorderForeground(lipgloss.Color(ct.SelectedDescBorder))
-
-		del.Styles.SelectedTitle = del.Styles.SelectedTitle.
-			Foreground(lipgloss.Color(ct.SelectedTitle)).
-			BorderForeground(lipgloss.Color(ct.SelectedBorder))
-
-		statusMessageStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.AdaptiveColor{Light: ct.StatusMsg, Dark: ct.StatusMsg}).
-			Render
+		del = styledDelegate(del, ct)
+		statusMessageStyle = styledStatusMessage(ct)
 	}
 
 	clipboardList := list.New(entryItems, del, 0, 0)
 	clipboardList.Title = "Clipboard History"
-	clipboardList.AdditionalFullHelpKeys = func() []key.Binding {
-		return []key.Binding{
-			listKeys.toggleSpinner,
-			listKeys.toggleTitleBar,
-			listKeys.toggleStatusBar,
-			listKeys.togglePagination,
-			listKeys.toggleHelpMenu,
-		}
-	}
+	clipboardList.SetShowHelp(false) // override with only custom options
 
 	if ct.UseCustom { // add additional customizations after delegate created
-		clipboardList.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterPrompt))
-		clipboardList.FilterInput.TextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterText))
-		clipboardList.Styles.StatusBarFilterCount = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterInfo))
-		clipboardList.FilterInput.Cursor.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterCursor))
-		clipboardList.Styles.StatusEmpty = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterInfo))
-
-		clipboardList.Help.Styles.ShortKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
-		clipboardList.Help.Styles.ShortDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
-		clipboardList.Help.Styles.FullKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
-		clipboardList.Help.Styles.FullDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
-
-		clipboardList.Paginator.ActiveDot = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.PageActiveDot)).Render("•")
-		clipboardList.Paginator.InactiveDot = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.PageInactiveDot)).Render("•")
-
-		clipboardList.Styles.StatusBar = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.TitleInfo)).PaddingBottom(1).PaddingLeft(2)
-		clipboardList.Styles.Title = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.TitleFore)).Background(lipgloss.Color(ct.TitleBack)).Padding(0, 1)
-
-		clipboardList.Styles.DividerDot = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.DividerDot)).SetString("•").PaddingLeft(1).PaddingRight(1)
-		clipboardList.Help.FullSeparator = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
-		clipboardList.Help.ShortSeparator = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
+		clipboardList = styledList(clipboardList, ct)
 	}
-
-	clipboardList.Styles.NoItems = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.TitleInfo)).PaddingBottom(1).PaddingLeft(2)
 
 	if len(clipboardItems) < 1 {
 		clipboardList.SetShowStatusBar(false)
@@ -200,27 +152,8 @@ func NewModel() model {
 	return model{
 		list:         clipboardList,
 		keys:         listKeys,
-		delegateKeys: delegateKeys,
-	}
-}
-
-func (m model) Init() tea.Cmd { // initialize app
-	return tea.EnterAltScreen
-}
-
-// This updates the TUI when an item is pinned/unpinned
-func (m *model) togglePinUpdate() {
-	index := m.list.Index()
-	if i, ok := m.list.SelectedItem().(item); ok {
-		if !i.pinned {
-			i.pinned = true // set pinned status to true
-			i.description = fmt.Sprintf("Date copied: %s %s", i.timeStamp, pinnedStyle())
-			m.list.SetItem(index, i)
-		} else {
-			i.pinned = false
-			i.description = fmt.Sprintf("Date copied: %s", i.timeStamp)
-			m.list.SetItem(index, i)
-		}
+		togglePinned: false,
+		showFullHelp: false,
 	}
 }
 
@@ -240,31 +173,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.list.FilterState() == list.Filtering {
 			break
 		}
-
-		switch {
-		case key.Matches(msg, m.keys.toggleSpinner):
-			cmd := m.list.ToggleSpinner()
-			return m, cmd
-
-		case key.Matches(msg, m.keys.toggleTitleBar):
-			v := !m.list.ShowTitle()
-			m.list.SetShowTitle(v)
-			m.list.SetShowFilter(v)
-			m.list.SetFilteringEnabled(v)
-			return m, nil
-
-		case key.Matches(msg, m.keys.toggleStatusBar):
-			m.list.SetShowStatusBar(!m.list.ShowStatusBar())
-			return m, nil
-
-		case key.Matches(msg, m.keys.togglePagination):
-			m.list.SetShowPagination(!m.list.ShowPagination())
-			return m, nil
-
-		case key.Matches(msg, m.keys.toggleHelpMenu):
+		if key.Matches(msg, m.keys.more) {
+			m.showFullHelp = !m.showFullHelp
 			m.list.SetShowHelp(!m.list.ShowHelp())
-			return m, nil
-
 		}
 		switch msg.String() {
 		case "p":
@@ -279,9 +190,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	return m, tea.Batch(cmds...)
 }
+func (m model) View() string {
+	listView := m.list.View()
+	parts := strings.Split(listView, "\n")
 
-func (m model) View() string { // Render app in terminal using client libs
-	return appStyle.Render(m.list.View())
+	var helpView string
+
+	if !m.showFullHelp {
+		helpView = "  " + m.list.Help.ShortHelpView(m.keys.ShortHelp())
+	}
+
+	if len(parts) > 0 {
+		parts = parts[:len(parts)-1]
+	}
+
+	parts = append(parts, helpView)
+
+	return appStyle.Render(strings.Join(parts, "\n"))
 }
 
 func filterItemsByPinned(clipboardItems []config.ClipboardItem, isPinned bool) []list.Item {
@@ -308,4 +233,33 @@ func filterItemsByPinned(clipboardItems []config.ClipboardItem, isPinned bool) [
 	}
 
 	return filteredItems
+}
+
+func pinnedStyle() string {
+	color := "#FF0000"
+	pinChar := " "
+	config := config.GetTheme()
+
+	if config.UseCustom {
+		color = config.PinIndicatorColor
+	}
+	return lipgloss.NewStyle().Foreground(lipgloss.Color(color)).SetString(pinChar).Render()
+}
+
+// This updates the TUI when an item is pinned/unpinned
+func (m *model) togglePinUpdate() {
+	index := m.list.Index()
+	i, ok := m.list.SelectedItem().(item)
+	if !ok {
+		return
+	}
+
+	i.description = fmt.Sprintf("Date copied: %s", i.timeStamp)
+	if !i.pinned {
+		i.description = fmt.Sprintf("Date copied: %s %s", i.timeStamp, pinnedStyle())
+	}
+
+	i.pinned = !i.pinned
+	m.list.SetItem(index, i)
+
 }
