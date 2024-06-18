@@ -17,61 +17,7 @@ import (
 base-level bubbletea app. Here including keybinds only.
 */
 
-type delegateKeyMap struct {
-	choose       key.Binding
-	remove       key.Binding
-	togglePin    key.Binding
-	togglePinned key.Binding
-}
-
-/*
-Additional short/full help entries. This satisfies the help.KeyMap interface and
-
-	is entirely optional.
-*/
-func (d delegateKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{
-		d.choose,
-		d.remove,
-		d.togglePin,
-		d.togglePinned,
-	}
-}
-
-func (d delegateKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{
-			d.choose,
-			d.remove,
-			d.togglePin,
-			d.togglePinned,
-		},
-	}
-}
-
-// final config map for new keys
-func newDelegateKeyMap() *delegateKeyMap {
-	return &delegateKeyMap{
-		choose: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "copy"),
-		),
-		remove: key.NewBinding(
-			key.WithKeys("x", "backspace"),
-			key.WithHelp("x", "delete"),
-		),
-		togglePin: key.NewBinding(
-			key.WithKeys("p"),
-			key.WithHelp("p", "toggle pin"),
-		),
-		togglePinned: key.NewBinding(
-			key.WithKeys("tab"),
-			key.WithHelp("tab", "toggle pinned items"),
-		),
-	}
-}
-
-func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
+func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 	/* This is where the additional keybinding actions are defined:
 	   - enter/reurn: copies selected item to the clipboard and adds a status message
 	   - backspace/delete: removes item from list view and json file
@@ -163,7 +109,6 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 				if len(m.Items()) == 0 {
 					keys.togglePinned.SetEnabled(false)
 				}
-
 				if parentModel.togglePinned {
 					parentModel.togglePinned = false
 					m.Title = "Clipboard History"
@@ -194,10 +139,11 @@ func (parentModel *model) newItemDelegate(keys *delegateKeyMap) list.DefaultDele
 		return nil
 	}
 
-	help := []key.Binding{keys.choose, keys.remove, keys.togglePin, keys.togglePinned}
-
-	d.ShortHelpFunc = func() []key.Binding {
-		return help
+	help := []key.Binding{
+		keys.choose,
+		keys.remove,
+		keys.togglePin,
+		keys.togglePinned,
 	}
 
 	d.FullHelpFunc = func() [][]key.Binding {
