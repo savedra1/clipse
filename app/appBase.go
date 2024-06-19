@@ -2,8 +2,8 @@ package app
 
 import (
 	"fmt"
-	"strings"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -35,10 +35,12 @@ var (
 
 type model struct {
 	// model pulls all relevant elems together for rendering
-	list         list.Model // list items
-	keys         *keyMap    // keybindings
-	togglePinned bool       // pinned indicator
-	showFullHelp bool
+	list         list.Model    // list items
+	keys         *keyMap       // keybindings
+	filterKeys   *filterKeyMap // keybindings for filter view
+	help         help.Model
+	togglePinned bool // pinned indicator
+	showFullHelp bool // whether full help menu is shown
 }
 
 type item struct {
@@ -58,8 +60,8 @@ func (i item) Description() string { return i.description }
 func (i item) FilePath() string    { return i.filePath }
 func (i item) FilterValue() string { return i.title }
 
+// default keybind definitions
 type keyMap struct {
-	// default keybind definitions
 	filter       key.Binding
 	quit         key.Binding
 	more         key.Binding
@@ -102,59 +104,87 @@ func newKeyMap() *keyMap {
 	}
 }
 
-// ShortHelp returns the key bindings for the short help screen.
 func (k keyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
 		k.choose, k.remove, k.filter, k.togglePin, k.togglePinned, k.more,
 	}
 }
 
-// FullHelp returns the key bindings for the full help screen.
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.choose, k.remove, k.togglePin, k.togglePinned},
+		{k.choose, k.remove},
+		{k.togglePin, k.togglePinned},
 		{k.filter, k.quit},
 	}
 }
 
-func (m model) Init() tea.Cmd { // initialize app
+func (m model) Init() tea.Cmd {
 	return tea.EnterAltScreen
 }
 
+type filterKeyMap struct {
+	apply  key.Binding
+	cancel key.Binding
+}
+
+func newFilterKeymap() *filterKeyMap {
+	return &filterKeyMap{
+		apply: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("↵", "apply"),
+		),
+		cancel: key.NewBinding(
+			key.WithKeys("esc"),
+			key.WithHelp("esc", "cancel"),
+		),
+	}
+}
+
+func (fk filterKeyMap) FilterHelp() []key.Binding {
+	return []key.Binding{
+		fk.apply, fk.cancel,
+	}
+}
+
 func NewModel() model {
-	var listKeys = newKeyMap()
+	var (
+		listKeys   = newKeyMap()
+		filterKeys = newFilterKeymap()
+	)
 
 	// Make initial list of items
 	clipboardItems := config.GetHistory()
-	entryItems := filterItemsByPinned(clipboardItems, false)
+	entryItems := filterItems(clipboardItems, false)
 
-	// Setup list
-	m := model{}
-	del := m.newItemDelegate(listKeys)
-	ct := config.GetTheme()
-	if ct.UseCustom {
-		del = styledDelegate(del, ct)
-		statusMessageStyle = styledStatusMessage(ct)
-	}
-
-	clipboardList := list.New(entryItems, del, 0, 0)
-	clipboardList.Title = "Clipboard History"
-	clipboardList.SetShowHelp(false) // override with only custom options
-
-	if ct.UseCustom { // add additional customizations after delegate created
-		clipboardList = styledList(clipboardList, ct)
-	}
-
-	if len(clipboardItems) < 1 {
-		clipboardList.SetShowStatusBar(false)
-	}
-
-	return model{
-		list:         clipboardList,
+	m := model{
 		keys:         listKeys,
+		filterKeys:   filterKeys,
+		help:         help.New(),
 		togglePinned: false,
 		showFullHelp: false,
 	}
+	del := m.newItemDelegate(listKeys)
+	clipboardList := list.New(entryItems, del, 0, 0)
+	clipboardList.Title = "Clipboard History" // set hardcoded title
+	clipboardList.SetShowHelp(false)          // override with custom
+	clipboardList.Styles.PaginationStyle = lipgloss.NewStyle().
+		MarginBottom(1).MarginLeft(2) // set custom pagination spacing
+
+	if len(clipboardItems) < 1 {
+		clipboardList.SetShowStatusBar(false) // remove duplicate "No items"
+	}
+
+	ct := config.GetTheme()
+	if !ct.UseCustom {
+		m.list = setDefaultStyling(clipboardList)
+		return m
+	}
+
+	statusMessageStyle = styledStatusMessage(ct)
+	m.help = styledHelp(m.help, ct)
+	clipboardList.SetDelegate(styledDelegate(del, ct))
+	m.list = styledList(clipboardList, ct)
+	return m
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -174,8 +204,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 		if key.Matches(msg, m.keys.more) {
-			m.showFullHelp = !m.showFullHelp
 			m.list.SetShowHelp(!m.list.ShowHelp())
+			m.updatePaginator()
 		}
 		switch msg.String() {
 		case "p":
@@ -183,33 +213,38 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// This will also call our delegate's update function.
+	// this will also call our delegate's update function
 	newListModel, cmd := m.list.Update(msg)
 	m.list = newListModel
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
 }
-func (m model) View() string {
-	listView := m.list.View()
-	parts := strings.Split(listView, "\n")
 
-	var helpView string
-
-	if !m.showFullHelp {
-		helpView = "  " + m.list.Help.ShortHelpView(m.keys.ShortHelp())
+func (m *model) updatePaginator() {
+	pagStyle := lipgloss.NewStyle().MarginBottom(1).MarginLeft(2)
+	if m.list.ShowHelp() {
+		pagStyle = lipgloss.NewStyle().MarginBottom(0).MarginLeft(2)
 	}
-
-	if len(parts) > 0 {
-		parts = parts[:len(parts)-1]
-	}
-
-	parts = append(parts, helpView)
-
-	return appStyle.Render(strings.Join(parts, "\n"))
+	m.list.Styles.PaginationStyle = pagStyle
 }
 
-func filterItemsByPinned(clipboardItems []config.ClipboardItem, isPinned bool) []list.Item {
+func (m model) View() string {
+	listView := m.list.View()
+	helpView := lipgloss.NewStyle().PaddingLeft(2).Render(m.help.View(m.keys))
+	render := lipgloss.NewStyle().PaddingLeft(1).Render
+
+	if m.list.FilterState() == list.Filtering {
+		return render(listView + "\n" + lipgloss.NewStyle().PaddingLeft(2).Render(
+			m.list.Help.ShortHelpView(m.filterKeys.FilterHelp())))
+	}
+	if m.list.ShowHelp() {
+		return render(listView) // default full view used as replacement
+	}
+	return render(listView + "\n" + helpView)
+}
+
+func filterItems(clipboardItems []config.ClipboardItem, isPinned bool) []list.Item {
 	var filteredItems []list.Item
 
 	for _, entry := range clipboardItems {
@@ -233,17 +268,6 @@ func filterItemsByPinned(clipboardItems []config.ClipboardItem, isPinned bool) [
 	}
 
 	return filteredItems
-}
-
-func pinnedStyle() string {
-	color := "#FF0000"
-	pinChar := " "
-	config := config.GetTheme()
-
-	if config.UseCustom {
-		color = config.PinIndicatorColor
-	}
-	return lipgloss.NewStyle().Foreground(lipgloss.Color(color)).SetString(pinChar).Render()
 }
 
 // This updates the TUI when an item is pinned/unpinned

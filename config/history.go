@@ -219,8 +219,7 @@ func textItems() []ClipboardItem {
 	return textItems
 }
 func AddClipboardItem(text, fp string) error {
-	var data ClipboardHistory = fileContents()
-
+	data := fileContents()
 	item := ClipboardItem{
 		Value:    text,
 		Recorded: utils.GetTime(),
