@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/savedra1/clipse/config"
@@ -71,8 +72,29 @@ func styledList(clipboardList list.Model, ct config.CustomTheme) list.Model {
 	return clipboardList
 }
 
+func styledHelp(help help.Model, ct config.CustomTheme) help.Model {
+	help.Styles.ShortKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
+	help.Styles.ShortDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
+	help.Styles.FullKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
+	help.Styles.FullDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
+	help.FullSeparator = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
+	help.ShortSeparator = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
+	return help
+}
+
 func styledStatusMessage(ct config.CustomTheme) func(strs ...string) string {
 	return lipgloss.NewStyle().
 		Foreground(lipgloss.AdaptiveColor{Light: ct.StatusMsg, Dark: ct.StatusMsg}).
 		Render
+}
+
+func pinnedStyle() string {
+	color := "#FF0000"
+	pinChar := " "
+	config := config.GetTheme()
+
+	if config.UseCustom {
+		color = config.PinIndicatorColor
+	}
+	return lipgloss.NewStyle().Foreground(lipgloss.Color(color)).SetString(pinChar).Render()
 }
