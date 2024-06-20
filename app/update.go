@@ -41,27 +41,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
+// This updates the TUI when an item is pinned/unpinned
+func (m *model) togglePinUpdate() {
+	index := m.list.Index()
+	item, ok := m.list.SelectedItem().(item)
+	if !ok {
+		return
+	}
+	item.description = fmt.Sprintf("Date copied: %s", item.timeStamp)
+	if !item.pinned {
+		item.description = fmt.Sprintf("Date copied: %s %s", item.timeStamp, styledPin())
+	}
+
+	item.pinned = !item.pinned
+	m.list.SetItem(index, item)
+	if m.list.IsFiltered() {
+		m.list.ResetFilter() // move selected pinned item to front
+	}
+}
+
 func (m *model) updatePaginator() {
 	pagStyle := lipgloss.NewStyle().MarginBottom(1).MarginLeft(2)
 	if m.list.ShowHelp() {
 		pagStyle = lipgloss.NewStyle().MarginBottom(0).MarginLeft(2)
 	}
 	m.list.Styles.PaginationStyle = pagStyle
-}
-
-// This updates the TUI when an item is pinned/unpinned
-func (m *model) togglePinUpdate() {
-	index := m.list.Index()
-	i, ok := m.list.SelectedItem().(item)
-	if !ok {
-		return
-	}
-	i.description = fmt.Sprintf("Date copied: %s", i.timeStamp)
-	if !i.pinned {
-		i.description = fmt.Sprintf("Date copied: %s %s", i.timeStamp, pinnedStyle())
-	}
-
-	i.pinned = !i.pinned
-	m.list.SetItem(index, i)
-
 }

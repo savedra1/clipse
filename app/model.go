@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	clipboardTitle     = "Clipboard History"               // hardcoded title for now
 	appStyle           = lipgloss.NewStyle().Padding(1, 2) // default padding
 	statusMessageStyle = lipgloss.NewStyle().Foreground(
 		lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"},
@@ -24,7 +23,7 @@ type model struct {
 	keys         *keyMap       // keybindings
 	filterKeys   *filterKeyMap // keybindings for filter view
 	help         help.Model    // custom help menu
-	togglePinned bool          // pinned indicator
+	togglePinned bool          // pinned view indicator
 }
 
 type item struct {
@@ -67,7 +66,6 @@ func NewModel() model {
 	if len(clipboardItems) < 1 {
 		clipboardList.SetShowStatusBar(false) // remove duplicate "No items"
 	}
-
 	// set list.Model as the m.list value
 	ct := config.GetTheme()
 	if !ct.UseCustom {
@@ -102,7 +100,7 @@ func filterItems(clipboardItems []config.ClipboardItem, isPinned bool) []list.It
 		}
 
 		if entry.Pinned {
-			item.description = fmt.Sprintf("Date copied: %s %s", entry.Recorded, pinnedStyle())
+			item.description = fmt.Sprintf("Date copied: %s %s", entry.Recorded, styledPin())
 		}
 
 		if !isPinned || entry.Pinned {

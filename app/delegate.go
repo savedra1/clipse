@@ -33,6 +33,7 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 			fullValue = i.TitleFull()
 			fp = i.FilePath()
 			desc = i.TimeStamp()
+
 		} else {
 			return nil
 		}
@@ -83,7 +84,6 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 				if len(m.Items()) == 0 {
 					keys.togglePin.SetEnabled(false)
 				}
-
 				// update pinned status in history file
 				isPinned, err := config.TogglePinClipboardItem(desc)
 				utils.HandleError(err)
@@ -91,6 +91,7 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 				if isPinned {
 					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
 				}
+
 				return m.NewStatusMessage(statusMessageStyle("Pinned: " + title))
 
 			case key.Matches(msg, keys.togglePinned):
@@ -117,7 +118,6 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 				for i := len(m.Items()) - 1; i >= 0; i-- { // clear all items
 					m.RemoveItem(i)
 				}
-
 				for _, item := range filteredItems { // adds all required items
 					m.InsertItem(len(m.Items()), item)
 				}
