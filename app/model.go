@@ -57,7 +57,7 @@ func NewModel() model {
 	// instantiate model delegate
 	del := m.newItemDelegate(listKeys)
 
-	// create list.Modle object
+	// create list.Model object
 	clipboardList := list.New(entryItems, del, 0, 0)
 	clipboardList.Title = clipboardTitle // set hardcoded title
 	clipboardList.SetShowHelp(false)     // override with custom
