@@ -13,10 +13,6 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
-/* This is were we define additional config to add to our
-base-level bubbletea app. Here including keybinds only.
-*/
-
 func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 	/* This is where the additional keybinding actions are defined:
 	   - enter/reurn: copies selected item to the clipboard and adds a status message
@@ -62,11 +58,8 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 					if os.Args[1] == "keep" {
 						return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))
 					}
-				} else {
-					return tea.Quit
 				}
-
-				return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))
+				return tea.Quit
 
 			case key.Matches(msg, keys.remove):
 				index := m.Index()
@@ -91,34 +84,33 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 					keys.togglePin.SetEnabled(false)
 				}
 
+				// update pinned status in history file
 				isPinned, err := config.TogglePinClipboardItem(desc)
 				utils.HandleError(err)
 
 				if isPinned {
 					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
-				} else if !isPinned {
-					return m.NewStatusMessage(statusMessageStyle("Pinned: " + title))
-				} else {
-					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
 				}
+				return m.NewStatusMessage(statusMessageStyle("Pinned: " + title))
 
 			case key.Matches(msg, keys.togglePinned):
 				if len(m.Items()) == 0 {
 					keys.togglePinned.SetEnabled(false)
 				}
+
+				parentModel.togglePinned = !parentModel.togglePinned
+
 				if parentModel.togglePinned {
-					parentModel.togglePinned = false
-					m.Title = "Clipboard History"
+					m.Title = "Pinned " + clipboardTitle
 				} else {
-					parentModel.togglePinned = true
-					m.Title = "Pinned Clipboard History"
+					m.Title = clipboardTitle
 				}
 
 				clipboardItems := config.GetHistory()
 				filteredItems := filterItems(clipboardItems, parentModel.togglePinned)
 
 				if len(filteredItems) == 0 {
-					m.Title = "Clipboard History"
+					m.Title = clipboardTitle
 					return m.NewStatusMessage(statusMessageStyle("No pinned items"))
 				}
 
@@ -129,13 +121,12 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 				for _, item := range filteredItems { // adds all required items
 					m.InsertItem(len(m.Items()), item)
 				}
-
 			}
 		}
-
 		return nil
 	}
 
+	// add custom options to the default full help view
 	help := []key.Binding{
 		keys.choose,
 		keys.remove,

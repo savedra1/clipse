@@ -3,16 +3,12 @@ package app
 import (
 	"fmt"
 
-	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	/* this is where the base logic is held for what action to take from
-	   the predefined key bindings
-	*/
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -25,13 +21,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.list.FilterState() == list.Filtering {
 			break
 		}
-		if key.Matches(msg, m.keys.more) {
-			m.list.SetShowHelp(!m.list.ShowHelp())
-			m.updatePaginator()
-		}
 		switch msg.String() {
 		case "p":
 			m.togglePinUpdate()
+		case "?":
+			// swap custom help menu for default list.Model help view when expanding
+			// the menu. doing this because the custom help menu causing rendering
+			// conflits with the list view
+			m.list.SetShowHelp(!m.list.ShowHelp())
+			m.updatePaginator()
 		}
 	}
 
@@ -58,7 +56,6 @@ func (m *model) togglePinUpdate() {
 	if !ok {
 		return
 	}
-
 	i.description = fmt.Sprintf("Date copied: %s", i.timeStamp)
 	if !i.pinned {
 		i.description = fmt.Sprintf("Date copied: %s %s", i.timeStamp, pinnedStyle())

@@ -12,30 +12,28 @@ import (
 )
 
 var (
-	// base styling config using lipgloss
-	appStyle           = lipgloss.NewStyle().Padding(1, 2)
-	statusMessageStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-				Render
+	clipboardTitle     = "Clipboard History"               // hardcoded title for now
+	appStyle           = lipgloss.NewStyle().Padding(1, 2) // default padding
+	statusMessageStyle = lipgloss.NewStyle().Foreground(
+		lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"},
+	).Render // default styling func used to render message
 )
 
 type model struct {
-	// model pulls all relevant elems together for rendering
 	list         list.Model    // list items
 	keys         *keyMap       // keybindings
 	filterKeys   *filterKeyMap // keybindings for filter view
-	help         help.Model
-	togglePinned bool // pinned indicator
-	showFullHelp bool // whether full help menu is shown
+	help         help.Model    // custom help menu
+	togglePinned bool          // pinned indicator
 }
 
 type item struct {
-	title       string
-	titleFull   string
-	timeStamp   string
-	description string
-	filePath    string
-	pinned      bool
+	title       string // display title in list
+	titleFull   string // full value stored in history file
+	timeStamp   string // local date and time of copy event
+	description string // displayed description in list
+	filePath    string // path to file | "null"
+	pinned      bool   // pinned status
 }
 
 func NewModel() model {
@@ -44,21 +42,25 @@ func NewModel() model {
 		filterKeys = newFilterKeymap()
 	)
 
-	// Make initial list of items
+	// get initial list of items
 	clipboardItems := config.GetHistory()
 	entryItems := filterItems(clipboardItems, false)
 
+	// instantiate model
 	m := model{
 		keys:         listKeys,
 		filterKeys:   filterKeys,
 		help:         help.New(),
 		togglePinned: false,
-		showFullHelp: false,
 	}
+
+	// instantiate model delegate
 	del := m.newItemDelegate(listKeys)
+
+	// create list.Modle object
 	clipboardList := list.New(entryItems, del, 0, 0)
-	clipboardList.Title = "Clipboard History" // set hardcoded title
-	clipboardList.SetShowHelp(false)          // override with custom
+	clipboardList.Title = clipboardTitle // set hardcoded title
+	clipboardList.SetShowHelp(false)     // override with custom
 	clipboardList.Styles.PaginationStyle = lipgloss.NewStyle().
 		MarginBottom(1).MarginLeft(2) // set custom pagination spacing
 
@@ -66,6 +68,7 @@ func NewModel() model {
 		clipboardList.SetShowStatusBar(false) // remove duplicate "No items"
 	}
 
+	// set list.Model as the m.list value
 	ct := config.GetTheme()
 	if !ct.UseCustom {
 		m.list = setDefaultStyling(clipboardList)
@@ -83,6 +86,7 @@ func (m model) Init() tea.Cmd {
 	return tea.EnterAltScreen
 }
 
+// if isPinned is true, returns only an array of pinned items, otherwise all
 func filterItems(clipboardItems []config.ClipboardItem, isPinned bool) []list.Item {
 	var filteredItems []list.Item
 
