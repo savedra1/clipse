@@ -88,13 +88,13 @@ func styledStatusMessage(ct config.CustomTheme) func(strs ...string) string {
 		Render
 }
 
-func pinnedStyle() string {
-	color := "#FF0000"
-	pinChar := " "
-	config := config.GetTheme()
-
-	if config.UseCustom {
-		color = config.PinIndicatorColor
+func styledPin() string {
+	theme := config.GetTheme()
+	if theme.UseCustom {
+		return lipgloss.NewStyle().
+			Foreground(lipgloss.Color(theme.PinIndicatorColor)).Render(pinChar)
 	}
-	return lipgloss.NewStyle().Foreground(lipgloss.Color(color)).SetString(pinChar).Render()
+	return lipgloss.NewStyle().
+		Foreground(lipgloss.Color(pinColorDefault)).Render(pinChar)
+
 }

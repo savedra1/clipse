@@ -50,7 +50,7 @@ func (m *model) togglePinUpdate() {
 	}
 	item.description = fmt.Sprintf("Date copied: %s", item.timeStamp)
 	if !item.pinned {
-		item.description = fmt.Sprintf("Date copied: %s %s", item.timeStamp, pinnedStyle())
+		item.description = fmt.Sprintf("Date copied: %s %s", item.timeStamp, styledPin())
 	}
 
 	item.pinned = !item.pinned
