@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -24,6 +25,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "p":
 			m.togglePinUpdate()
+		case "shift+down":
+			m.toggleSelected()
+			m.list.CursorDown()
+		case "shift+up":
+			m.toggleSelected()
+			m.list.CursorUp()
+
 		case "?":
 			// swap custom help menu for default list.Model help view when expanding
 			// the menu. doing this because the custom help menu causing rendering
@@ -66,4 +74,22 @@ func (m *model) updatePaginator() {
 		pagStyle = lipgloss.NewStyle().MarginBottom(0).MarginLeft(2)
 	}
 	m.list.Styles.PaginationStyle = pagStyle
+}
+
+func (m *model) toggleSelected() {
+	index := m.list.Index()
+	item, ok := m.list.SelectedItem().(item)
+
+	if !ok {
+		return
+	}
+	selectedChar := "➤➤➤ "
+	item.selected = !item.selected
+	if !item.selected {
+		item.title = strings.Replace(item.title, selectedChar, "", 1)
+	} else if string(item.title[0]) != selectedChar {
+		item.title = selectedChar + item.title
+	}
+	m.list.SetItem(index, item)
+
 }
