@@ -28,15 +28,14 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 		var fp string
 		var desc string
 
-		if i, ok := m.SelectedItem().(item); ok {
-			title = i.Title()
-			fullValue = i.TitleFull()
-			fp = i.FilePath()
-			desc = i.TimeStamp()
-
-		} else {
+		i, ok := m.SelectedItem().(item)
+		if !ok {
 			return nil
 		}
+		title = i.Title()
+		fullValue = i.TitleFull()
+		fp = i.FilePath()
+		desc = i.TimeStamp()
 
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
