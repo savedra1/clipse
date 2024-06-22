@@ -28,14 +28,14 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 		var fp string
 		var desc string
 
-		i, ok := m.SelectedItem().(item)
+		item, ok := m.SelectedItem().(item)
 		if !ok {
 			return nil
 		}
-		title = i.Title()
-		fullValue = i.TitleFull()
-		fp = i.FilePath()
-		desc = i.TimeStamp()
+		title = item.Title()
+		fullValue = item.TitleFull()
+		fp = item.FilePath()
+		desc = item.TimeStamp()
 
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
@@ -73,7 +73,7 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 					if currentContent == fullValue {
 						clipboard.WriteAll("")
 					}
-					err := config.DeleteJsonItem(desc) // This func will also delete the temoraily stored image if filepath present
+					err := config.DeleteJsonItem(desc)
 					utils.HandleError(err)
 				}()
 
@@ -107,7 +107,7 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 				}
 
 				clipboardItems := config.GetHistory()
-				filteredItems := filterItems(clipboardItems, parentModel.togglePinned)
+				filteredItems := filterItems(clipboardItems, parentModel.togglePinned, parentModel.theme)
 
 				if len(filteredItems) == 0 {
 					m.Title = clipboardTitle
@@ -120,6 +120,12 @@ func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
 				for _, item := range filteredItems { // adds all required items
 					m.InsertItem(len(m.Items()), item)
 				}
+				//switch msg.String() {
+				//case "y":
+				//	allItems := m.Items()
+				//	fmt.Println(allItems)
+				//}
+
 			}
 		}
 		return nil

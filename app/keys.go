@@ -4,13 +4,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 )
 
-func (i item) Title() string       { return i.title }
-func (i item) TitleFull() string   { return i.titleFull }
-func (i item) TimeStamp() string   { return i.timeStamp }
-func (i item) Description() string { return i.description }
-func (i item) FilePath() string    { return i.filePath }
-func (i item) FilterValue() string { return i.title }
-
 // default keybind definitions
 type keyMap struct {
 	filter       key.Binding

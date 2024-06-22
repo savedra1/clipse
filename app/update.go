@@ -1,8 +1,18 @@
+/*
+	TODO
+	- fix for items not showing selected after selection was set
+	- fix for selected item styles not updating during filter view
+	- implement final behaviour for multi-selection:
+		- directional unselect
+		- selection of next item
+	- update help menu
+	- implement logic to copy all selected split by a configurable custom string val
+*/
+
 package app
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -20,27 +30,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		// Don't match any of the keys below if we're actively filtering.
 		if m.list.FilterState() == list.Filtering {
+			//m.resetSelected() - need to implement
 			break
 		}
 		switch msg.String() {
 		case "p":
 			m.togglePinUpdate()
-		case "shift+down":
+		case "shift+down", "J":
 			m.toggleSelected()
 			m.list.CursorDown()
-		case "shift+up":
+		case "shift+up", "K":
 			m.toggleSelected()
 			m.list.CursorUp()
-
+		case "S":
+			m.toggleSelected()
 		case "?":
 			// swap custom help menu for default list.Model help view when expanding
 			// the menu. doing this because the custom help menu causing rendering
 			// conflits with the list view
 			m.list.SetShowHelp(!m.list.ShowHelp())
 			m.updatePaginator()
+
 		}
 	}
-
 	// this will also call our delegate's update function
 	newListModel, cmd := m.list.Update(msg)
 	m.list = newListModel
@@ -58,7 +70,7 @@ func (m *model) togglePinUpdate() {
 	}
 	item.description = fmt.Sprintf("Date copied: %s", item.timeStamp)
 	if !item.pinned {
-		item.description = fmt.Sprintf("Date copied: %s %s", item.timeStamp, styledPin())
+		item.description = fmt.Sprintf("Date copied: %s %s", item.timeStamp, styledPin(m.theme))
 	}
 
 	item.pinned = !item.pinned
@@ -79,17 +91,45 @@ func (m *model) updatePaginator() {
 func (m *model) toggleSelected() {
 	index := m.list.Index()
 	item, ok := m.list.SelectedItem().(item)
-
 	if !ok {
 		return
 	}
-	selectedChar := "➤➤➤ "
 	item.selected = !item.selected
-	if !item.selected {
-		item.title = strings.Replace(item.title, selectedChar, "", 1)
-	} else if string(item.title[0]) != selectedChar {
-		item.title = selectedChar + item.title
-	}
+	item = updateSelectionStyle(item, m.theme)
 	m.list.SetItem(index, item)
-
 }
+
+/*func (m *model) resetSelected() {
+/*
+	Need make selected items reset to dimmed when filtering
+*/
+//for i := 0; i < len(m.list.Items()); i++ {
+//	item, ok := m.list.SelectedItem().(item)
+//	if !ok {
+//		continue
+//	}
+//	item.selected = false
+//	m.list.SetItem(i, item)
+//}
+//m.list.Filter("", []string{""})
+//}
+
+/*func (m *model) addSelected() {
+
+
+
+	index := m.list.Index()
+	item, ok := m.list.SelectedItem().(item)
+	if !ok {
+		return
+	}
+	desc := item.descriptionBase
+	if item.pinned {
+		desc = desc + " " + styledPin(m.theme)
+	}
+
+	item.title = lipgloss.NewStyle().Foreground(lipgloss.Color(m.theme.SelectedTitle)).Render(item.titleBase)
+	item.description = lipgloss.NewStyle().Foreground(lipgloss.Color(m.theme.SelectedTitle)).Render(desc)
+
+	m.list.SetItem(index, item)
+}*/

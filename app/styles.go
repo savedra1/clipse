@@ -7,6 +7,22 @@ import (
 	"github.com/savedra1/clipse/config"
 )
 
+func updateSelectionStyle(item item, theme config.CustomTheme) item {
+	desc := item.descriptionBase
+	if item.pinned {
+		desc = desc + " " + styledPin(theme)
+	}
+
+	if !item.selected {
+		item.title = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.NormalTitle)).Render(item.titleBase)
+		item.description = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.NormalDesc)).Render(desc)
+	} else {
+		item.title = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.SelectedTitle)).Render(item.titleBase)
+		item.description = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.SelectedDesc)).Render(desc)
+	}
+	return item
+}
+
 func setDefaultStyling(clipboardList list.Model) list.Model {
 	// align list elements
 	clipboardList.FilterInput.PromptStyle = lipgloss.NewStyle().PaddingTop(1)
@@ -33,6 +49,7 @@ func styledDelegate(del list.DefaultDelegate, ct config.CustomTheme) list.Defaul
 	del.Styles.SelectedDesc = del.Styles.SelectedDesc.
 		Foreground(lipgloss.Color(ct.SelectedDesc)).
 		BorderForeground(lipgloss.Color(ct.SelectedDescBorder))
+
 	del.Styles.SelectedTitle = del.Styles.SelectedTitle.
 		Foreground(lipgloss.Color(ct.SelectedTitle)).
 		BorderForeground(lipgloss.Color(ct.SelectedBorder))
@@ -88,13 +105,7 @@ func styledStatusMessage(ct config.CustomTheme) func(strs ...string) string {
 		Render
 }
 
-func styledPin() string {
-	theme := config.GetTheme()
-	if theme.UseCustom {
-		return lipgloss.NewStyle().
-			Foreground(lipgloss.Color(theme.PinIndicatorColor)).Render(pinChar)
-	}
+func styledPin(theme config.CustomTheme) string {
 	return lipgloss.NewStyle().
-		Foreground(lipgloss.Color(pinColorDefault)).Render(pinChar)
-
+		Foreground(lipgloss.Color(theme.PinIndicatorColor)).Render(pinChar)
 }

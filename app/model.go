@@ -19,21 +19,33 @@ var (
 )
 
 type model struct {
-	list         list.Model    // list items
-	keys         *keyMap       // keybindings
-	filterKeys   *filterKeyMap // keybindings for filter view
-	help         help.Model    // custom help menu
-	togglePinned bool          // pinned view indicator
+	list         list.Model         // list items
+	keys         *keyMap            // keybindings
+	filterKeys   *filterKeyMap      // keybindings for filter view
+	help         help.Model         // custom help menu
+	togglePinned bool               // pinned view indicator
+	theme        config.CustomTheme // colors scheme to uses
 }
 
 type item struct {
-	title       string // display title in list
-	titleFull   string // full value stored in history file
-	timeStamp   string // local date and time of copy event
-	description string // displayed description in list
-	filePath    string // path to file | "null"
-	pinned      bool   // pinned status
+	title           string // display title in list
+	titleBase       string
+	titleFull       string // full value stored in history file
+	timeStamp       string // local date and time of copy event
+	description     string // displayed description in list
+	descriptionBase string
+	filePath        string // "path/to/file" | "null"
+	pinned          bool   // pinned status
+	pinChar         string
+	selected        bool
 }
+
+func (i item) Title() string       { return i.title }
+func (i item) TitleFull() string   { return i.titleFull }
+func (i item) TimeStamp() string   { return i.timeStamp }
+func (i item) Description() string { return i.description }
+func (i item) FilePath() string    { return i.filePath }
+func (i item) FilterValue() string { return i.title }
 
 func NewModel() model {
 	var (
@@ -43,7 +55,9 @@ func NewModel() model {
 
 	// get initial list of items
 	clipboardItems := config.GetHistory()
-	entryItems := filterItems(clipboardItems, false)
+
+	// get theme info
+	ct := config.GetTheme()
 
 	// instantiate model
 	m := model{
@@ -51,7 +65,10 @@ func NewModel() model {
 		filterKeys:   filterKeys,
 		help:         help.New(),
 		togglePinned: false,
+		theme:        ct,
 	}
+
+	entryItems := filterItems(clipboardItems, false, m.theme)
 
 	// instantiate model delegate
 	del := m.newItemDelegate(listKeys)
@@ -66,8 +83,9 @@ func NewModel() model {
 	if len(clipboardItems) < 1 {
 		clipboardList.SetShowStatusBar(false) // remove duplicate "No items"
 	}
+
 	// set list.Model as the m.list value
-	ct := config.GetTheme()
+
 	if !ct.UseCustom {
 		m.list = setDefaultStyling(clipboardList)
 		return m
@@ -85,22 +103,25 @@ func (m model) Init() tea.Cmd {
 }
 
 // if isPinned is true, returns only an array of pinned items, otherwise all
-func filterItems(clipboardItems []config.ClipboardItem, isPinned bool) []list.Item {
+func filterItems(clipboardItems []config.ClipboardItem, isPinned bool, theme config.CustomTheme) []list.Item {
 	var filteredItems []list.Item
 
 	for _, entry := range clipboardItems {
 		shortenedVal := utils.Shorten(entry.Value)
 		item := item{
-			title:       shortenedVal,
-			titleFull:   entry.Value,
-			description: "Date copied: " + entry.Recorded,
-			filePath:    entry.FilePath,
-			pinned:      entry.Pinned,
-			timeStamp:   entry.Recorded,
+			title:           shortenedVal,
+			titleBase:       shortenedVal,
+			titleFull:       entry.Value,
+			description:     "Date copied: " + entry.Recorded,
+			descriptionBase: "Date copied: " + entry.Recorded,
+			filePath:        entry.FilePath,
+			pinned:          entry.Pinned,
+			timeStamp:       entry.Recorded,
+			selected:        false,
 		}
 
 		if entry.Pinned {
-			item.description = fmt.Sprintf("Date copied: %s %s", entry.Recorded, styledPin())
+			item.description = fmt.Sprintf("Date copied: %s %s", entry.Recorded, styledPin(theme))
 		}
 
 		if !isPinned || entry.Pinned {
