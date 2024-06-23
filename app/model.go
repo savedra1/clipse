@@ -89,6 +89,7 @@ func NewModel() model {
 		return []key.Binding{
 			listKeys.selectDown,
 			listKeys.selectSingle,
+			listKeys.clearSelected,
 		}
 	}
 

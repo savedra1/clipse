@@ -6,22 +6,23 @@ import (
 
 // default keybind definitions
 type keyMap struct {
-	filter       key.Binding
-	quit         key.Binding
-	more         key.Binding
-	choose       key.Binding
-	remove       key.Binding
-	togglePin    key.Binding
-	togglePinned key.Binding
-	selectDown   key.Binding
-	selectUp     key.Binding
-	selectSingle key.Binding
-	up           key.Binding
-	down         key.Binding
-	nextPage     key.Binding
-	prevPage     key.Binding
-	home         key.Binding
-	end          key.Binding
+	filter        key.Binding
+	quit          key.Binding
+	more          key.Binding
+	choose        key.Binding
+	remove        key.Binding
+	togglePin     key.Binding
+	togglePinned  key.Binding
+	selectDown    key.Binding
+	selectUp      key.Binding
+	selectSingle  key.Binding
+	clearSelected key.Binding
+	up            key.Binding
+	down          key.Binding
+	nextPage      key.Binding
+	prevPage      key.Binding
+	home          key.Binding
+	end           key.Binding
 }
 
 func newKeyMap() *keyMap {
@@ -63,8 +64,12 @@ func newKeyMap() *keyMap {
 			key.WithHelp("⇧+↓/↑", "select"),
 		),
 		selectSingle: key.NewBinding(
+			key.WithKeys("s"),
+			key.WithHelp("s", "select single"),
+		),
+		clearSelected: key.NewBinding(
 			key.WithKeys("S"),
-			key.WithHelp("S", "select single"),
+			key.WithHelp("S", "clear selected"),
 		),
 		up: key.NewBinding(
 			key.WithKeys("up", "k"),

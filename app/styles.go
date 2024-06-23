@@ -89,12 +89,12 @@ func (d itemDelegate) itemSelectedStyle(i item, m list.Model, index int) string 
 }
 
 func (d itemDelegate) itemNormalStyle(i item) string {
-	titleStyle := style.
+	titleStyle = style.
 		Foreground(lipgloss.Color(d.theme.NormalTitle)).
 		PaddingLeft(2).
 		Render(i.titleBase)
 
-	descStyle := style.
+	descStyle = style.
 		Foreground(lipgloss.Color(d.theme.NormalDesc)).
 		PaddingLeft(2).
 		Render(i.descriptionBase)

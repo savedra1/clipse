@@ -140,10 +140,27 @@ func DeleteJsonItem(item string) error {
 		ClipboardHistory: updatedClipboardHistory,
 	}
 	err := WriteUpdate(updatedData)
-	if err != nil {
-		return nil
+	return err
+}
+
+func DeleteItems(timeStamps []string) error {
+	data := fileContents()
+	updatedData := []ClipboardItem{}
+
+	toDelete := make(map[string]bool)
+	for _, ts := range timeStamps {
+		toDelete[ts] = true
 	}
-	return nil
+	for _, item := range data.ClipboardHistory {
+		if !toDelete[item.Recorded] {
+			updatedData = append(updatedData, item)
+		}
+	}
+	updatedFile := ClipboardHistory{
+		ClipboardHistory: updatedData,
+	}
+	err := WriteUpdate(updatedFile)
+	return err
 }
 
 func createDir(dirPath string) error {

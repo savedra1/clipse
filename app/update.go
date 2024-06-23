@@ -1,16 +1,9 @@
-/*
-	TODO
-	- implement final behaviour for multi-selection:
-		- directional unselect
-		- selection of next item
-	- implement logic to copy all selected split by a configurable custom string val
-*/
-
 package app
 
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
@@ -33,31 +26,62 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		// Don't match any of the keys below if we're actively filtering.
 		if m.list.FilterState() == list.Filtering {
-			//m.resetSelected() - need to implement
 			break
 		}
-		item, ok := m.list.SelectedItem().(item)
+		i, ok := m.list.SelectedItem().(item)
 		if !ok {
-			return nil, nil
+			switch {
+			case key.Matches(msg, m.keys.more):
+				m.list.SetShowHelp(!m.list.ShowHelp())
+				m.updatePaginator()
+			}
+			break
+
 		}
-		title := item.Title()
-		fullValue := item.TitleFull()
-		fp := item.FilePath()
-		desc := item.TimeStamp()
+		title := i.Title()
+		fullValue := i.TitleFull()
+		fp := i.FilePath()
+		desc := i.TimeStamp()
+
 		switch {
+
 		case key.Matches(msg, m.keys.choose):
+			selectedItems := m.selectedItems()
+			if len(selectedItems) < 1 && fp == "null" {
+				err := clipboard.WriteAll(fullValue)
+				utils.HandleError(err)
+				return m, tea.Quit
+			}
+
+			if len(selectedItems) >= 1 {
+				yank := ""
+				for _, item := range selectedItems {
+					if fullValue != item.Value {
+						yank += item.Value + "\n"
+					}
+				}
+				yank += fullValue
+				err := clipboard.WriteAll(yank)
+				if err == nil {
+					return m, tea.Quit
+				}
+				cmds = append(
+					cmds,
+					m.list.NewStatusMessage(statusMessageStyle("Failed to copy all selected items.")),
+				)
+			}
+
 			if fp != "null" {
 				ds := config.DisplayServer() // eg "wayland"
 				err := shell.CopyImage(fp, ds)
 				utils.HandleError(err)
-			} else {
-				err := clipboard.WriteAll(fullValue)
-				utils.HandleError(err)
+				return m, tea.Quit
 			}
 
 			if len(os.Args) > 2 {
 				if utils.IsInt(os.Args[2]) {
 					shell.KillProcess(os.Args[2])
+					return m, tea.Quit
 				}
 			} else if len(os.Args) > 1 {
 				if os.Args[1] == "keep" {
@@ -66,28 +90,51 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+title)),
 					)
 				}
-			} else {
-				return m, tea.Quit
 			}
 
 		case key.Matches(msg, m.keys.remove):
-			index := m.list.Index()
-			m.list.RemoveItem(index)
+			selectedItems := m.selectedItems()
+			currentIndex := m.list.Index()
+
+			currentContent, _ := clipboard.ReadAll()
+			if currentContent == fullValue {
+				clipboard.WriteAll("")
+			} else {
+				for _, item := range selectedItems {
+					if item.Value == currentContent {
+						clipboard.WriteAll("")
+					}
+				}
+			}
+
+			statusMsg := "Deleted: "
+
+			if len(selectedItems) >= 1 {
+				timeStamps := []string{}
+				m.list.RemoveItem(currentIndex)
+				m.removeSelected()
+				for _, item := range selectedItems {
+					timeStamps = append(timeStamps, strings.Split(item.Description, "Date copied: ")[1])
+				}
+
+				timeStamps = append(timeStamps, desc)
+				statusMsg += "*selected items*"
+				config.DeleteItems(timeStamps)
+			} else {
+				m.list.RemoveItem(currentIndex)
+				err := config.DeleteItems([]string{desc})
+				utils.HandleError(err)
+				statusMsg += title
+			}
+
 			if len(m.list.Items()) == 0 {
 				m.keys.remove.SetEnabled(false)
 				m.list.SetShowStatusBar(false)
 			}
-			go func() { // stop cached clipboard item repopulating
-				currentContent, _ := clipboard.ReadAll()
-				if currentContent == fullValue {
-					clipboard.WriteAll("")
-				}
-				err := config.DeleteJsonItem(desc)
-				utils.HandleError(err)
-			}()
+
 			cmds = append(
 				cmds,
-				m.list.NewStatusMessage(statusMessageStyle("Deleted: "+title)),
+				m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
 			)
 
 		case key.Matches(msg, m.keys.togglePin):
@@ -138,13 +185,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		case key.Matches(msg, m.keys.selectDown):
-			m.toggleSelected("down")
+			if !m.list.IsFiltered() {
+				m.toggleSelected("down")
+			}
 
 		case key.Matches(msg, m.keys.selectUp):
-			m.toggleSelected("up")
+			if !m.list.IsFiltered() {
+				m.toggleSelected("up")
+			}
 
 		case key.Matches(msg, m.keys.selectSingle):
-			m.toggleSelectedSingle()
+			if !m.list.IsFiltered() {
+				m.toggleSelectedSingle()
+			}
+
+		case key.Matches(msg, m.keys.clearSelected):
+			m.clearSelected()
 
 		case key.Matches(msg, m.keys.more):
 			// swap custom help menu for default list.Model help view when expanding
@@ -160,6 +216,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			key.Matches(msg, m.keys.home),
 			key.Matches(msg, m.keys.end):
 			m.prevDirection = ""
+
 		}
 	}
 	// this will also call our delegate's update function
@@ -234,4 +291,54 @@ func (m *model) toggleSelected(direction string) {
 		m.list.CursorUp()
 	}
 
+}
+
+// used to retrieve selected items with their list view indexes
+type SelectedItem struct {
+	Index       int
+	Description string
+	Value       string
+}
+
+// index values, descriptions and full values of all selected items
+func (m *model) selectedItems() []SelectedItem {
+	selectedItems := []SelectedItem{}
+	for index, i := range m.list.Items() {
+		item, ok := i.(item)
+		if !ok {
+			continue
+		}
+		if item.selected {
+			selectedItems = append(
+				selectedItems,
+				SelectedItem{
+					Index:       index,
+					Description: item.descriptionBase,
+					Value:       item.titleFull,
+				},
+			)
+		}
+	}
+	return selectedItems
+}
+
+// iterate over the list items backwards so the indexes are not affected
+func (m *model) removeSelected() {
+	items := m.list.Items()
+	for i := len(items) - 1; i >= 0; i-- {
+		if item, ok := items[i].(item); ok && item.selected {
+			m.list.RemoveItem(i)
+		}
+	}
+}
+
+// remove selected state form all items
+func (m *model) clearSelected() {
+	items := m.list.Items()
+	for i := len(items) - 1; i >= 0; i-- {
+		if item, ok := items[i].(item); ok && item.selected {
+			item.selected = false
+			m.list.SetItem(i, item)
+		}
+	}
 }

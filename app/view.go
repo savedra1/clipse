@@ -14,6 +14,7 @@ func (m model) View() string {
 		return render(listView + "\n" + lipgloss.NewStyle().PaddingLeft(2).Render(
 			m.list.Help.ShortHelpView(m.filterKeys.FilterHelp())))
 	}
+
 	if m.list.ShowHelp() {
 		return render(listView) // default full view used as replacement
 	}
