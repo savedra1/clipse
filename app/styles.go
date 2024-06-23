@@ -1,111 +1,184 @@
 package app
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/savedra1/clipse/config"
 )
 
-func updateSelectionStyle(item item, theme config.CustomTheme) item {
-	desc := item.descriptionBase
-	if item.pinned {
-		desc = desc + " " + styledPin(theme)
-	}
-
-	if !item.selected {
-		item.title = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.NormalTitle)).Render(item.titleBase)
-		item.description = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.NormalDesc)).Render(desc)
-	} else {
-		item.title = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.SelectedTitle)).Render(item.titleBase)
-		item.description = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.SelectedDesc)).Render(desc)
-	}
-	return item
-}
+var style = lipgloss.NewStyle()
+var titleStyle, descStyle string
 
 func setDefaultStyling(clipboardList list.Model) list.Model {
 	// align list elements
-	clipboardList.FilterInput.PromptStyle = lipgloss.NewStyle().PaddingTop(1)
-	clipboardList.Styles.Title = lipgloss.NewStyle().MarginTop(1)
-	clipboardList.Styles.StatusBar = lipgloss.NewStyle().MarginBottom(1).MarginLeft(2)
-	clipboardList.Styles.DividerDot = lipgloss.NewStyle().PaddingLeft(1).PaddingRight(1)
-	clipboardList.Help.FullSeparator = lipgloss.NewStyle().PaddingLeft(1).PaddingRight(1).Render("•")
-	clipboardList.Help.ShortSeparator = lipgloss.NewStyle().PaddingLeft(1).PaddingRight(1).Render("•")
-	clipboardList.Styles.NoItems = lipgloss.NewStyle().PaddingBottom(1).PaddingLeft(2)
+	clipboardList.FilterInput.PromptStyle = style.PaddingTop(1)
+	clipboardList.Styles.Title = style.MarginTop(1)
+	clipboardList.Styles.StatusBar = style.MarginBottom(1).MarginLeft(2)
+	clipboardList.Styles.DividerDot = style.PaddingLeft(1).PaddingRight(1)
+	clipboardList.Help.FullSeparator = style.PaddingLeft(1).PaddingRight(1).Render("•")
+	clipboardList.Help.ShortSeparator = style.PaddingLeft(1).PaddingRight(1).Render("•")
+	clipboardList.Styles.NoItems = style.PaddingBottom(1).PaddingLeft(2)
 	return clipboardList
 }
 
-func styledDelegate(del list.DefaultDelegate, ct config.CustomTheme) list.DefaultDelegate {
-	del.Styles.DimmedDesc = del.Styles.DimmedDesc.
-		Foreground(lipgloss.Color(ct.DimmedDesc))
-	del.Styles.DimmedTitle = del.Styles.DimmedTitle.
-		Foreground(lipgloss.Color(ct.DimmedTitle))
-	del.Styles.FilterMatch = del.Styles.FilterMatch.
-		Foreground(lipgloss.Color(ct.FilteredMatch))
-	del.Styles.NormalDesc = del.Styles.NormalDesc.
-		Foreground(lipgloss.Color(ct.NormalDesc))
-	del.Styles.NormalTitle = del.Styles.NormalTitle.
-		Foreground(lipgloss.Color(ct.NormalTitle))
-	del.Styles.SelectedDesc = del.Styles.SelectedDesc.
-		Foreground(lipgloss.Color(ct.SelectedDesc)).
-		BorderForeground(lipgloss.Color(ct.SelectedDescBorder))
+func (d itemDelegate) itemFilterStyle(i item, m list.Model) string {
+	titleStyle := style.
+		Foreground(lipgloss.Color(d.theme.DimmedTitle)).
+		PaddingLeft(2).
+		Render(i.titleBase)
 
-	del.Styles.SelectedTitle = del.Styles.SelectedTitle.
-		Foreground(lipgloss.Color(ct.SelectedTitle)).
-		BorderForeground(lipgloss.Color(ct.SelectedBorder))
+	descStyle := style.
+		Foreground(lipgloss.Color(d.theme.DimmedDesc)).
+		PaddingLeft(2).
+		Render(i.descriptionBase)
 
-	return del
+	if strings.Contains(
+		strings.ToLower(i.FilterValue()),
+		strings.ToLower(m.FilterValue()),
+	) && m.FilterValue() != "" {
+		titleStyle = style.
+			Foreground(lipgloss.Color(d.theme.NormalTitle)).
+			PaddingLeft(2).
+			Render(i.titleBase)
+
+		descStyle = style.
+			Foreground(lipgloss.Color(d.theme.NormalDesc)).
+			PaddingLeft(2).
+			Render(i.descriptionBase)
+	}
+	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
+}
+
+func (d itemDelegate) itemSelectedStyle(i item, m list.Model, index int) string {
+	if index == m.Index() {
+		titleStyle = style.
+			Foreground(lipgloss.Color(d.theme.SelectedTitle)).
+			PaddingLeft(1).
+			BorderLeft(true).BorderStyle(lipgloss.NormalBorder()).
+			BorderForeground(lipgloss.Color(d.theme.SelectedDescBorder)).
+			Render(i.titleBase)
+
+		descStyle = style.
+			Foreground(lipgloss.Color(d.theme.SelectedDesc)).
+			PaddingLeft(1).
+			BorderLeft(true).BorderStyle(lipgloss.NormalBorder()).
+			BorderForeground(lipgloss.Color(d.theme.SelectedDescBorder)).
+			Render(i.descriptionBase)
+	} else {
+		titleStyle = style.
+			Foreground(lipgloss.Color(d.theme.SelectedTitle)).
+			PaddingLeft(2).
+			Render(i.titleBase)
+
+		descStyle = style.
+			Foreground(lipgloss.Color(d.theme.SelectedDesc)).
+			PaddingLeft(2).
+			Render(i.descriptionBase)
+	}
+
+	if i.pinned {
+		descStyle = descStyle + " " + styledPin(d.theme)
+	}
+
+	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
+}
+
+func (d itemDelegate) itemNormalStyle(i item) string {
+	titleStyle := style.
+		Foreground(lipgloss.Color(d.theme.NormalTitle)).
+		PaddingLeft(2).
+		Render(i.titleBase)
+
+	descStyle := style.
+		Foreground(lipgloss.Color(d.theme.NormalDesc)).
+		PaddingLeft(2).
+		Render(i.descriptionBase)
+
+	if i.pinned {
+		descStyle = descStyle + " " + styledPin(d.theme)
+	}
+
+	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
 }
 
 func styledList(clipboardList list.Model, ct config.CustomTheme) list.Model {
-	clipboardList.FilterInput.PromptStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.FilterPrompt)).PaddingTop(1)
-	clipboardList.FilterInput.TextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterText))
-	clipboardList.Styles.StatusBarFilterCount = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterInfo))
-	clipboardList.FilterInput.Cursor.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterCursor))
-	clipboardList.Styles.StatusEmpty = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.FilterInfo))
-	clipboardList.Help.Styles.ShortKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
-	clipboardList.Help.Styles.ShortDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
-	clipboardList.Help.Styles.FullKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
-	clipboardList.Help.Styles.FullDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
-	clipboardList.Paginator.ActiveDot = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.PageActiveDot)).Render("•")
-	clipboardList.Paginator.InactiveDot = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.PageInactiveDot)).Render("•")
-	clipboardList.Styles.StatusBar = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.TitleInfo)).MarginBottom(1).MarginLeft(2)
-	clipboardList.Styles.Title = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.TitleFore)).Background(lipgloss.Color(ct.TitleBack)).MarginTop(1).
+	clipboardList.FilterInput.PromptStyle = style.
+		Foreground(lipgloss.Color(ct.FilterPrompt)).
+		PaddingTop(1)
+	clipboardList.FilterInput.TextStyle = style.Foreground(lipgloss.Color(ct.FilterText))
+	clipboardList.Styles.StatusBarFilterCount = style.Foreground(lipgloss.Color(ct.FilterInfo))
+	clipboardList.FilterInput.Cursor.Style = style.Foreground(lipgloss.Color(ct.FilterCursor))
+	clipboardList.Styles.StatusEmpty = style.Foreground(lipgloss.Color(ct.FilterInfo))
+	clipboardList.Help.Styles.ShortKey = style.Foreground(lipgloss.Color(ct.HelpKey))
+	clipboardList.Help.Styles.ShortDesc = style.Foreground(lipgloss.Color(ct.HelpDesc))
+	clipboardList.Help.Styles.FullKey = style.Foreground(lipgloss.Color(ct.HelpKey))
+	clipboardList.Help.Styles.FullDesc = style.Foreground(lipgloss.Color(ct.HelpDesc))
+	clipboardList.Paginator.ActiveDot = style.
+		Foreground(lipgloss.Color(ct.PageActiveDot)).
+		Render("•")
+	clipboardList.Paginator.InactiveDot = style.
+		Foreground(lipgloss.Color(ct.PageInactiveDot)).
+		Render("•")
+	clipboardList.Styles.StatusBar = style.
+		Foreground(lipgloss.Color(ct.TitleInfo)).
+		MarginBottom(1).
+		MarginLeft(2)
+	clipboardList.Styles.Title = style.
+		Foreground(lipgloss.Color(ct.TitleFore)).
+		Background(lipgloss.Color(ct.TitleBack)).
+		MarginTop(1).
 		Align(lipgloss.Position(1))
-	clipboardList.Styles.DividerDot = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.DividerDot)).SetString("•").PaddingLeft(1).PaddingRight(1)
-	clipboardList.Help.FullSeparator = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
-	clipboardList.Help.ShortSeparator = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
-	clipboardList.Styles.NoItems = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(ct.TitleInfo)).PaddingBottom(1).PaddingLeft(2)
+	clipboardList.Styles.DividerDot = style.
+		Foreground(lipgloss.Color(ct.DividerDot)).
+		SetString("•").
+		PaddingLeft(1).
+		PaddingRight(1)
+	clipboardList.Help.FullSeparator = style.
+		Foreground(lipgloss.Color(ct.DividerDot)).
+		PaddingLeft(1).
+		PaddingRight(1).
+		Render("•")
+	clipboardList.Help.ShortSeparator = style.
+		Foreground(lipgloss.Color(ct.DividerDot)).
+		PaddingLeft(1).
+		PaddingRight(1).
+		Render("•")
+	clipboardList.Styles.NoItems = style.
+		Foreground(lipgloss.Color(ct.TitleInfo)).
+		PaddingBottom(1).
+		PaddingLeft(2)
 
 	return clipboardList
 }
 
 func styledHelp(help help.Model, ct config.CustomTheme) help.Model {
-	help.Styles.ShortKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
-	help.Styles.ShortDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
-	help.Styles.FullKey = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpKey))
-	help.Styles.FullDesc = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.HelpDesc))
-	help.FullSeparator = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
-	help.ShortSeparator = lipgloss.NewStyle().Foreground(lipgloss.Color(ct.DividerDot)).PaddingLeft(1).PaddingRight(1).Render("•")
+	help.Styles.ShortKey = style.Foreground(lipgloss.Color(ct.HelpKey))
+	help.Styles.ShortDesc = style.Foreground(lipgloss.Color(ct.HelpDesc))
+	help.Styles.FullKey = style.Foreground(lipgloss.Color(ct.HelpKey))
+	help.Styles.FullDesc = style.Foreground(lipgloss.Color(ct.HelpDesc))
+	help.FullSeparator = style.Foreground(lipgloss.Color(ct.DividerDot)).
+		PaddingLeft(1).
+		PaddingRight(1).
+		Render("•")
+	help.ShortSeparator = style.
+		Foreground(lipgloss.Color(ct.DividerDot)).
+		PaddingLeft(1).
+		PaddingRight(1).
+		Render("•")
 	return help
 }
 
 func styledStatusMessage(ct config.CustomTheme) func(strs ...string) string {
-	return lipgloss.NewStyle().
+	return style.
 		Foreground(lipgloss.AdaptiveColor{Light: ct.StatusMsg, Dark: ct.StatusMsg}).
 		Render
 }
 
 func styledPin(theme config.CustomTheme) string {
-	return lipgloss.NewStyle().
+	return style.
 		Foreground(lipgloss.Color(theme.PinIndicatorColor)).Render(pinChar)
 }

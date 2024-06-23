@@ -15,6 +15,7 @@ type keyMap struct {
 	togglePinned key.Binding
 	selectDown   key.Binding
 	selectUp     key.Binding
+	selectSingle key.Binding
 }
 
 func newKeyMap() *keyMap {
@@ -48,19 +49,23 @@ func newKeyMap() *keyMap {
 			key.WithHelp("↹", "show pinned"),
 		),
 		selectDown: key.NewBinding(
-			key.WithKeys("shift+down"),
+			key.WithKeys("shift+down", "J"),
 			key.WithHelp("⇧+↓/↑", "select"),
 		),
 		selectUp: key.NewBinding(
-			key.WithKeys("shift+up"),
+			key.WithKeys("shift+up", "K"),
 			key.WithHelp("⇧+↓/↑", "select"),
+		),
+		selectSingle: key.NewBinding(
+			key.WithKeys("S"),
+			key.WithHelp("S", "select single"),
 		),
 	}
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
-		k.choose, k.remove, k.filter, k.togglePin, k.togglePinned, k.more,
+		k.choose, k.remove, k.togglePin, k.togglePinned, k.more,
 	}
 }
 

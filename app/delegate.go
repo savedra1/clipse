@@ -1,147 +1,47 @@
 package app
 
 import (
-	"os"
+	"fmt"
+	"io"
 
-	"github.com/atotto/clipboard"
-	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/savedra1/clipse/config"
-	"github.com/savedra1/clipse/shell"
-	"github.com/savedra1/clipse/utils"
 )
 
-func (parentModel *model) newItemDelegate(keys *keyMap) list.DefaultDelegate {
-	/* This is where the additional keybinding actions are defined:
-	   - enter/reurn: copies selected item to the clipboard and adds a status message
-	   - backspace/delete: removes item from list view and json file
-	   - p: pins/unpins an item
-	   - tab: toggles pinned items
-	*/
-	d := list.NewDefaultDelegate()
+// Delegate used to override individual item appearance based on state.
 
-	d.UpdateFunc = func(msg tea.Msg, m *list.Model) tea.Cmd {
-		var title string
-		var fullValue string
-		var fp string
-		var desc string
+type itemDelegate struct {
+	theme config.CustomTheme
+}
 
-		item, ok := m.SelectedItem().(item)
-		if !ok {
-			return nil
-		}
-		title = item.Title()
-		fullValue = item.TitleFull()
-		fp = item.FilePath()
-		desc = item.TimeStamp()
+func (d itemDelegate) Height() int                               { return 2 }
+func (d itemDelegate) Spacing() int                              { return 1 }
+func (d itemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
-			switch {
-			case key.Matches(msg, keys.choose):
-				if fp != "null" {
-					ds := config.DisplayServer() // eg "wayland"
-					err := shell.CopyImage(fp, ds)
-					utils.HandleError(err)
-				} else {
-					err := clipboard.WriteAll(fullValue)
-					utils.HandleError(err)
-				}
-
-				if len(os.Args) > 2 {
-					if utils.IsInt(os.Args[2]) {
-						shell.KillProcess(os.Args[2])
-					}
-				} else if len(os.Args) > 1 {
-					if os.Args[1] == "keep" {
-						return m.NewStatusMessage(statusMessageStyle("Copied to clipboard: " + title))
-					}
-				}
-				return tea.Quit
-
-			case key.Matches(msg, keys.remove):
-				index := m.Index()
-				m.RemoveItem(index)
-				if len(m.Items()) == 0 {
-					keys.remove.SetEnabled(false)
-					m.SetShowStatusBar(false)
-				}
-				go func() { // stop cached clipboard item repopulating
-					currentContent, _ := clipboard.ReadAll()
-					if currentContent == fullValue {
-						clipboard.WriteAll("")
-					}
-					err := config.DeleteJsonItem(desc)
-					utils.HandleError(err)
-				}()
-
-				return m.NewStatusMessage(statusMessageStyle("Deleted: " + title))
-
-			case key.Matches(msg, keys.togglePin):
-				if len(m.Items()) == 0 {
-					keys.togglePin.SetEnabled(false)
-				}
-				// update pinned status in history file
-				isPinned, err := config.TogglePinClipboardItem(desc)
-				utils.HandleError(err)
-
-				if isPinned {
-					return m.NewStatusMessage(statusMessageStyle("UnPinned: " + title))
-				}
-
-				return m.NewStatusMessage(statusMessageStyle("Pinned: " + title))
-
-			case key.Matches(msg, keys.togglePinned):
-				if len(m.Items()) == 0 {
-					keys.togglePinned.SetEnabled(false)
-				}
-
-				parentModel.togglePinned = !parentModel.togglePinned
-
-				if parentModel.togglePinned {
-					m.Title = "Pinned " + clipboardTitle
-				} else {
-					m.Title = clipboardTitle
-				}
-
-				clipboardItems := config.GetHistory()
-				filteredItems := filterItems(clipboardItems, parentModel.togglePinned, parentModel.theme)
-
-				if len(filteredItems) == 0 {
-					m.Title = clipboardTitle
-					return m.NewStatusMessage(statusMessageStyle("No pinned items"))
-				}
-
-				for i := len(m.Items()) - 1; i >= 0; i-- { // clear all items
-					m.RemoveItem(i)
-				}
-				for _, item := range filteredItems { // adds all required items
-					m.InsertItem(len(m.Items()), item)
-				}
-				//switch msg.String() {
-				//case "y":
-				//	allItems := m.Items()
-				//	fmt.Println(allItems)
-				//}
-
-			}
-		}
-		return nil
+func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	i, ok := listItem.(item)
+	if !ok {
+		return
 	}
 
-	// add custom options to the default full help view
-	help := []key.Binding{
-		keys.choose,
-		keys.remove,
-		keys.togglePin,
-		keys.togglePinned,
+	var renderStr string
+
+	switch {
+	case m.FilterState() == list.Filtering:
+		renderStr = d.itemFilterStyle(i, m)
+	case i.selected, index == m.Index():
+		renderStr = d.itemSelectedStyle(i, m, index)
+	default:
+		renderStr = d.itemNormalStyle(i)
 	}
 
-	d.FullHelpFunc = func() [][]key.Binding {
-		return [][]key.Binding{help}
-	}
+	fmt.Fprint(w, renderStr)
+}
 
-	return d
+func (m *model) newItemDelegate() itemDelegate {
+	return itemDelegate{
+		theme: m.theme,
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -29,15 +30,14 @@ type model struct {
 
 type item struct {
 	title           string // display title in list
-	titleBase       string
+	titleBase       string // unstyled string used for rendering
 	titleFull       string // full value stored in history file
 	timeStamp       string // local date and time of copy event
 	description     string // displayed description in list
-	descriptionBase string
+	descriptionBase string // unstyled string used for rendering
 	filePath        string // "path/to/file" | "null"
 	pinned          bool   // pinned status
-	pinChar         string
-	selected        bool
+	selected        bool   // selected status
 }
 
 func (i item) Title() string       { return i.title }
@@ -71,20 +71,26 @@ func NewModel() model {
 	entryItems := filterItems(clipboardItems, false, m.theme)
 
 	// instantiate model delegate
-	del := m.newItemDelegate(listKeys)
+	del := m.newItemDelegate()
 
 	// create list.Model object
 	clipboardList := list.New(entryItems, del, 0, 0)
 	clipboardList.Title = clipboardTitle // set hardcoded title
-	clipboardList.SetShowHelp(false)     // override with custom
-	clipboardList.Styles.PaginationStyle = lipgloss.NewStyle().
-		MarginBottom(1).MarginLeft(2) // set custom pagination spacing
+	clipboardList.SetShowTitle(true)
+	clipboardList.SetShowStatusBar(true)
+	clipboardList.SetShowHelp(false)                                           // override with custom
+	clipboardList.Styles.PaginationStyle = style.MarginBottom(1).MarginLeft(2) // set custom pagination spacing
+	//clipboardList.StatusMessageLifetime = time.Second // can override this if necessary
+	clipboardList.AdditionalFullHelpKeys = func() []key.Binding {
+		return []key.Binding{
+			listKeys.selectDown,
+			listKeys.selectSingle,
+		}
+	}
 
 	if len(clipboardItems) < 1 {
 		clipboardList.SetShowStatusBar(false) // remove duplicate "No items"
 	}
-
-	// set list.Model as the m.list value
 
 	if !ct.UseCustom {
 		m.list = setDefaultStyling(clipboardList)
@@ -93,7 +99,6 @@ func NewModel() model {
 
 	statusMessageStyle = styledStatusMessage(ct)
 	m.help = styledHelp(m.help, ct)
-	clipboardList.SetDelegate(styledDelegate(del, ct))
 	m.list = styledList(clipboardList, ct)
 	return m
 }
