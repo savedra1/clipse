@@ -133,20 +133,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				for i := len(m.list.Items()) - 1; i >= 0; i-- { // clear all items
 					m.list.RemoveItem(i)
 				}
-				for _, item := range filteredItems { // adds all required items
-					m.list.InsertItem(len(m.list.Items()), item)
+				for _, i := range filteredItems { // adds all required items
+					m.list.InsertItem(len(m.list.Items()), i)
 				}
 			}
 		case key.Matches(msg, m.keys.selectDown):
-			m.toggleSelected()
-			m.list.CursorDown()
+			m.toggleSelected("down")
 
 		case key.Matches(msg, m.keys.selectUp):
-			m.toggleSelected()
-			m.list.CursorUp()
+			m.toggleSelected("up")
 
 		case key.Matches(msg, m.keys.selectSingle):
-			m.toggleSelected()
+			m.toggleSelectedSingle()
 
 		case key.Matches(msg, m.keys.more):
 			// swap custom help menu for default list.Model help view when expanding
@@ -155,6 +153,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.list.SetShowHelp(!m.list.ShowHelp())
 			m.updatePaginator()
 
+		case key.Matches(msg, m.keys.up),
+			key.Matches(msg, m.keys.down),
+			key.Matches(msg, m.keys.nextPage),
+			key.Matches(msg, m.keys.prevPage),
+			key.Matches(msg, m.keys.home),
+			key.Matches(msg, m.keys.end):
+			m.prevDirection = ""
 		}
 	}
 	// this will also call our delegate's update function
@@ -192,13 +197,41 @@ func (m *model) updatePaginator() {
 	m.list.Styles.PaginationStyle = pagStyle
 }
 
-func (m *model) toggleSelected() {
+func (m *model) toggleSelectedSingle() {
+	m.prevDirection = ""
 	index := m.list.Index()
 	item, ok := m.list.SelectedItem().(item)
 	if !ok {
 		return
 	}
 	item.selected = !item.selected
-	//item = updateSelectionStyle(item, m.theme)
 	m.list.SetItem(index, item)
+}
+
+func (m *model) toggleSelected(direction string) {
+	if m.prevDirection == "" {
+		m.prevDirection = direction
+	}
+
+	index := m.list.Index()
+	item, ok := m.list.SelectedItem().(item)
+	if !ok {
+		return
+	}
+
+	if item.selected {
+		item.selected = false
+	} else if m.prevDirection == direction && !item.selected {
+		item.selected = true
+	}
+
+	m.list.SetItem(index, item)
+
+	switch direction {
+	case "down":
+		m.list.CursorDown()
+	case "up":
+		m.list.CursorUp()
+	}
+
 }

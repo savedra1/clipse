@@ -16,6 +16,12 @@ type keyMap struct {
 	selectDown   key.Binding
 	selectUp     key.Binding
 	selectSingle key.Binding
+	up           key.Binding
+	down         key.Binding
+	nextPage     key.Binding
+	prevPage     key.Binding
+	home         key.Binding
+	end          key.Binding
 }
 
 func newKeyMap() *keyMap {
@@ -59,6 +65,24 @@ func newKeyMap() *keyMap {
 		selectSingle: key.NewBinding(
 			key.WithKeys("S"),
 			key.WithHelp("S", "select single"),
+		),
+		up: key.NewBinding(
+			key.WithKeys("up", "k"),
+		),
+		down: key.NewBinding(
+			key.WithKeys("down", "j"),
+		),
+		nextPage: key.NewBinding(
+			key.WithKeys("right", "l"),
+		),
+		prevPage: key.NewBinding(
+			key.WithKeys("left", "h"),
+		),
+		home: key.NewBinding(
+			key.WithKeys("home", "g"),
+		),
+		end: key.NewBinding(
+			key.WithKeys("end", "G"),
 		),
 	}
 }

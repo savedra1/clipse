@@ -54,6 +54,7 @@ func (d itemDelegate) itemFilterStyle(i item, m list.Model) string {
 }
 
 func (d itemDelegate) itemSelectedStyle(i item, m list.Model, index int) string {
+
 	if index == m.Index() {
 		titleStyle = style.
 			Foreground(lipgloss.Color(d.theme.SelectedTitle)).
@@ -180,5 +181,6 @@ func styledStatusMessage(ct config.CustomTheme) func(strs ...string) string {
 
 func styledPin(theme config.CustomTheme) string {
 	return style.
-		Foreground(lipgloss.Color(theme.PinIndicatorColor)).Render(pinChar)
+		Foreground(lipgloss.Color(theme.PinIndicatorColor)).
+		Render(pinChar)
 }

@@ -20,12 +20,14 @@ var (
 )
 
 type model struct {
-	list         list.Model         // list items
-	keys         *keyMap            // keybindings
-	filterKeys   *filterKeyMap      // keybindings for filter view
-	help         help.Model         // custom help menu
-	togglePinned bool               // pinned view indicator
-	theme        config.CustomTheme // colors scheme to uses
+	list          list.Model         // list items
+	keys          *keyMap            // keybindings
+	filterKeys    *filterKeyMap      // keybindings for filter view
+	help          help.Model         // custom help menu
+	togglePinned  bool               // pinned view indicator
+	theme         config.CustomTheme // colors scheme to uses
+	prevDirection string             // prev direction used to track selections
+	selections    []int              // indexes of selected items
 }
 
 type item struct {
@@ -61,11 +63,13 @@ func NewModel() model {
 
 	// instantiate model
 	m := model{
-		keys:         listKeys,
-		filterKeys:   filterKeys,
-		help:         help.New(),
-		togglePinned: false,
-		theme:        ct,
+		keys:          listKeys,
+		filterKeys:    filterKeys,
+		help:          help.New(),
+		togglePinned:  false,
+		theme:         ct,
+		prevDirection: "",
+		selections:    []int{},
 	}
 
 	entryItems := filterItems(clipboardItems, false, m.theme)
