@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
@@ -25,7 +24,7 @@ func setDefaultStyling(clipboardList list.Model) list.Model {
 	return clipboardList
 }
 
-func (d itemDelegate) itemFilterStyle(i item, m list.Model) string {
+func (d itemDelegate) itemFilterStyle(i item) string {
 	titleStyle := style.
 		Foreground(lipgloss.Color(d.theme.DimmedTitle)).
 		PaddingLeft(2).
@@ -36,50 +35,42 @@ func (d itemDelegate) itemFilterStyle(i item, m list.Model) string {
 		PaddingLeft(2).
 		Render(i.descriptionBase)
 
-	if strings.Contains(
-		strings.ToLower(i.FilterValue()),
-		strings.ToLower(m.FilterValue()),
-	) && m.FilterValue() != "" {
-		titleStyle = style.
-			Foreground(lipgloss.Color(d.theme.NormalTitle)).
-			PaddingLeft(2).
-			Render(i.titleBase)
-
-		descStyle = style.
-			Foreground(lipgloss.Color(d.theme.NormalDesc)).
-			PaddingLeft(2).
-			Render(i.descriptionBase)
-	}
 	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
 }
 
-func (d itemDelegate) itemSelectedStyle(i item, m list.Model, index int) string {
+func (d itemDelegate) itemChosenStyle(i item) string {
+	titleStyle = style.
+		Foreground(lipgloss.Color(d.theme.SelectedTitle)).
+		PaddingLeft(1).
+		BorderLeft(true).BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color(d.theme.SelectedDescBorder)).
+		Render(i.titleBase)
 
-	if index == m.Index() {
-		titleStyle = style.
-			Foreground(lipgloss.Color(d.theme.SelectedTitle)).
-			PaddingLeft(1).
-			BorderLeft(true).BorderStyle(lipgloss.NormalBorder()).
-			BorderForeground(lipgloss.Color(d.theme.SelectedDescBorder)).
-			Render(i.titleBase)
+	descStyle = style.
+		Foreground(lipgloss.Color(d.theme.SelectedDesc)).
+		PaddingLeft(1).
+		BorderLeft(true).BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color(d.theme.SelectedDescBorder)).
+		Render(i.descriptionBase)
 
-		descStyle = style.
-			Foreground(lipgloss.Color(d.theme.SelectedDesc)).
-			PaddingLeft(1).
-			BorderLeft(true).BorderStyle(lipgloss.NormalBorder()).
-			BorderForeground(lipgloss.Color(d.theme.SelectedDescBorder)).
-			Render(i.descriptionBase)
-	} else {
-		titleStyle = style.
-			Foreground(lipgloss.Color(d.theme.SelectedTitle)).
-			PaddingLeft(2).
-			Render(i.titleBase)
-
-		descStyle = style.
-			Foreground(lipgloss.Color(d.theme.SelectedDesc)).
-			PaddingLeft(2).
-			Render(i.descriptionBase)
+	if i.pinned {
+		descStyle = descStyle + " " + styledPin(d.theme)
 	}
+
+	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
+}
+
+func (d itemDelegate) itemSelectedStyle(i item) string {
+
+	titleStyle = style.
+		Foreground(lipgloss.Color(d.theme.SelectedTitle)).
+		PaddingLeft(2).
+		Render(i.titleBase)
+
+	descStyle = style.
+		Foreground(lipgloss.Color(d.theme.SelectedDesc)).
+		PaddingLeft(2).
+		Render(i.descriptionBase)
 
 	if i.pinned {
 		descStyle = descStyle + " " + styledPin(d.theme)

@@ -17,6 +17,8 @@ type keyMap struct {
 	selectUp      key.Binding
 	selectSingle  key.Binding
 	clearSelected key.Binding
+	fuzzySelect   key.Binding
+	yankFilter    key.Binding
 	up            key.Binding
 	down          key.Binding
 	nextPage      key.Binding
@@ -56,12 +58,12 @@ func newKeyMap() *keyMap {
 			key.WithHelp("↹", "show pinned"),
 		),
 		selectDown: key.NewBinding(
-			key.WithKeys("shift+down", "J"),
-			key.WithHelp("⇧+↓/↑", "select"),
+			key.WithKeys("ctrl+down", "ctrl+j"),
+			key.WithHelp("ctrl+↓/↑", "select"),
 		),
 		selectUp: key.NewBinding(
-			key.WithKeys("shift+up", "K"),
-			key.WithHelp("⇧+↓/↑", "select"),
+			key.WithKeys("ctrl+up", "ctrl+k"),
+			key.WithHelp("ctrl+↓/↑", "select"),
 		),
 		selectSingle: key.NewBinding(
 			key.WithKeys("s"),
@@ -70,6 +72,14 @@ func newKeyMap() *keyMap {
 		clearSelected: key.NewBinding(
 			key.WithKeys("S"),
 			key.WithHelp("S", "clear selected"),
+		),
+		fuzzySelect: key.NewBinding(
+			key.WithKeys("F"),
+			key.WithHelp("F", "select search"),
+		),
+		yankFilter: key.NewBinding(
+			key.WithKeys("ctrl+s"),
+			key.WithHelp("ctrl+s", "yank filter results"),
 		),
 		up: key.NewBinding(
 			key.WithKeys("up", "k"),
@@ -107,8 +117,9 @@ func (k keyMap) FullHelp() [][]key.Binding {
 }
 
 type filterKeyMap struct {
-	apply  key.Binding
-	cancel key.Binding
+	apply       key.Binding
+	cancel      key.Binding
+	yankMatches key.Binding
 }
 
 func newFilterKeymap() *filterKeyMap {
@@ -121,11 +132,15 @@ func newFilterKeymap() *filterKeyMap {
 			key.WithKeys("esc"),
 			key.WithHelp("esc", "cancel"),
 		),
+		yankMatches: key.NewBinding(
+			key.WithKeys("ctrl+s"),
+			key.WithHelp("ctrl+s", "yank matched"),
+		),
 	}
 }
 
 func (fk filterKeyMap) FilterHelp() []key.Binding {
 	return []key.Binding{
-		fk.apply, fk.cancel,
+		fk.apply, fk.cancel, fk.yankMatches,
 	}
 }

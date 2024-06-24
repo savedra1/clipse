@@ -27,7 +27,6 @@ type model struct {
 	togglePinned  bool               // pinned view indicator
 	theme         config.CustomTheme // colors scheme to uses
 	prevDirection string             // prev direction used to track selections
-	selections    []int              // indexes of selected items
 }
 
 type item struct {
@@ -55,13 +54,10 @@ func NewModel() model {
 		filterKeys = newFilterKeymap()
 	)
 
-	// get initial list of items
 	clipboardItems := config.GetHistory()
 
-	// get theme info
 	ct := config.GetTheme()
 
-	// instantiate model
 	m := model{
 		keys:          listKeys,
 		filterKeys:    filterKeys,
@@ -69,15 +65,12 @@ func NewModel() model {
 		togglePinned:  false,
 		theme:         ct,
 		prevDirection: "",
-		selections:    []int{},
 	}
 
 	entryItems := filterItems(clipboardItems, false, m.theme)
 
-	// instantiate model delegate
 	del := m.newItemDelegate()
 
-	// create list.Model object
 	clipboardList := list.New(entryItems, del, 0, 0)
 	clipboardList.Title = clipboardTitle // set hardcoded title
 	clipboardList.SetShowTitle(true)

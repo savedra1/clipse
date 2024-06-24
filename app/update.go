@@ -7,7 +7,6 @@ import (
 
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/savedra1/clipse/config"
@@ -16,6 +15,7 @@ import (
 )
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -24,10 +24,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 
 	case tea.KeyMsg:
+		if m.list.SettingFilter() && key.Matches(msg, m.keys.yankFilter) {
+			//filterValue := m.list.FilterValue()
+
+			filterMatches := m.filterMatches()
+			if len(filterMatches) >= 1 {
+				err := clipboard.WriteAll(strings.Join(filterMatches, "\n"))
+				if err == nil {
+					return m, tea.Quit
+				}
+				cmds = append(
+					cmds,
+					m.list.NewStatusMessage(statusMessageStyle("Failed to copy all selected items.")),
+				)
+			}
+			return m, tea.Batch(cmds...)
+		}
+
 		// Don't match any of the keys below if we're actively filtering.
-		if m.list.FilterState() == list.Filtering {
+		if m.list.SettingFilter() {
 			break
 		}
+
 		i, ok := m.list.SelectedItem().(item)
 		if !ok {
 			switch {
@@ -180,32 +198,51 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				for i := len(m.list.Items()) - 1; i >= 0; i-- { // clear all items
 					m.list.RemoveItem(i)
 				}
-				for _, i := range filteredItems { // adds all required items
+				for _, i := range filteredItems { // redraw all required items
 					m.list.InsertItem(len(m.list.Items()), i)
 				}
 			}
 		case key.Matches(msg, m.keys.selectDown):
-			if !m.list.IsFiltered() {
+			if m.list.IsFiltered() {
+				cmds = append(
+					cmds,
+					m.list.NewStatusMessage(statusMessageStyle("cannot select with filter applied")),
+				)
+			} else {
 				m.toggleSelected("down")
 			}
 
 		case key.Matches(msg, m.keys.selectUp):
-			if !m.list.IsFiltered() {
+			if m.list.IsFiltered() {
+				cmds = append(
+					cmds,
+					m.list.NewStatusMessage(statusMessageStyle("cannot select with filter applied")),
+				)
+			} else {
 				m.toggleSelected("up")
 			}
 
 		case key.Matches(msg, m.keys.selectSingle):
-			if !m.list.IsFiltered() {
+			if m.list.IsFiltered() {
+				cmds = append(
+					cmds,
+					m.list.NewStatusMessage(statusMessageStyle("cannot select with filter applied")),
+				)
+			} else {
 				m.toggleSelectedSingle()
 			}
 
-		case key.Matches(msg, m.keys.clearSelected):
+		case key.Matches(msg, m.keys.clearSelected), key.Matches(msg, m.keys.filter):
 			m.clearSelected()
 
+		case key.Matches(msg, m.keys.yankFilter):
+			cmds = append(
+				cmds,
+				m.list.NewStatusMessage(statusMessageStyle("no filtered items")),
+			)
+
 		case key.Matches(msg, m.keys.more):
-			// swap custom help menu for default list.Model help view when expanding
-			// the menu. doing this because the custom help menu causing rendering
-			// conflits with the list view
+			// switch to default help for full view (better rendering)
 			m.list.SetShowHelp(!m.list.ShowHelp())
 			m.updatePaginator()
 
@@ -270,16 +307,20 @@ func (m *model) toggleSelected(direction string) {
 		m.prevDirection = direction
 	}
 
-	index := m.list.Index()
 	item, ok := m.list.SelectedItem().(item)
 	if !ok {
 		return
 	}
 
+	//index := m.list.Index()
+	index := m.list.Index()
+
 	if item.selected {
 		item.selected = false
 	} else if m.prevDirection == direction && !item.selected {
 		item.selected = true
+	} else {
+		m.prevDirection = ""
 	}
 
 	m.list.SetItem(index, item)
@@ -290,7 +331,6 @@ func (m *model) toggleSelected(direction string) {
 	case "up":
 		m.list.CursorUp()
 	}
-
 }
 
 // used to retrieve selected items with their list view indexes
@@ -332,7 +372,7 @@ func (m *model) removeSelected() {
 	}
 }
 
-// remove selected state form all items
+// remove selected state from all items
 func (m *model) clearSelected() {
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
@@ -341,4 +381,20 @@ func (m *model) clearSelected() {
 			m.list.SetItem(i, item)
 		}
 	}
+}
+
+// return a list of all current filter matches
+func (m *model) filterMatches() []string {
+	filteredItems := []string{}
+	for _, i := range m.list.Items() {
+		if item, ok := i.(item); ok {
+			if strings.Contains(
+				strings.ToLower(item.titleFull),
+				strings.ToLower(m.list.FilterValue()),
+			) {
+				filteredItems = append(filteredItems, item.titleFull)
+			}
+		}
+	}
+	return filteredItems
 }
