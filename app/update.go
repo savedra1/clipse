@@ -25,8 +25,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		if m.list.SettingFilter() && key.Matches(msg, m.keys.yankFilter) {
-			//filterValue := m.list.FilterValue()
-
 			filterMatches := m.filterMatches()
 			if len(filterMatches) >= 1 {
 				err := clipboard.WriteAll(strings.Join(filterMatches, "\n"))
@@ -65,49 +63,69 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.choose):
 			selectedItems := m.selectedItems()
-			if len(selectedItems) < 1 && fp == "null" {
-				err := clipboard.WriteAll(fullValue)
-				utils.HandleError(err)
-				return m, tea.Quit
+
+			if len(selectedItems) < 1 {
+				switch {
+				case fp != "null":
+					ds := config.DisplayServer() // eg "wayland"
+					utils.HandleError(shell.CopyImage(fp, ds))
+					return m, tea.Quit
+
+				case len(os.Args) > 2 && utils.IsInt(os.Args[2]):
+					shell.KillProcess(os.Args[2])
+					return m, tea.Quit
+
+				case len(os.Args) > 1 && os.Args[1] == "keep":
+					utils.HandleError(clipboard.WriteAll(fullValue))
+					cmds = append(
+						cmds,
+						m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+title)),
+					)
+					return m, tea.Batch(cmds...)
+
+				default:
+					err := clipboard.WriteAll(fullValue)
+					utils.HandleError(err)
+					return m, tea.Quit
+				}
 			}
 
-			if len(selectedItems) >= 1 {
-				yank := ""
-				for _, item := range selectedItems {
-					if fullValue != item.Value {
-						yank += item.Value + "\n"
-					}
+			yank := ""
+			for _, item := range selectedItems {
+				if fullValue != item.Value {
+					yank += item.Value + "\n"
 				}
-				yank += fullValue
+			}
+			yank += fullValue
+			switch {
+
+			case len(os.Args) > 2 && utils.IsInt(os.Args[2]):
+				utils.HandleError(clipboard.WriteAll(yank))
+				shell.KillProcess(os.Args[2])
+				return m, tea.Quit
+
+			case len(os.Args) > 1 && os.Args[1] == "keep":
+				statusMsg := "Copied to clipboard: *selected items*"
+				err := clipboard.WriteAll(yank)
+				if err != nil {
+					statusMsg = "Could not copy all selected items."
+				}
+				cmds = append(
+					cmds,
+					m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
+				)
+				return m, tea.Batch(cmds...)
+
+			default:
 				err := clipboard.WriteAll(yank)
 				if err == nil {
 					return m, tea.Quit
 				}
 				cmds = append(
 					cmds,
-					m.list.NewStatusMessage(statusMessageStyle("Failed to copy all selected items.")),
+					m.list.NewStatusMessage(statusMessageStyle("Could not copy all selected items.")),
 				)
-			}
 
-			if fp != "null" {
-				ds := config.DisplayServer() // eg "wayland"
-				err := shell.CopyImage(fp, ds)
-				utils.HandleError(err)
-				return m, tea.Quit
-			}
-
-			if len(os.Args) > 2 {
-				if utils.IsInt(os.Args[2]) {
-					shell.KillProcess(os.Args[2])
-					return m, tea.Quit
-				}
-			} else if len(os.Args) > 1 {
-				if os.Args[1] == "keep" {
-					cmds = append(
-						cmds,
-						m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+title)),
-					)
-				}
 			}
 
 		case key.Matches(msg, m.keys.remove):
@@ -115,13 +133,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			currentIndex := m.list.Index()
 
 			currentContent, _ := clipboard.ReadAll()
-			if currentContent == fullValue {
-				clipboard.WriteAll("")
-			} else {
-				for _, item := range selectedItems {
-					if item.Value == currentContent {
-						clipboard.WriteAll("")
-					}
+
+			for _, item := range selectedItems {
+				if item.Value == currentContent {
+					clipboard.WriteAll("") // clear clipboard to stop deleted content temp repopulating (temp solution)
 				}
 			}
 
@@ -130,7 +145,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(selectedItems) >= 1 {
 				timeStamps := []string{}
 				m.list.RemoveItem(currentIndex)
-				m.removeSelected()
+				m.removeMultiSelected()
 				for _, item := range selectedItems {
 					timeStamps = append(timeStamps, strings.Split(item.Description, "Date copied: ")[1])
 				}
@@ -180,11 +195,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.keys.togglePinned.SetEnabled(false)
 			}
 			m.togglePinned = !m.togglePinned
+			m.list.Title = clipboardTitle
 			if m.togglePinned {
 				m.list.Title = "Pinned " + clipboardTitle
-			} else {
-				m.list.Title = clipboardTitle
 			}
+
 			clipboardItems := config.GetHistory()
 			filteredItems := filterItems(clipboardItems, m.togglePinned, m.theme)
 
@@ -233,7 +248,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case key.Matches(msg, m.keys.clearSelected), key.Matches(msg, m.keys.filter):
-			m.clearSelected()
+			m.resetSelected()
 
 		case key.Matches(msg, m.keys.yankFilter):
 			cmds = append(
@@ -312,7 +327,6 @@ func (m *model) toggleSelected(direction string) {
 		return
 	}
 
-	//index := m.list.Index()
 	index := m.list.Index()
 
 	if item.selected {
@@ -363,7 +377,7 @@ func (m *model) selectedItems() []SelectedItem {
 }
 
 // iterate over the list items backwards so the indexes are not affected
-func (m *model) removeSelected() {
+func (m *model) removeMultiSelected() {
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
 		if item, ok := items[i].(item); ok && item.selected {
@@ -373,7 +387,7 @@ func (m *model) removeSelected() {
 }
 
 // remove selected state from all items
-func (m *model) clearSelected() {
+func (m *model) resetSelected() {
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
 		if item, ok := items[i].(item); ok && item.selected {
@@ -387,14 +401,17 @@ func (m *model) clearSelected() {
 func (m *model) filterMatches() []string {
 	filteredItems := []string{}
 	for _, i := range m.list.Items() {
-		if item, ok := i.(item); ok {
-			if strings.Contains(
-				strings.ToLower(item.titleFull),
-				strings.ToLower(m.list.FilterValue()),
-			) {
-				filteredItems = append(filteredItems, item.titleFull)
-			}
+		item, ok := i.(item)
+		if !ok {
+			continue
+		}
+		if strings.Contains(
+			strings.ToLower(item.titleFull),
+			strings.ToLower(m.list.FilterValue()),
+		) {
+			filteredItems = append(filteredItems, item.titleFull)
 		}
 	}
+
 	return filteredItems
 }

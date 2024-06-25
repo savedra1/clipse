@@ -1,7 +1,7 @@
 package app
 
 const (
-	pinChar         = " "
+	pinChar         = "  "
 	pinColorDefault = "#FF0000"
 	clipboardTitle  = "Clipboard History"
 )

@@ -54,7 +54,7 @@ func (d itemDelegate) itemChosenStyle(i item) string {
 		Render(i.descriptionBase)
 
 	if i.pinned {
-		descStyle = descStyle + " " + styledPin(d.theme)
+		descStyle += styledPin(d.theme)
 	}
 
 	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
@@ -73,7 +73,7 @@ func (d itemDelegate) itemSelectedStyle(i item) string {
 		Render(i.descriptionBase)
 
 	if i.pinned {
-		descStyle = descStyle + " " + styledPin(d.theme)
+		descStyle += styledPin(d.theme)
 	}
 
 	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
@@ -91,7 +91,7 @@ func (d itemDelegate) itemNormalStyle(i item) string {
 		Render(i.descriptionBase)
 
 	if i.pinned {
-		descStyle = descStyle + " " + styledPin(d.theme)
+		descStyle += styledPin(d.theme)
 	}
 
 	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
