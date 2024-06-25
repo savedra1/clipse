@@ -139,8 +139,8 @@ func DeleteJsonItem(item string) error {
 	updatedData := ClipboardHistory{
 		ClipboardHistory: updatedClipboardHistory,
 	}
-	err := WriteUpdate(updatedData)
-	return err
+	return WriteUpdate(updatedData)
+
 }
 
 func DeleteItems(timeStamps []string) error {
@@ -159,8 +159,8 @@ func DeleteItems(timeStamps []string) error {
 	updatedFile := ClipboardHistory{
 		ClipboardHistory: updatedData,
 	}
-	err := WriteUpdate(updatedFile)
-	return err
+	return WriteUpdate(updatedFile)
+
 }
 
 func createDir(dirPath string) error {
@@ -196,11 +196,8 @@ func ClearHistory(clearType string) error {
 			ClipboardHistory: pinnedItems(),
 		}
 	}
-	err := WriteUpdate(data)
-	if err != nil {
-		return err
-	}
-	return nil
+	return WriteUpdate(data)
+
 }
 
 func pinnedItems() []ClipboardItem {
@@ -257,10 +254,7 @@ func AddClipboardItem(text, fp string) error {
 		}
 	}
 
-	if err := WriteUpdate(data); err != nil {
-		return err
-	}
-	return nil
+	return WriteUpdate(data)
 }
 
 // This pins and unpins an item in the clipboard
