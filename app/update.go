@@ -28,6 +28,31 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 
 	case tea.KeyMsg:
+		if msg.String() == "y" {
+			m.itemCach = m.list.Items()
+			m.showConfirmation = true
+			m.list.SetItems(confirmationItems())
+			m.keys.remove.SetEnabled(false)
+			m.list.SetFilteringEnabled(false)
+			m.list.SetShowStatusBar(false)
+			m.list.Title = "Delete pinned item(s)?"
+			m.list.ResetSelected()
+			//m.setConfirmationScreen()
+
+			return m, tea.Batch(cmds...)
+
+		}
+		if key.Matches(msg, m.keys.choose) && m.showConfirmation {
+			m.list.SetItems(m.itemCach)
+			m.showConfirmation = false
+			m.keys.remove.SetEnabled(true)
+			m.list.SetFilteringEnabled(true)
+			m.list.SetShowStatusBar(true)
+			m.list.Title = clipboardTitle
+			return m, tea.Batch(cmds...)
+
+		}
+
 		if key.Matches(msg, m.keys.filter) && m.list.ShowHelp() {
 			m.list.Help.ShowAll = false // change default back to short help to keep in sync
 			m.list.SetShowHelp(false)
@@ -424,4 +449,15 @@ func (m *model) filterMatches() []string {
 	}
 
 	return filteredItems
+}
+
+func (m model) setConfirmationScreen() {
+	m.list.SetItems(confirmationItems())
+	m.keys.remove.SetEnabled(false)
+	m.list.SetFilteringEnabled(false)
+	m.list.SetShowFilter(false)
+	m.list.SetShowStatusBar(false)
+	m.list.SetShowHelp(false)
+	m.list.Title = "Delete pinned item(s)?"
+
 }

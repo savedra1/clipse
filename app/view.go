@@ -5,9 +5,14 @@ import (
 )
 
 func (m model) View() string {
+	render := lipgloss.NewStyle().PaddingLeft(1).Render
+
 	listView := m.list.View()
 	helpView := lipgloss.NewStyle().PaddingLeft(2).Render(m.help.View(m.keys))
-	render := lipgloss.NewStyle().PaddingLeft(1).Render
+
+	if m.showConfirmation {
+		return render(listView)
+	}
 
 	if m.list.SettingFilter() {
 		return render(listView + "\n" + lipgloss.NewStyle().PaddingLeft(2).Render(
