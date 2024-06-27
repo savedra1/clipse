@@ -72,9 +72,7 @@ func NewModel() model {
 	del := m.newItemDelegate()
 
 	clipboardList := list.New(entryItems, del, 0, 0)
-	clipboardList.Title = clipboardTitle // set hardcoded title
-	clipboardList.SetShowTitle(true)
-	clipboardList.SetShowStatusBar(true)
+	clipboardList.Title = clipboardTitle                                       // set hardcoded title
 	clipboardList.SetShowHelp(false)                                           // override with custom
 	clipboardList.Styles.PaginationStyle = style.MarginBottom(1).MarginLeft(2) // set custom pagination spacing
 	//clipboardList.StatusMessageLifetime = time.Second // can override this if necessary

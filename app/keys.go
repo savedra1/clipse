@@ -108,14 +108,19 @@ func (k keyMap) ShortHelp() []key.Binding {
 	}
 }
 
+// not currently in use as intentionally being overridden by the default
+// full help view
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
+		{k.up, k.down, k.home, k.end},
 		{k.choose, k.remove},
 		{k.togglePin, k.togglePinned},
+		{k.selectDown, k.selectSingle, k.yankFilter},
 		{k.filter, k.quit},
 	}
 }
 
+// used only for the default filter input view
 type filterKeyMap struct {
 	apply       key.Binding
 	cancel      key.Binding

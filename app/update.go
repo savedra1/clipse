@@ -14,8 +14,12 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+/*
+	The main update function used to handle core TUI logic and update
+	the model state.
+*/
 
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -24,6 +28,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 
 	case tea.KeyMsg:
+		if key.Matches(msg, m.keys.filter) && m.list.ShowHelp() {
+			m.list.Help.ShowAll = false // change default back to short help to keep in sync
+			m.list.SetShowHelp(false)
+			m.updatePaginator()
+		}
+
 		if m.list.SettingFilter() && key.Matches(msg, m.keys.yankFilter) {
 			filterMatches := m.filterMatches()
 			if len(filterMatches) >= 1 {
@@ -46,13 +56,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		i, ok := m.list.SelectedItem().(item)
 		if !ok {
+
 			switch {
 			case key.Matches(msg, m.keys.more):
 				m.list.SetShowHelp(!m.list.ShowHelp())
 				m.updatePaginator()
 			}
 			break
-
 		}
 		title := i.Title()
 		fullValue := i.TitleFull()
@@ -136,7 +146,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			for _, item := range selectedItems {
 				if item.Value == currentContent {
-					clipboard.WriteAll("") // clear clipboard to stop deleted content temp repopulating (temp solution)
+					// clear clipboard to stop deleted content temp repopulating (temp solution)
+					clipboard.WriteAll("")
 				}
 			}
 
@@ -174,7 +185,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(m.list.Items()) == 0 {
 				m.keys.togglePin.SetEnabled(false)
 			}
-			// update pinned status in history file
 			isPinned, err := config.TogglePinClipboardItem(desc)
 			utils.HandleError(err)
 			m.togglePinUpdate()
