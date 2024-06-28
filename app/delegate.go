@@ -7,7 +7,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 
 	"github.com/savedra1/clipse/config"
 )
@@ -61,64 +60,6 @@ func (d itemDelegate) Render(
 
 	default:
 		renderStr = d.itemNormalStyle(i)
-	}
-
-	fmt.Fprint(w, renderStr)
-}
-
-func (m *model) warningDelegate() secondaryItemDelegate {
-	return secondaryItemDelegate{
-		theme: m.theme,
-	}
-}
-
-type secondaryItemDelegate struct {
-	theme config.CustomTheme
-	task  string
-	items []item
-}
-
-func (sd secondaryItemDelegate) Height() int  { return 2 }
-func (sd secondaryItemDelegate) Spacing() int { return 1 }
-func (sd secondaryItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
-
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		h, v := appStyle.GetFrameSize()
-		m.SetSize(msg.Width-h, msg.Height-v)
-
-	case tea.KeyMsg:
-		if msg.String() == "down" {
-			m.CursorDown()
-		}
-
-	}
-	return nil
-}
-
-func (sd secondaryItemDelegate) Render(
-	w io.Writer,
-	m list.Model,
-	index int,
-	listItem list.Item,
-) {
-	i, ok := listItem.(item)
-	if !ok {
-		return
-	}
-
-	renderStr := style.
-		Foreground(lipgloss.Color(sd.theme.SelectedTitle)).
-		PaddingLeft(1).
-		BorderLeft(true).BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color(sd.theme.SelectedDescBorder)).
-		Render(i.title)
-
-	if index != m.Index() {
-		renderStr = style.
-			Foreground(lipgloss.Color(sd.theme.NormalTitle)).
-			PaddingLeft(1).
-			Render(i.title)
 	}
 
 	fmt.Fprint(w, renderStr)

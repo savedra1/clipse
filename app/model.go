@@ -27,9 +27,9 @@ type model struct {
 	togglePinned     bool               // pinned view indicator
 	theme            config.CustomTheme // colors scheme to uses
 	prevDirection    string             // prev direction used to track selections
-	confirmationList list.Model
-	showConfirmation bool
-	itemCach         []list.Item
+	confirmationList list.Model         // secondary list model used for confirmation screen
+	showConfirmation bool               // whether to show confirmation screen
+	itemCach         []SelectedItem     // easy access for related items following confirmation screen choice
 }
 
 type item struct {
@@ -80,7 +80,6 @@ func NewModel() model {
 	del := m.newItemDelegate()
 
 	clipboardList := list.New(entryItems, del, 0, 0)
-	m.confirmationList = list.New(confirmationItems(), del, 0, 0)
 
 	clipboardList.Title = clipboardTitle                                       // set hardcoded title
 	clipboardList.SetShowHelp(false)                                           // override with custom
@@ -94,18 +93,22 @@ func NewModel() model {
 		}
 	}
 
+	confirmationList := newConfirmationList(del)
+
 	if len(clipboardItems) < 1 {
 		clipboardList.SetShowStatusBar(false) // remove duplicate "No items"
 	}
 
 	if !ct.UseCustom {
 		m.list = setDefaultStyling(clipboardList)
+		m.confirmationList = setDefaultStyling(confirmationList)
 		return m
 	}
 
 	statusMessageStyle = styledStatusMessage(ct)
 	m.help = styledHelp(m.help, ct)
 	m.list = styledList(clipboardList, ct)
+	m.confirmationList = styledList(confirmationList, ct)
 
 	return m
 }
@@ -140,41 +143,29 @@ func filterItems(clipboardItems []config.ClipboardItem, isPinned bool, theme con
 	return filteredItems
 }
 
-type confirmationItem struct {
-	title string
-}
-
-func (i confirmationItem) FilterValue() string { return i.title }
-func (i confirmationItem) Title() string       { return i.title }
-
-func newConfirmationList() list.Model {
-	items := []list.Item{
-		confirmationItem{title: "Yes"},
-		confirmationItem{title: "No"},
-	}
-
-	del := list.NewDefaultDelegate()
-	del.Styles.NormalTitle = lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff"))
-	l := list.New(items, del, 0, 0) // Set initial width and height
-	l.Title = fmt.Sprint("Confirm Deletion" + fmt.Sprint(len(l.Items())))
+func newConfirmationList(del itemDelegate) list.Model {
+	items := confirmationItems()
+	l := list.New(items, del, 0, 10)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
 	l.SetShowHelp(false)
 	l.SetShowPagination(false)
-	l.Styles.Title = lipgloss.NewStyle().MarginLeft(2).MarginTop(1).Bold(true)
-	l.SetShowTitle(true)
-
+	l.Title = confirmationTitle
+	l.DisableQuitKeybindings()
 	return l
 }
 
 func confirmationItems() []list.Item {
-	//yes := lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff")).Render("Yes")
 	return []list.Item{
 		item{
-			title:           "yes",
-			titleBase:       "yes",
-			descriptionBase: "deletes the items",
+			title:           "No",
+			titleBase:       "No",
+			descriptionBase: "go back",
 		},
-		item{title: "yes", titleBase: "no", descriptionBase: "go back"},
+		item{
+			title:           "Yes",
+			titleBase:       "Yes",
+			descriptionBase: "delete the item(s)",
+		},
 	}
 }

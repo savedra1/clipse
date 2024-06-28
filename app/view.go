@@ -11,6 +11,8 @@ func (m model) View() string {
 	helpView := lipgloss.NewStyle().PaddingLeft(2).Render(m.help.View(m.keys))
 
 	if m.showConfirmation {
+		// TODO: add custom help menu
+		listView = m.confirmationList.View()
 		return render(listView)
 	}
 
