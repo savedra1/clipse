@@ -74,7 +74,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.choose):
 			if m.showConfirmation && m.confirmationList.Index() == 0 { // No
-				m.itemCach = []SelectedItem{}
+				m.itemCache = []SelectedItem{}
 				m.showConfirmation = false
 				break
 
@@ -82,7 +82,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.showConfirmation = false
 				currentContent, _ := clipboard.ReadAll()
 				timeStamps := []string{}
-				for _, item := range m.itemCach {
+				for _, item := range m.itemCache {
 					if item.Value == currentContent {
 						clipboard.WriteAll("")
 					}
@@ -91,8 +91,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 				statusMsg := "Deleted: "
-				if len(m.itemCach) == 1 {
-					statusMsg += m.itemCach[0].Value
+				if len(m.itemCache) == 1 {
+					statusMsg += m.itemCache[0].Value
 				} else {
 					statusMsg += "*selected items*"
 				}
@@ -102,7 +102,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					cmds,
 					m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
 				)
-				m.itemCach = []SelectedItem{}
+				m.itemCache = []SelectedItem{}
 
 				if len(m.list.Items()) == 0 {
 					m.keys.remove.SetEnabled(false)
@@ -180,8 +180,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selectedItems := m.selectedItems()
 			var pinnedItemSelected bool
 
-			m.itemCach = append(
-				m.itemCach,
+			m.itemCache = append(
+				m.itemCache,
 				SelectedItem{
 					Index:     m.list.Index(),
 					TimeStamp: timestamp,
@@ -198,8 +198,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if selectedItem.Pinned {
 					pinnedItemSelected = true
 				}
-				m.itemCach = append(
-					m.itemCach,
+				m.itemCache = append(
+					m.itemCache,
 					selectedItem,
 				)
 			}
@@ -241,7 +241,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.list.SetShowStatusBar(false)
 			}
 
-			m.itemCach = []SelectedItem{}
+			m.itemCache = []SelectedItem{}
 			cmds = append(
 				cmds,
 				m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
@@ -355,7 +355,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 	m.confirmationList, cmd = m.confirmationList.Update(msg)
 	cmds = append(cmds, cmd)
-
 	return m, tea.Batch(cmds...)
 }
 

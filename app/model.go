@@ -20,16 +20,17 @@ var (
 )
 
 type model struct {
-	list             list.Model         // list items
-	keys             *keyMap            // keybindings
-	filterKeys       *filterKeyMap      // keybindings for filter view
-	help             help.Model         // custom help menu
-	togglePinned     bool               // pinned view indicator
-	theme            config.CustomTheme // colors scheme to uses
-	prevDirection    string             // prev direction used to track selections
-	confirmationList list.Model         // secondary list model used for confirmation screen
-	showConfirmation bool               // whether to show confirmation screen
-	itemCach         []SelectedItem     // easy access for related items following confirmation screen choice
+	list             list.Model          // list items
+	keys             *keyMap             // keybindings
+	filterKeys       *filterKeyMap       // keybindings for filter view
+	confirmationKeys *confirmationKeyMap // keybindings for teh confirmation view
+	help             help.Model          // custom help menu
+	togglePinned     bool                // pinned view indicator
+	theme            config.CustomTheme  // colors scheme to uses
+	prevDirection    string              // prev direction used to track selections
+	confirmationList list.Model          // secondary list model used for confirmation screen
+	showConfirmation bool                // whether to show confirmation screen
+	itemCache        []SelectedItem      // easy access for related items following confirmation screen choice
 }
 
 type item struct {
@@ -57,8 +58,9 @@ func (m model) Init() tea.Cmd {
 
 func NewModel() model {
 	var (
-		listKeys   = newKeyMap()
-		filterKeys = newFilterKeymap()
+		listKeys         = newKeyMap()
+		filterKeys       = newFilterKeymap()
+		confirmationKeys = newConfirmationKeymap()
 	)
 
 	clipboardItems := config.GetHistory()
@@ -68,6 +70,7 @@ func NewModel() model {
 	m := model{
 		keys:             listKeys,
 		filterKeys:       filterKeys,
+		confirmationKeys: confirmationKeys,
 		help:             help.New(),
 		togglePinned:     false,
 		theme:            ct,
