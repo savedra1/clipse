@@ -23,7 +23,7 @@ type model struct {
 	list             list.Model          // list items
 	keys             *keyMap             // keybindings
 	filterKeys       *filterKeyMap       // keybindings for filter view
-	confirmationKeys *confirmationKeyMap // keybindings for teh confirmation view
+	confirmationKeys *confirmationKeyMap // keybindings for the confirmation view
 	help             help.Model          // custom help menu
 	togglePinned     bool                // pinned view indicator
 	theme            config.CustomTheme  // colors scheme to uses
