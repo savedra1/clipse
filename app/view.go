@@ -1,8 +1,6 @@
 package app
 
 import (
-	"strings"
-
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -16,7 +14,7 @@ func (m model) View() string {
 		listView = m.confirmationList.View()
 		helpView = lipgloss.NewStyle().PaddingLeft(2).Render(
 			m.list.Help.ShortHelpView(m.confirmationKeys.ConfirmationHelp()))
-		return render(listView + strings.Repeat("\n", 22) + helpView)
+		return render(listView + "\n" + helpView)
 	}
 
 	if m.list.SettingFilter() {

@@ -26,6 +26,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		h, v := appStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
+		m.confirmationList.SetSize(msg.Width-h, msg.Height-v)
 
 	case tea.KeyMsg:
 
