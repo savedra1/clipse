@@ -20,13 +20,17 @@ var (
 )
 
 type model struct {
-	list          list.Model         // list items
-	keys          *keyMap            // keybindings
-	filterKeys    *filterKeyMap      // keybindings for filter view
-	help          help.Model         // custom help menu
-	togglePinned  bool               // pinned view indicator
-	theme         config.CustomTheme // colors scheme to uses
-	prevDirection string             // prev direction used to track selections
+	list             list.Model          // list items
+	keys             *keyMap             // keybindings
+	filterKeys       *filterKeyMap       // keybindings for filter view
+	confirmationKeys *confirmationKeyMap // keybindings for the confirmation view
+	help             help.Model          // custom help menu
+	togglePinned     bool                // pinned view indicator
+	theme            config.CustomTheme  // colors scheme to uses
+	prevDirection    string              // prev direction used to track selections
+	confirmationList list.Model          // secondary list model used for confirmation screen
+	showConfirmation bool                // whether to show confirmation screen
+	itemCache        []SelectedItem      // easy access for related items following confirmation screen choice
 }
 
 type item struct {
@@ -48,10 +52,15 @@ func (i item) Description() string { return i.description }
 func (i item) FilePath() string    { return i.filePath }
 func (i item) FilterValue() string { return i.title }
 
+func (m model) Init() tea.Cmd {
+	return tea.EnterAltScreen
+}
+
 func NewModel() model {
 	var (
-		listKeys   = newKeyMap()
-		filterKeys = newFilterKeymap()
+		listKeys         = newKeyMap()
+		filterKeys       = newFilterKeymap()
+		confirmationKeys = newConfirmationKeymap()
 	)
 
 	clipboardItems := config.GetHistory()
@@ -59,12 +68,14 @@ func NewModel() model {
 	ct := config.GetTheme()
 
 	m := model{
-		keys:          listKeys,
-		filterKeys:    filterKeys,
-		help:          help.New(),
-		togglePinned:  false,
-		theme:         ct,
-		prevDirection: "",
+		keys:             listKeys,
+		filterKeys:       filterKeys,
+		confirmationKeys: confirmationKeys,
+		help:             help.New(),
+		togglePinned:     false,
+		theme:            ct,
+		prevDirection:    "",
+		showConfirmation: false,
 	}
 
 	entryItems := filterItems(clipboardItems, false, m.theme)
@@ -72,6 +83,7 @@ func NewModel() model {
 	del := m.newItemDelegate()
 
 	clipboardList := list.New(entryItems, del, 0, 0)
+
 	clipboardList.Title = clipboardTitle                                       // set hardcoded title
 	clipboardList.SetShowHelp(false)                                           // override with custom
 	clipboardList.Styles.PaginationStyle = style.MarginBottom(1).MarginLeft(2) // set custom pagination spacing
@@ -84,23 +96,24 @@ func NewModel() model {
 		}
 	}
 
+	confirmationList := newConfirmationList(del)
+
 	if len(clipboardItems) < 1 {
 		clipboardList.SetShowStatusBar(false) // remove duplicate "No items"
 	}
 
 	if !ct.UseCustom {
 		m.list = setDefaultStyling(clipboardList)
+		m.confirmationList = setDefaultStyling(confirmationList)
 		return m
 	}
 
 	statusMessageStyle = styledStatusMessage(ct)
 	m.help = styledHelp(m.help, ct)
 	m.list = styledList(clipboardList, ct)
-	return m
-}
+	m.confirmationList = styledList(confirmationList, ct)
 
-func (m model) Init() tea.Cmd {
-	return tea.EnterAltScreen
+	return m
 }
 
 // if isPinned is true, returns only an array of pinned items, otherwise all
@@ -131,4 +144,31 @@ func filterItems(clipboardItems []config.ClipboardItem, isPinned bool, theme con
 	}
 
 	return filteredItems
+}
+
+func newConfirmationList(del itemDelegate) list.Model {
+	items := confirmationItems()
+	l := list.New(items, del, 0, 10)
+	l.SetShowStatusBar(false)
+	l.SetFilteringEnabled(false)
+	l.SetShowHelp(false)
+	l.SetShowPagination(false)
+	l.Title = confirmationTitle
+	l.DisableQuitKeybindings()
+	return l
+}
+
+func confirmationItems() []list.Item {
+	return []list.Item{
+		item{
+			title:           "No",
+			titleBase:       "No",
+			descriptionBase: "go back",
+		},
+		item{
+			title:           "Yes",
+			titleBase:       "Yes",
+			descriptionBase: "delete the item(s)",
+		},
+	}
 }

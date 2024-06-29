@@ -26,8 +26,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		h, v := appStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
+		m.confirmationList.SetSize(msg.Width-h, msg.Height-v)
 
 	case tea.KeyMsg:
+
 		if key.Matches(msg, m.keys.filter) && m.list.ShowHelp() {
 			m.list.Help.ShowAll = false // change default back to short help to keep in sync
 			m.list.SetShowHelp(false)
@@ -67,11 +69,49 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		title := i.Title()
 		fullValue := i.TitleFull()
 		fp := i.FilePath()
-		desc := i.TimeStamp()
+		timestamp := i.TimeStamp()
 
 		switch {
 
 		case key.Matches(msg, m.keys.choose):
+			if m.showConfirmation && m.confirmationList.Index() == 0 { // No
+				m.itemCache = []SelectedItem{}
+				m.showConfirmation = false
+				break
+
+			} else if m.showConfirmation && m.confirmationList.Index() == 1 { // Yes
+				m.showConfirmation = false
+				currentContent, _ := clipboard.ReadAll()
+				timeStamps := []string{}
+				for _, item := range m.itemCache {
+					if item.Value == currentContent {
+						clipboard.WriteAll("")
+					}
+					timeStamps = append(timeStamps, item.TimeStamp)
+					m.removeCachedItem(item.TimeStamp)
+				}
+
+				statusMsg := "Deleted: "
+				if len(m.itemCache) == 1 {
+					statusMsg += m.itemCache[0].Value
+				} else {
+					statusMsg += "*selected items*"
+				}
+
+				config.DeleteItems(timeStamps)
+				cmds = append(
+					cmds,
+					m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
+				)
+				m.itemCache = []SelectedItem{}
+
+				if len(m.list.Items()) == 0 {
+					m.keys.remove.SetEnabled(false)
+					m.list.SetShowStatusBar(false)
+				}
+				break
+			}
+
 			selectedItems := m.selectedItems()
 
 			if len(selectedItems) < 1 {
@@ -135,38 +175,64 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					cmds,
 					m.list.NewStatusMessage(statusMessageStyle("Could not copy all selected items.")),
 				)
-
 			}
 
 		case key.Matches(msg, m.keys.remove):
 			selectedItems := m.selectedItems()
-			currentIndex := m.list.Index()
+			var pinnedItemSelected bool
 
-			currentContent, _ := clipboard.ReadAll()
+			m.itemCache = append(
+				m.itemCache,
+				SelectedItem{
+					Index:     m.list.Index(),
+					TimeStamp: timestamp,
+					Value:     i.titleFull,
+					Pinned:    i.pinned,
+				},
+			)
 
-			for _, item := range selectedItems {
-				if item.Value == currentContent {
-					// clear clipboard to stop deleted content temp repopulating (temp solution)
-					clipboard.WriteAll("")
-				}
+			if i.pinned {
+				pinnedItemSelected = true
 			}
 
+			for _, selectedItem := range selectedItems {
+				if selectedItem.Pinned {
+					pinnedItemSelected = true
+				}
+				m.itemCache = append(
+					m.itemCache,
+					selectedItem,
+				)
+			}
+
+			if pinnedItemSelected {
+				m.showConfirmation = true
+				break
+			}
+
+			currentIndex := m.list.Index()
+			currentContent, _ := clipboard.ReadAll()
 			statusMsg := "Deleted: "
 
 			if len(selectedItems) >= 1 {
+				for _, item := range selectedItems {
+					if item.Value == currentContent {
+						clipboard.WriteAll("")
+					}
+				}
 				timeStamps := []string{}
 				m.list.RemoveItem(currentIndex)
 				m.removeMultiSelected()
 				for _, item := range selectedItems {
-					timeStamps = append(timeStamps, strings.Split(item.Description, "Date copied: ")[1])
+					timeStamps = append(timeStamps, item.TimeStamp)
 				}
 
-				timeStamps = append(timeStamps, desc)
+				timeStamps = append(timeStamps, timestamp)
 				statusMsg += "*selected items*"
 				config.DeleteItems(timeStamps)
 			} else {
 				m.list.RemoveItem(currentIndex)
-				err := config.DeleteItems([]string{desc})
+				err := config.DeleteItems([]string{timestamp})
 				utils.HandleError(err)
 				statusMsg += title
 			}
@@ -176,6 +242,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.list.SetShowStatusBar(false)
 			}
 
+			m.itemCache = []SelectedItem{}
 			cmds = append(
 				cmds,
 				m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
@@ -185,7 +252,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(m.list.Items()) == 0 {
 				m.keys.togglePin.SetEnabled(false)
 			}
-			isPinned, err := config.TogglePinClipboardItem(desc)
+			isPinned, err := config.TogglePinClipboardItem(timestamp)
 			utils.HandleError(err)
 			m.togglePinUpdate()
 
@@ -200,6 +267,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.list.NewStatusMessage(statusMessageStyle("Pinned: "+title)),
 				)
 			}
+
 		case key.Matches(msg, m.keys.togglePinned):
 			if len(m.list.Items()) == 0 {
 				m.keys.togglePinned.SetEnabled(false)
@@ -227,6 +295,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.list.InsertItem(len(m.list.Items()), i)
 				}
 			}
+
 		case key.Matches(msg, m.keys.selectDown):
 			if m.list.IsFiltered() {
 				cmds = append(
@@ -281,15 +350,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		}
 	}
-	// this will also call our delegate's update function
+
 	newListModel, cmd := m.list.Update(msg)
 	m.list = newListModel
 	cmds = append(cmds, cmd)
-
+	m.confirmationList, cmd = m.confirmationList.Update(msg)
+	cmds = append(cmds, cmd)
 	return m, tea.Batch(cmds...)
 }
 
-// This updates the TUI when an item is pinned/unpinned
+/*
+	HELPER FUNCS
+*/
+
 func (m *model) togglePinUpdate() {
 	index := m.list.Index()
 	item, ok := m.list.SelectedItem().(item)
@@ -357,14 +430,13 @@ func (m *model) toggleSelected(direction string) {
 	}
 }
 
-// used to retrieve selected items with their list view indexes
 type SelectedItem struct {
-	Index       int
-	Description string
-	Value       string
+	Index     int
+	TimeStamp string
+	Value     string
+	Pinned    bool
 }
 
-// index values, descriptions and full values of all selected items
 func (m *model) selectedItems() []SelectedItem {
 	selectedItems := []SelectedItem{}
 	for index, i := range m.list.Items() {
@@ -376,17 +448,18 @@ func (m *model) selectedItems() []SelectedItem {
 			selectedItems = append(
 				selectedItems,
 				SelectedItem{
-					Index:       index,
-					Description: item.descriptionBase,
-					Value:       item.titleFull,
+					Index:     index,
+					TimeStamp: item.TimeStamp(),
+					Value:     item.titleFull,
+					Pinned:    item.pinned,
 				},
 			)
 		}
+
 	}
 	return selectedItems
 }
 
-// iterate over the list items backwards so the indexes are not affected
 func (m *model) removeMultiSelected() {
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
@@ -396,7 +469,6 @@ func (m *model) removeMultiSelected() {
 	}
 }
 
-// remove selected state from all items
 func (m *model) resetSelected() {
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
@@ -407,7 +479,6 @@ func (m *model) resetSelected() {
 	}
 }
 
-// return a list of all current filter matches
 func (m *model) filterMatches() []string {
 	filteredItems := []string{}
 	for _, i := range m.list.Items() {
@@ -424,4 +495,13 @@ func (m *model) filterMatches() []string {
 	}
 
 	return filteredItems
+}
+
+func (m *model) removeCachedItem(ts string) {
+	items := m.list.Items()
+	for i := len(items) - 1; i >= 0; i-- {
+		if item, ok := items[i].(item); ok && item.timeStamp == ts {
+			m.list.RemoveItem(i)
+		}
+	}
 }

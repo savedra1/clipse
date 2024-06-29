@@ -149,3 +149,32 @@ func (fk filterKeyMap) FilterHelp() []key.Binding {
 		fk.apply, fk.cancel, fk.yankMatches,
 	}
 }
+
+type confirmationKeyMap struct {
+	up     key.Binding
+	down   key.Binding
+	choose key.Binding
+}
+
+func newConfirmationKeymap() *confirmationKeyMap {
+	return &confirmationKeyMap{
+		up: key.NewBinding(
+			key.WithKeys("up", "k"),
+			key.WithHelp("↑/k", "up"),
+		),
+		down: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("↓/k", "down"),
+		),
+		choose: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("↵", "choose"),
+		),
+	}
+}
+
+func (ck confirmationKeyMap) ConfirmationHelp() []key.Binding {
+	return []key.Binding{
+		ck.up, ck.down, ck.choose,
+	}
+}
