@@ -33,9 +33,12 @@ var (
 )
 
 func main() {
+
 	flag.Parse()
-	clipseDir, displayServer, imgEnabled, err := config.Init()
+	logPath, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)
+
+	utils.SetUpLogger(logPath)
 
 	switch {
 
@@ -69,7 +72,7 @@ func main() {
 		handleListen()
 
 	case *listenShell:
-		handleListenShell(clipseDir, displayServer, imgEnabled)
+		handleListenShell(displayServer, imgEnabled)
 
 	case *kill:
 		handleKill()
@@ -104,12 +107,14 @@ func handleAdd() {
 }
 
 func handleListen() {
-	shell.KillExisting()
+	if err := shell.KillExisting(); err != nil {
+		fmt.Printf("failed to kill existing processes: %s", err)
+	}
 	shell.RunNohupListener() // hardcoded as const
 }
 
-func handleListenShell(clipseDir, displayServer string, imgEnabled bool) {
-	err := handlers.RunListener(clipseDir, displayServer, imgEnabled)
+func handleListenShell(displayServer string, imgEnabled bool) {
+	err := handlers.RunListener(displayServer, imgEnabled)
 	utils.HandleError(err)
 }
 
@@ -118,8 +123,10 @@ func handleKill() {
 }
 
 func handleClear() {
-	clipboard.WriteAll("")
 	var err error
+	if err = clipboard.WriteAll(""); err != nil {
+		fmt.Printf("failed to reset clipboard buffer value: %s", err)
+	}
 	if *clearImages {
 		err = config.ClearHistory("images")
 	} else if *clearAll {
