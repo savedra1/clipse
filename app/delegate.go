@@ -23,9 +23,9 @@ type itemDelegate struct {
 	theme config.CustomTheme
 }
 
-func (d itemDelegate) Height() int                               { return 2 }
-func (d itemDelegate) Spacing() int                              { return 1 }
-func (d itemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
+func (d itemDelegate) Height() int                             { return 2 }
+func (d itemDelegate) Spacing() int                            { return 1 }
+func (d itemDelegate) Update(_ tea.Msg, m *list.Model) tea.Cmd { return nil }
 
 func (d itemDelegate) Render(
 	w io.Writer,

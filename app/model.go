@@ -30,7 +30,7 @@ type model struct {
 	prevDirection    string              // prev direction used to track selections
 	confirmationList list.Model          // secondary list model used for confirmation screen
 	showConfirmation bool                // whether to show confirmation screen
-	itemCache        []SelectedItem      // easy access for related items following confirmation screen choice
+	itemCache        []SelectedItem      // easy access for related items following confirmation screen
 }
 
 type item struct {
@@ -45,6 +45,13 @@ type item struct {
 	selected        bool   // selected status
 }
 
+type SelectedItem struct {
+	Index     int    // list index needed for deletion
+	TimeStamp string // timestamp needed for deletion
+	Value     string // full val needed for copy
+	Pinned    bool   // pinned val needed to determine whether confirmation screen is needed
+}
+
 func (i item) Title() string       { return i.title }
 func (i item) TitleFull() string   { return i.titleFull }
 func (i item) TimeStamp() string   { return i.timeStamp }
@@ -56,7 +63,7 @@ func (m model) Init() tea.Cmd {
 	return tea.EnterAltScreen
 }
 
-func NewModel() model {
+func NewModel() *model {
 	var (
 		listKeys         = newKeyMap()
 		filterKeys       = newFilterKeymap()
@@ -105,7 +112,7 @@ func NewModel() model {
 	if !ct.UseCustom {
 		m.list = setDefaultStyling(clipboardList)
 		m.confirmationList = setDefaultStyling(confirmationList)
-		return m
+		return &m
 	}
 
 	statusMessageStyle = styledStatusMessage(ct)
@@ -113,7 +120,7 @@ func NewModel() model {
 	m.list = styledList(clipboardList, ct)
 	m.confirmationList = styledList(confirmationList, ct)
 
-	return m
+	return &m
 }
 
 // if isPinned is true, returns only an array of pinned items, otherwise all

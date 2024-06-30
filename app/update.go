@@ -29,7 +29,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.confirmationList.SetSize(msg.Width-h, msg.Height-v)
 
 	case tea.KeyMsg:
-
 		if key.Matches(msg, m.keys.filter) && m.list.ShowHelp() {
 			m.list.Help.ShowAll = false // change default back to short help to keep in sync
 			m.list.SetShowHelp(false)
@@ -39,8 +38,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.list.SettingFilter() && key.Matches(msg, m.keys.yankFilter) {
 			filterMatches := m.filterMatches()
 			if len(filterMatches) >= 1 {
-				err := clipboard.WriteAll(strings.Join(filterMatches, "\n"))
-				if err == nil {
+				if err := clipboard.WriteAll(strings.Join(filterMatches, "\n")); err == nil {
 					return m, tea.Quit
 				}
 				cmds = append(
@@ -85,7 +83,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				timeStamps := []string{}
 				for _, item := range m.itemCache {
 					if item.Value == currentContent {
-						clipboard.WriteAll("")
+						if err := clipboard.WriteAll(""); err != nil {
+							utils.LogERROR(fmt.Sprintf("ERROR: could not delete all items form history: %s", err))
+
+						}
 					}
 					timeStamps = append(timeStamps, item.TimeStamp)
 					m.removeCachedItem(item.TimeStamp)
@@ -98,7 +99,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					statusMsg += "*selected items*"
 				}
 
-				config.DeleteItems(timeStamps)
+				if err := config.DeleteItems(timeStamps); err != nil {
+					utils.LogERROR(fmt.Sprintf("ERROR: could not delete all items form history: %s", err))
+				}
+
 				cmds = append(
 					cmds,
 					m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
@@ -134,8 +138,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Batch(cmds...)
 
 				default:
-					err := clipboard.WriteAll(fullValue)
-					utils.HandleError(err)
+					utils.HandleError(clipboard.WriteAll(fullValue))
 					return m, tea.Quit
 				}
 			}
@@ -217,7 +220,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(selectedItems) >= 1 {
 				for _, item := range selectedItems {
 					if item.Value == currentContent {
-						clipboard.WriteAll("")
+						if err := clipboard.WriteAll(""); err != nil {
+							utils.LogERROR(fmt.Sprintf("ERROR: failed to reset clipboard buffer value: %s", err))
+						}
 					}
 				}
 				timeStamps := []string{}
@@ -229,11 +234,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				timeStamps = append(timeStamps, timestamp)
 				statusMsg += "*selected items*"
-				config.DeleteItems(timeStamps)
+				if err := config.DeleteItems(timeStamps); err != nil {
+					utils.LogERROR(fmt.Sprintf("ERROR: failed to delete all items form history file: %s", err))
+				}
 			} else {
 				m.list.RemoveItem(currentIndex)
-				err := config.DeleteItems([]string{timestamp})
-				utils.HandleError(err)
+				utils.HandleError(config.DeleteItems([]string{timestamp}))
 				statusMsg += title
 			}
 
@@ -428,13 +434,6 @@ func (m *model) toggleSelected(direction string) {
 	case "up":
 		m.list.CursorUp()
 	}
-}
-
-type SelectedItem struct {
-	Index     int
-	TimeStamp string
-	Value     string
-	Pinned    bool
 }
 
 func (m *model) selectedItems() []SelectedItem {

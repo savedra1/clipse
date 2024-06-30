@@ -87,10 +87,8 @@ func GetHistory() []ClipboardItem {
 
 	var data ClipboardHistory
 
-	err = json.NewDecoder(file).Decode(&data)
-	utils.HandleError(err)
+	utils.HandleError(json.NewDecoder(file).Decode(&data))
 
-	// Extract clipboard history items
 	return data.ClipboardHistory
 }
 
@@ -100,8 +98,7 @@ func fileContents() ClipboardHistory {
 
 	var data ClipboardHistory
 
-	err = json.NewDecoder(file).Decode(&data)
-	utils.HandleError(err)
+	utils.HandleError(json.NewDecoder(file).Decode(&data))
 
 	return data
 }
@@ -119,20 +116,21 @@ func WriteUpdate(data ClipboardHistory) error {
 	return nil
 }
 
-func DeleteJsonItem(item string) error {
-	/* Accessed by bubbletea method on backspace keybinding:
-	Deletes selected item from json file.
+func DeleteJSONItem(timeStamp string) error {
+	/* Could be used to rmeove a single item from the
+	history file
 	*/
 	data := fileContents()
 	var updatedClipboardHistory []ClipboardItem
 
 	for _, entry := range data.ClipboardHistory {
-		if entry.Recorded != item {
+		if entry.Recorded != timeStamp {
 			updatedClipboardHistory = append(updatedClipboardHistory, entry)
-		} else {
-			if entry.FilePath != "null" {
-				err := shell.DeleteImage(entry.FilePath)
-				utils.HandleError(err)
+			continue
+		}
+		if entry.FilePath != "null" {
+			if err := shell.DeleteImage(entry.FilePath); err != nil {
+				utils.LogERROR(fmt.Sprintf("failed to delete image file | %s", entry.FilePath))
 			}
 		}
 	}
@@ -140,7 +138,6 @@ func DeleteJsonItem(item string) error {
 		ClipboardHistory: updatedClipboardHistory,
 	}
 	return WriteUpdate(updatedData)
-
 }
 
 func DeleteItems(timeStamps []string) error {
@@ -181,12 +178,16 @@ func ClearHistory(clearType string) error {
 		data = ClipboardHistory{
 			ClipboardHistory: []ClipboardItem{},
 		}
-		shell.DeleteAllImages(ClipseConfig.TempDirPath)
+		if err := shell.DeleteAllImages(ClipseConfig.TempDirPath); err != nil {
+			utils.LogERROR(fmt.Sprintf("could not delete all images: %s", err))
+		}
 	case "images":
 		data = ClipboardHistory{
 			ClipboardHistory: textItems(),
 		}
-		shell.DeleteAllImages(ClipseConfig.TempDirPath)
+		if err := shell.DeleteAllImages(ClipseConfig.TempDirPath); err != nil {
+			utils.LogERROR(fmt.Sprintf("could not delete all images: %s", err))
+		}
 	case "text":
 		data = ClipboardHistory{
 			ClipboardHistory: imageItems(),

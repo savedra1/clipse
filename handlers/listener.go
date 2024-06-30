@@ -27,7 +27,7 @@ runListener is essentially a while loop to be created as a system background pro
 var prevClipboardContent string // used to store clipboard content to avoid re-checking media data unnecessarily
 var dataType string             // used to determine which poll interval to use based on current clipboard data format
 
-func RunListener(clipsDir, displayServer string, imgEnabled bool) error {
+func RunListener(displayServer string, imgEnabled bool) error {
 	// Listen for SIGINT (Ctrl+C) and SIGTERM signals to properly close the program
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -62,8 +62,9 @@ MainLoop:
 			switch dataType {
 			case "text":
 				if input != "" && !config.Contains(input) {
-					err := config.AddClipboardItem(input, "null")
-					utils.HandleError(err)
+					if err := config.AddClipboardItem(input, "null"); err != nil {
+						utils.LogERROR(fmt.Sprintf("ERROR: failed to add new item `( %s )` | %s", input, err))
+					}
 				}
 			case "png", "jpeg":
 				if imgEnabled { // need to add something here to only check the same media image once to save CPU
@@ -71,12 +72,15 @@ MainLoop:
 					title := fmt.Sprintf("%s %s", imgIcon, fileName)
 					if !config.Contains(title) {
 						filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
-						err := shell.SaveImage(filePath, displayServer)
-						if err != nil {
-							fmt.Println("failed to save media data to tmp dir")
+
+						if err := shell.SaveImage(filePath, displayServer); err != nil {
+							fmt.Println("")
+							utils.LogERROR(fmt.Sprintf("ERROR: failed to save image | %s", err))
+							break
 						}
-						err = config.AddClipboardItem(title, filePath)
-						utils.HandleError(err)
+						if err := config.AddClipboardItem(title, filePath); err != nil {
+							utils.LogERROR(fmt.Sprintf("ERROR: failed to save image | %s", err))
+						}
 					}
 				}
 			}

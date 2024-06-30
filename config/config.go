@@ -14,6 +14,7 @@ type Config struct {
 	HistoryFilePath string `json:"historyFile"`
 	MaxHistory      int    `json:"maxHistory"`
 	ThemeFilePath   string `json:"themeFile"`
+	LogFilePath     string `json:"logFile"`
 	TempDirPath     string `json:"tempDir"`
 }
 
@@ -25,8 +26,8 @@ func Init() (string, string, bool, error) {
 		Ensure $HOME/.config/clipse/clipboard_history.json OR $XDG_CONFIG_HOME
 		exists and create the path if not.
 	*/
-  
-  // returns $HOME/.config || $XDG_CONFIG_HOME
+
+	// returns $HOME/.config || $XDG_CONFIG_HOME
 	userHome, err := os.UserConfigDir()
 	if err != nil {
 		return "", "", false, fmt.Errorf("failed to read home dir.\nerror: %s", err)
@@ -47,13 +48,12 @@ func Init() (string, string, bool, error) {
 	loadConfig(configPath)
 
 	// The history path is absolute at this point. Create it if it does not exist
-	initHistoryFile()
+	utils.HandleError(initHistoryFile())
 
 	// Create TempDir for images if it does not exist.
 	_, err = os.Stat(ClipseConfig.TempDirPath)
 	if os.IsNotExist(err) {
-		err = createDir(ClipseConfig.TempDirPath)
-		utils.HandleError(err)
+		utils.HandleError(createDir(ClipseConfig.TempDirPath))
 	}
 
 	ds := DisplayServer()
@@ -64,7 +64,7 @@ func Init() (string, string, bool, error) {
 		ie = shell.ImagesEnabled(ds)
 	}
 
-	return clipseDir, ds, ie, nil
+	return ClipseConfig.LogFilePath, ds, ie, nil
 }
 
 func loadConfig(configPath string) {
@@ -90,9 +90,9 @@ func loadConfig(configPath string) {
 		fmt.Println("Failed to read config. Skipping.\nErr: %w", err)
 	}
 
-	// Expand HistoryFile, ThemeFile and TempDir paths
+	// Expand HistoryFile, ThemeFile, LogFile and TempDir paths
 	ClipseConfig.HistoryFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.HistoryFilePath), configDir)
 	ClipseConfig.TempDirPath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), configDir)
 	ClipseConfig.ThemeFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.ThemeFilePath), configDir)
+	ClipseConfig.LogFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.LogFilePath), configDir)
 }
-
