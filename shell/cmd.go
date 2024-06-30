@@ -18,7 +18,6 @@ func KillExisting() error {
 		Kills any existing clipse processes but keeps current ps live
 	*/
 	currentPS := syscall.Getpid()
-	// fmt.Println("current:", currentPS)
 	psList, err := ps.Processes()
 	if err != nil {
 		return err
@@ -84,12 +83,12 @@ func KillAll(bin string) {
 
 func RunNohupListener() {
 	cmd := exec.Command("nohup", os.Args[0], listenCmd, ">/dev/null", "2>&1", "&")
-	err := cmd.Start()
-	utils.HandleError(err)
-	// clearShellOutput()
+	utils.HandleError(cmd.Start())
 }
 
 func KillProcess(ppid string) {
 	cmd := exec.Command("kill", ppid)
-	cmd.Run()
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("Failed to kill process: %s", err)
+	}
 }

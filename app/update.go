@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
@@ -16,10 +17,10 @@ import (
 
 /*
 	The main update function used to handle core TUI logic and update
-	the model state.
+	the Model state.
 */
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -29,7 +30,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.confirmationList.SetSize(msg.Width-h, msg.Height-v)
 
 	case tea.KeyMsg:
-
 		if key.Matches(msg, m.keys.filter) && m.list.ShowHelp() {
 			m.list.Help.ShowAll = false // change default back to short help to keep in sync
 			m.list.SetShowHelp(false)
@@ -39,8 +39,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.list.SettingFilter() && key.Matches(msg, m.keys.yankFilter) {
 			filterMatches := m.filterMatches()
 			if len(filterMatches) >= 1 {
-				err := clipboard.WriteAll(strings.Join(filterMatches, "\n"))
-				if err == nil {
+				if err := clipboard.WriteAll(strings.Join(filterMatches, "\n")); err == nil {
 					return m, tea.Quit
 				}
 				cmds = append(
@@ -85,7 +84,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				timeStamps := []string{}
 				for _, item := range m.itemCache {
 					if item.Value == currentContent {
-						clipboard.WriteAll("")
+						if err := clipboard.WriteAll(""); err != nil {
+							utils.LogERROR(fmt.Sprintf("ERROR: could not delete all items from history: %s", err))
+
+						}
 					}
 					timeStamps = append(timeStamps, item.TimeStamp)
 					m.removeCachedItem(item.TimeStamp)
@@ -98,7 +100,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					statusMsg += "*selected items*"
 				}
 
-				config.DeleteItems(timeStamps)
+				if err := config.DeleteItems(timeStamps); err != nil {
+					utils.LogERROR(fmt.Sprintf("ERROR: could not delete all items from history: %s", err))
+				}
+
 				cmds = append(
 					cmds,
 					m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
@@ -134,8 +139,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Batch(cmds...)
 
 				default:
-					err := clipboard.WriteAll(fullValue)
-					utils.HandleError(err)
+					utils.HandleError(clipboard.WriteAll(fullValue))
 					return m, tea.Quit
 				}
 			}
@@ -217,7 +221,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(selectedItems) >= 1 {
 				for _, item := range selectedItems {
 					if item.Value == currentContent {
-						clipboard.WriteAll("")
+						if err := clipboard.WriteAll(""); err != nil {
+							utils.LogERROR(fmt.Sprintf("ERROR: failed to reset clipboard buffer value: %s", err))
+						}
 					}
 				}
 				timeStamps := []string{}
@@ -229,11 +235,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				timeStamps = append(timeStamps, timestamp)
 				statusMsg += "*selected items*"
-				config.DeleteItems(timeStamps)
+				if err := config.DeleteItems(timeStamps); err != nil {
+					utils.LogERROR(fmt.Sprintf("ERROR: failed to delete all items from history file: %s", err))
+				}
 			} else {
 				m.list.RemoveItem(currentIndex)
-				err := config.DeleteItems([]string{timestamp})
-				utils.HandleError(err)
+				utils.HandleError(config.DeleteItems([]string{timestamp}))
 				statusMsg += title
 			}
 
@@ -363,7 +370,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	HELPER FUNCS
 */
 
-func (m *model) togglePinUpdate() {
+func (m *Model) togglePinUpdate() {
 	index := m.list.Index()
 	item, ok := m.list.SelectedItem().(item)
 	if !ok {
@@ -381,7 +388,7 @@ func (m *model) togglePinUpdate() {
 	}
 }
 
-func (m *model) updatePaginator() {
+func (m *Model) updatePaginator() {
 	pagStyle := lipgloss.NewStyle().MarginBottom(1).MarginLeft(2)
 	if m.list.ShowHelp() {
 		pagStyle = lipgloss.NewStyle().MarginBottom(0).MarginLeft(2)
@@ -389,7 +396,7 @@ func (m *model) updatePaginator() {
 	m.list.Styles.PaginationStyle = pagStyle
 }
 
-func (m *model) toggleSelectedSingle() {
+func (m *Model) toggleSelectedSingle() {
 	m.prevDirection = ""
 	index := m.list.Index()
 	item, ok := m.list.SelectedItem().(item)
@@ -400,7 +407,7 @@ func (m *model) toggleSelectedSingle() {
 	m.list.SetItem(index, item)
 }
 
-func (m *model) toggleSelected(direction string) {
+func (m *Model) toggleSelected(direction string) {
 	if m.prevDirection == "" {
 		m.prevDirection = direction
 	}
@@ -430,14 +437,7 @@ func (m *model) toggleSelected(direction string) {
 	}
 }
 
-type SelectedItem struct {
-	Index     int
-	TimeStamp string
-	Value     string
-	Pinned    bool
-}
-
-func (m *model) selectedItems() []SelectedItem {
+func (m *Model) selectedItems() []SelectedItem {
 	selectedItems := []SelectedItem{}
 	for index, i := range m.list.Items() {
 		item, ok := i.(item)
@@ -460,7 +460,7 @@ func (m *model) selectedItems() []SelectedItem {
 	return selectedItems
 }
 
-func (m *model) removeMultiSelected() {
+func (m *Model) removeMultiSelected() {
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
 		if item, ok := items[i].(item); ok && item.selected {
@@ -469,7 +469,7 @@ func (m *model) removeMultiSelected() {
 	}
 }
 
-func (m *model) resetSelected() {
+func (m *Model) resetSelected() {
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
 		if item, ok := items[i].(item); ok && item.selected {
@@ -479,7 +479,7 @@ func (m *model) resetSelected() {
 	}
 }
 
-func (m *model) filterMatches() []string {
+func (m *Model) filterMatches() []string {
 	filteredItems := []string{}
 	for _, i := range m.list.Items() {
 		item, ok := i.(item)
@@ -497,7 +497,7 @@ func (m *model) filterMatches() []string {
 	return filteredItems
 }
 
-func (m *model) removeCachedItem(ts string) {
+func (m *Model) removeCachedItem(ts string) {
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
 		if item, ok := items[i].(item); ok && item.timeStamp == ts {

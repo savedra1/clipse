@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/utils"
 )
@@ -19,7 +20,7 @@ var (
 	).Render // default styling func used to render message
 )
 
-type model struct {
+type Model struct {
 	list             list.Model          // list items
 	keys             *keyMap             // keybindings
 	filterKeys       *filterKeyMap       // keybindings for filter view
@@ -28,9 +29,9 @@ type model struct {
 	togglePinned     bool                // pinned view indicator
 	theme            config.CustomTheme  // colors scheme to uses
 	prevDirection    string              // prev direction used to track selections
-	confirmationList list.Model          // secondary list model used for confirmation screen
+	confirmationList list.Model          // secondary list Model used for confirmation screen
 	showConfirmation bool                // whether to show confirmation screen
-	itemCache        []SelectedItem      // easy access for related items following confirmation screen choice
+	itemCache        []SelectedItem      // easy access for related items following confirmation screen
 }
 
 type item struct {
@@ -45,6 +46,13 @@ type item struct {
 	selected        bool   // selected status
 }
 
+type SelectedItem struct {
+	Index     int    // list index needed for deletion
+	TimeStamp string // timestamp needed for deletion
+	Value     string // full val needed for copy
+	Pinned    bool   // pinned val needed to determine whether confirmation screen is needed
+}
+
 func (i item) Title() string       { return i.title }
 func (i item) TitleFull() string   { return i.titleFull }
 func (i item) TimeStamp() string   { return i.timeStamp }
@@ -52,11 +60,11 @@ func (i item) Description() string { return i.description }
 func (i item) FilePath() string    { return i.filePath }
 func (i item) FilterValue() string { return i.title }
 
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return tea.EnterAltScreen
 }
 
-func NewModel() model {
+func NewModel() Model {
 	var (
 		listKeys         = newKeyMap()
 		filterKeys       = newFilterKeymap()
@@ -67,7 +75,7 @@ func NewModel() model {
 
 	ct := config.GetTheme()
 
-	m := model{
+	m := Model{
 		keys:             listKeys,
 		filterKeys:       filterKeys,
 		confirmationKeys: confirmationKeys,

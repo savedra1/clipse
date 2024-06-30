@@ -1,5 +1,6 @@
 package utils
 
 const (
-	maxChar = 65
+	maxChar     = 65
+	logFileName = "clipse.log"
 )

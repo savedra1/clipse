@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/savedra1/clipse/utils"
 )
 
 type CustomTheme struct {
@@ -36,7 +38,9 @@ type CustomTheme struct {
 func GetTheme() CustomTheme {
 	_, err := os.Stat(ClipseConfig.ThemeFilePath)
 	if os.IsNotExist(err) {
-		initDefaultTheme()
+		if err = initDefaultTheme(); err != nil {
+			utils.LogERROR(fmt.Sprintf("could not initialize theme: %s", err))
+		}
 	}
 
 	file, err := os.OpenFile(ClipseConfig.ThemeFilePath, os.O_RDONLY, 0644)
