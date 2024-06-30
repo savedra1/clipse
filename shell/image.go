@@ -13,9 +13,9 @@ func ImagesEnabled(displayServer string) bool {
 	var cmd *exec.Cmd
 	switch displayServer {
 	case "wayland":
-		cmd = exec.Command("sh", "-c", "wl-copy -v")
+		cmd = exec.Command("sh", "-c", wlVersionCmd)
 	case "x11", "darwin":
-		cmd = exec.Command("sh", "-c", "xclip -v")
+		cmd = exec.Command("sh", "-c", xVersionCmd)
 	default:
 		return false
 	}
@@ -28,9 +28,9 @@ func ImagesEnabled(displayServer string) bool {
 func CopyImage(imagePath, displayServer string) error {
 	var cmd string
 	if displayServer == "wayland" {
-		cmd = fmt.Sprintf("wl-copy -t image/png < %s", imagePath)
+		cmd = fmt.Sprintf("%s %s", wlCopyImgCmd, imagePath)
 	} else {
-		cmd = fmt.Sprintf("xclip -selection clipboard -t image/png -i %s", imagePath)
+		cmd = fmt.Sprintf("%s %s", xCopyImgCmd, imagePath)
 	}
 	err := exec.Command("sh", "-c", cmd).Run()
 	if err != nil {
@@ -42,9 +42,9 @@ func CopyImage(imagePath, displayServer string) error {
 func SaveImage(imagePath, displayServer string) error {
 	var cmd string
 	if displayServer == "wayland" {
-		cmd = fmt.Sprintf("wl-paste -t image/png > %s", imagePath)
+		cmd = fmt.Sprintf("%s %s", wlPasteImgCmd, imagePath)
 	} else {
-		cmd = fmt.Sprintf("xclip -selection clipboard -t image/png -o > %s", imagePath)
+		cmd = fmt.Sprintf("%s %s", xPasteImgCmd, imagePath)
 	}
 
 	err := exec.Command("sh", "-c", cmd).Run()

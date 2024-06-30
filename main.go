@@ -36,7 +36,6 @@ func main() {
 	flag.Parse()
 	logPath, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)
-
 	utils.SetUpLogger(logPath)
 
 	switch {
@@ -88,7 +87,7 @@ func main() {
 }
 
 func launchTUI() {
-	_ = shell.KillExistingFG() // err ignored to mitigate panic when no existinmg clipse ps
+	shell.KillExistingFG()
 	_, err := tea.NewProgram(app.NewModel()).Run()
 	utils.HandleError(err)
 }
@@ -107,9 +106,10 @@ func handleAdd() {
 
 func handleListen() {
 	if err := shell.KillExisting(); err != nil {
-		fmt.Printf("failed to kill existing processes: %s", err)
+		fmt.Printf("ERROR: failed to kill existing listener process: %s", err)
+		utils.LogERROR(fmt.Sprintf("failed to kill existing listener process: %s", err))
 	}
-	shell.RunNohupListener() // hardcoded as const
+	shell.RunNohupListener()
 }
 
 func handleListenShell(displayServer string, imgEnabled bool) {

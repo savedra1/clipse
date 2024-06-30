@@ -33,33 +33,36 @@ func KillExisting() error {
 	return nil
 }
 
-func KillExistingFG() error {
+func KillExistingFG() {
 	/*
-		Only kill other clipboard GUI windows to prevent
+		Only kill other clipboard TUI windows to prevent
 		file conflicts.
 	*/
-
 	currentPS := strconv.Itoa(syscall.Getpid())
-	// fmt.Println("current:", currentPS)
-	cmd := exec.Command("sh", "-c", "pgrep -a clipse")
+	cmd := exec.Command("sh", "-c", pgrepCmd)
 	output, err := cmd.Output()
-	if err != nil || output == nil { // allows local usage when no clipse ps
-		return fmt.Errorf("no clipse processes are running")
-	}
 	/*
 		EG Output returns as:
-		156842 ./clipse --listen-shell >/dev/null 2>&1 &
-		310228 ./clipse
+		156842 clipse --listen-shell >/dev/null 2>&1 &
+		310228 clipse
 	*/
+	if err != nil {
+		utils.LogERROR(fmt.Sprintf("failed to get processes | err msg: %s | output: %s", err, output))
+		return
+	}
+	if output == nil {
+		return // no clipse processes running
+	}
 
 	psList := strings.Split(string(output), "\n")
 	for _, ps := range psList {
-		if !strings.Contains(ps, currentPS) && !strings.Contains(ps, listenCmd) {
+		if strings.Contains(ps, currentPS) || strings.Contains(ps, listenCmd) {
+			continue
+		}
+		if ps != "" {
 			KillProcess(strings.Split(ps, " ")[0])
 		}
 	}
-
-	return nil
 }
 
 func KillAll(bin string) {
@@ -79,6 +82,6 @@ func RunNohupListener() {
 func KillProcess(ppid string) {
 	cmd := exec.Command("kill", ppid)
 	if err := cmd.Run(); err != nil {
-		fmt.Printf("Failed to kill process: %s", err)
+		utils.LogERROR(fmt.Sprintf("failed to kill process: %s", err))
 	}
 }
