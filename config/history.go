@@ -116,30 +116,6 @@ func WriteUpdate(data ClipboardHistory) error {
 	return nil
 }
 
-func DeleteJSONItem(timeStamp string) error {
-	/* Could be used to remove a single item from the
-	history file
-	*/
-	data := fileContents()
-	var updatedClipboardHistory []ClipboardItem
-
-	for _, entry := range data.ClipboardHistory {
-		if entry.Recorded != timeStamp {
-			updatedClipboardHistory = append(updatedClipboardHistory, entry)
-			continue
-		}
-		if entry.FilePath != "null" {
-			if err := shell.DeleteImage(entry.FilePath); err != nil {
-				utils.LogERROR(fmt.Sprintf("failed to delete image file | %s", entry.FilePath))
-			}
-		}
-	}
-	updatedData := ClipboardHistory{
-		ClipboardHistory: updatedClipboardHistory,
-	}
-	return WriteUpdate(updatedData)
-}
-
 func DeleteItems(timeStamps []string) error {
 	data := fileContents()
 	updatedData := []ClipboardItem{}
@@ -149,9 +125,16 @@ func DeleteItems(timeStamps []string) error {
 		toDelete[ts] = true
 	}
 	for _, item := range data.ClipboardHistory {
-		if !toDelete[item.Recorded] {
-			updatedData = append(updatedData, item)
+		if toDelete[item.Recorded] {
+			if item.FilePath == "null" {
+				continue
+			}
+			if err := shell.DeleteImage(item.FilePath); err != nil {
+				utils.LogERROR(fmt.Sprintf("failed to delete image file | %s", item.FilePath))
+			}
+			continue
 		}
+		updatedData = append(updatedData, item)
 	}
 	updatedFile := ClipboardHistory{
 		ClipboardHistory: updatedData,
@@ -186,7 +169,7 @@ func ClearHistory(clearType string) error {
 			ClipboardHistory: textItems(),
 		}
 		if err := shell.DeleteAllImages(ClipseConfig.TempDirPath); err != nil {
-			utils.LogERROR(fmt.Sprintf("could not delete all images: %s", err))
+			utils.LogERROR(fmt.Sprintf("could not read file dir: %s", err))
 		}
 	case "text":
 		data = ClipboardHistory{

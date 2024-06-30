@@ -2,7 +2,11 @@ package shell
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
+
+	"github.com/savedra1/clipse/utils"
 )
 
 func ImagesEnabled(displayServer string) bool {
@@ -47,24 +51,25 @@ func SaveImage(imagePath, displayServer string) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
 func DeleteImage(imagePath string) error {
-	cmd := fmt.Sprintf("rm -f %s", imagePath)
-	err := exec.Command("sh", "-c", cmd).Run()
-	if err != nil {
+	if err := os.Remove(imagePath); err != nil {
 		return err
 	}
 	return nil
 }
 
 func DeleteAllImages(imgDir string) error {
-	cmd := fmt.Sprintf("rm -f %s/*", imgDir)
-	err := exec.Command("sh", "-c", cmd).Run()
+	files, err := os.ReadDir(imgDir)
 	if err != nil {
 		return err
+	}
+	for _, file := range files {
+		if err := os.Remove(filepath.Join(imgDir, file.Name())); err != nil {
+			utils.LogERROR(fmt.Sprintf("failed to delete file %s | %s", file.Name(), err))
+		}
 	}
 	return nil
 }

@@ -45,9 +45,9 @@ func RunListener(displayServer string, imgEnabled bool) error {
 			}
 			if dataType == "text" {
 				time.Sleep(defaultPollInterval)
-			} else {
-				time.Sleep(mediaPollInterval)
+				continue
 			}
+			time.Sleep(mediaPollInterval)
 		}
 	}()
 
@@ -74,7 +74,6 @@ MainLoop:
 						filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
 
 						if err := shell.SaveImage(filePath, displayServer); err != nil {
-							fmt.Println("")
 							utils.LogERROR(fmt.Sprintf("ERROR: failed to save image | %s", err))
 							break
 						}
