@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
@@ -16,10 +17,10 @@ import (
 
 /*
 	The main update function used to handle core TUI logic and update
-	the model state.
+	the Model state.
 */
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -369,7 +370,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	HELPER FUNCS
 */
 
-func (m *model) togglePinUpdate() {
+func (m *Model) togglePinUpdate() {
 	index := m.list.Index()
 	item, ok := m.list.SelectedItem().(item)
 	if !ok {
@@ -387,7 +388,7 @@ func (m *model) togglePinUpdate() {
 	}
 }
 
-func (m *model) updatePaginator() {
+func (m *Model) updatePaginator() {
 	pagStyle := lipgloss.NewStyle().MarginBottom(1).MarginLeft(2)
 	if m.list.ShowHelp() {
 		pagStyle = lipgloss.NewStyle().MarginBottom(0).MarginLeft(2)
@@ -395,7 +396,7 @@ func (m *model) updatePaginator() {
 	m.list.Styles.PaginationStyle = pagStyle
 }
 
-func (m *model) toggleSelectedSingle() {
+func (m *Model) toggleSelectedSingle() {
 	m.prevDirection = ""
 	index := m.list.Index()
 	item, ok := m.list.SelectedItem().(item)
@@ -406,7 +407,7 @@ func (m *model) toggleSelectedSingle() {
 	m.list.SetItem(index, item)
 }
 
-func (m *model) toggleSelected(direction string) {
+func (m *Model) toggleSelected(direction string) {
 	if m.prevDirection == "" {
 		m.prevDirection = direction
 	}
@@ -436,7 +437,7 @@ func (m *model) toggleSelected(direction string) {
 	}
 }
 
-func (m *model) selectedItems() []SelectedItem {
+func (m *Model) selectedItems() []SelectedItem {
 	selectedItems := []SelectedItem{}
 	for index, i := range m.list.Items() {
 		item, ok := i.(item)
@@ -459,7 +460,7 @@ func (m *model) selectedItems() []SelectedItem {
 	return selectedItems
 }
 
-func (m *model) removeMultiSelected() {
+func (m *Model) removeMultiSelected() {
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
 		if item, ok := items[i].(item); ok && item.selected {
@@ -468,7 +469,7 @@ func (m *model) removeMultiSelected() {
 	}
 }
 
-func (m *model) resetSelected() {
+func (m *Model) resetSelected() {
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
 		if item, ok := items[i].(item); ok && item.selected {
@@ -478,7 +479,7 @@ func (m *model) resetSelected() {
 	}
 }
 
-func (m *model) filterMatches() []string {
+func (m *Model) filterMatches() []string {
 	filteredItems := []string{}
 	for _, i := range m.list.Items() {
 		item, ok := i.(item)
@@ -496,7 +497,7 @@ func (m *model) filterMatches() []string {
 	return filteredItems
 }
 
-func (m *model) removeCachedItem(ts string) {
+func (m *Model) removeCachedItem(ts string) {
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
 		if item, ok := items[i].(item); ok && item.timeStamp == ts {

@@ -4,7 +4,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func (m model) View() string {
+func (m Model) View() string {
 	render := lipgloss.NewStyle().PaddingLeft(1).Render
 
 	listView := m.list.View()

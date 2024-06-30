@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/utils"
 )
@@ -19,7 +20,7 @@ var (
 	).Render // default styling func used to render message
 )
 
-type model struct {
+type Model struct {
 	list             list.Model          // list items
 	keys             *keyMap             // keybindings
 	filterKeys       *filterKeyMap       // keybindings for filter view
@@ -28,7 +29,7 @@ type model struct {
 	togglePinned     bool                // pinned view indicator
 	theme            config.CustomTheme  // colors scheme to uses
 	prevDirection    string              // prev direction used to track selections
-	confirmationList list.Model          // secondary list model used for confirmation screen
+	confirmationList list.Model          // secondary list Model used for confirmation screen
 	showConfirmation bool                // whether to show confirmation screen
 	itemCache        []SelectedItem      // easy access for related items following confirmation screen
 }
@@ -59,11 +60,11 @@ func (i item) Description() string { return i.description }
 func (i item) FilePath() string    { return i.filePath }
 func (i item) FilterValue() string { return i.title }
 
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return tea.EnterAltScreen
 }
 
-func NewModel() *model {
+func NewModel() Model {
 	var (
 		listKeys         = newKeyMap()
 		filterKeys       = newFilterKeymap()
@@ -74,7 +75,7 @@ func NewModel() *model {
 
 	ct := config.GetTheme()
 
-	m := model{
+	m := Model{
 		keys:             listKeys,
 		filterKeys:       filterKeys,
 		confirmationKeys: confirmationKeys,
@@ -112,7 +113,7 @@ func NewModel() *model {
 	if !ct.UseCustom {
 		m.list = setDefaultStyling(clipboardList)
 		m.confirmationList = setDefaultStyling(confirmationList)
-		return &m
+		return m
 	}
 
 	statusMessageStyle = styledStatusMessage(ct)
@@ -120,7 +121,7 @@ func NewModel() *model {
 	m.list = styledList(clipboardList, ct)
 	m.confirmationList = styledList(confirmationList, ct)
 
-	return &m
+	return m
 }
 
 // if isPinned is true, returns only an array of pinned items, otherwise all

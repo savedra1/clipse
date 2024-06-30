@@ -20,7 +20,7 @@ var (
 	help        = flag.Bool("help", false, "Show help message.")
 	v           = flag.Bool("v", false, "Show app version.")
 	add         = flag.Bool("a", false, "Add the following arg to the clipboard history.")
-	copy        = flag.Bool("c", false, "Copy the input to your systems clipboard.")
+	copyInput   = flag.Bool("c", false, "Copy the input to your systems clipboard.")
 	paste       = flag.Bool("p", false, "Prints the current clipboard content.")
 	listen      = flag.Bool("listen", false, "Start background process for monitoring clipboard activity.")
 	listenShell = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
@@ -62,7 +62,7 @@ func main() {
 	case *add:
 		handleAdd()
 
-	case *copy:
+	case *copyInput:
 		handleCopy()
 
 	case *paste:

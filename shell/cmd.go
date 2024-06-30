@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	ps "github.com/mitchellh/go-ps"
+
 	"github.com/savedra1/clipse/utils"
 )
 

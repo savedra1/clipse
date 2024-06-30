@@ -11,7 +11,7 @@ import (
 	"github.com/savedra1/clipse/config"
 )
 
-func (m *model) newItemDelegate() itemDelegate {
+func (m *Model) newItemDelegate() itemDelegate {
 	return itemDelegate{
 		theme: m.theme,
 	}
@@ -25,7 +25,7 @@ type itemDelegate struct {
 
 func (d itemDelegate) Height() int                             { return 2 }
 func (d itemDelegate) Spacing() int                            { return 1 }
-func (d itemDelegate) Update(_ tea.Msg, m *list.Model) tea.Cmd { return nil }
+func (d itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
 
 func (d itemDelegate) Render(
 	w io.Writer,
