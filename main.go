@@ -33,7 +33,6 @@ var (
 )
 
 func main() {
-
 	flag.Parse()
 	logPath, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)

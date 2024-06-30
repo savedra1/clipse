@@ -25,7 +25,6 @@ func KillExisting() error {
 
 	for _, p := range psList {
 		if strings.Contains(os.Args[0], p.Executable()) {
-			// fmt.Println("Process:", p.Pid())
 			if p.Pid() != currentPS {
 				KillProcess(strconv.Itoa(p.Pid()))
 			}
@@ -63,22 +62,13 @@ func KillExistingFG() error {
 	return nil
 }
 
-/* Not currently used
-func clearShellOutput() {
-	cmd := exec.Command("clear")
-	cmd.Stdout = os.Stdout
-	cmd.Start() // Not essential to wait for this process to complete
-}
-*/
-
 func KillAll(bin string) {
 	cmd := exec.Command("pkill", "-f", bin)
 	err := cmd.Run() // Wait for this to finish before executing
 	if err != nil {
-		fmt.Printf("Failed to kill all existing processes for %s.", bin)
+		utils.LogERROR(fmt.Sprintf("Failed to kill all existing processes for %s.", bin))
 		return
 	}
-	// clearShellOutput()
 }
 
 func RunNohupListener() {
