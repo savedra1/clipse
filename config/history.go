@@ -117,7 +117,7 @@ func WriteUpdate(data ClipboardHistory) error {
 }
 
 func DeleteJSONItem(timeStamp string) error {
-	/* Could be used to rmeove a single item from the
+	/* Could be used to remove a single item from the
 	history file
 	*/
 	data := fileContents()
