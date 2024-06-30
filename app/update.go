@@ -84,7 +84,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				for _, item := range m.itemCache {
 					if item.Value == currentContent {
 						if err := clipboard.WriteAll(""); err != nil {
-							utils.LogERROR(fmt.Sprintf("ERROR: could not delete all items form history: %s", err))
+							utils.LogERROR(fmt.Sprintf("ERROR: could not delete all items from history: %s", err))
 
 						}
 					}
@@ -100,7 +100,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 				if err := config.DeleteItems(timeStamps); err != nil {
-					utils.LogERROR(fmt.Sprintf("ERROR: could not delete all items form history: %s", err))
+					utils.LogERROR(fmt.Sprintf("ERROR: could not delete all items from history: %s", err))
 				}
 
 				cmds = append(
@@ -235,7 +235,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				timeStamps = append(timeStamps, timestamp)
 				statusMsg += "*selected items*"
 				if err := config.DeleteItems(timeStamps); err != nil {
-					utils.LogERROR(fmt.Sprintf("ERROR: failed to delete all items form history file: %s", err))
+					utils.LogERROR(fmt.Sprintf("ERROR: failed to delete all items from history file: %s", err))
 				}
 			} else {
 				m.list.RemoveItem(currentIndex)
