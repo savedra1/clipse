@@ -17,8 +17,6 @@ func (m *Model) newItemDelegate() itemDelegate {
 	}
 }
 
-// delegate used to override individual item appearance based on state
-
 type itemDelegate struct {
 	theme config.CustomTheme
 }

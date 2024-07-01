@@ -68,9 +68,8 @@ func DisplayServer() string {
 		waylandDisplay := os.Getenv("WAYLAND_DISPLAY")
 		if waylandDisplay != "" {
 			return "wayland"
-		} else {
-			return "x11"
 		}
+		return "x11"
 	case "darwin":
 		return "darwin"
 	default:
@@ -141,17 +140,6 @@ func DeleteItems(timeStamps []string) error {
 	}
 	return WriteUpdate(updatedFile)
 
-}
-
-func createDir(dirPath string) error {
-	/* Used to create the ~/.config/clipboard_manager dir
-	in relative path. Takes arg to allow other dirs to be created also.
-	*/
-	if err := os.MkdirAll(dirPath, 0755); err != nil {
-		fmt.Println("Error creating directory:", err)
-		os.Exit(1)
-	}
-	return nil
 }
 
 func ClearHistory(clearType string) error {

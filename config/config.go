@@ -40,7 +40,7 @@ func Init() (string, string, bool, error) {
 	// Does Config dir exist, if no make it.
 	_, err = os.Stat(clipseDir)
 	if os.IsNotExist(err) {
-		err = createDir(clipseDir)
+		utils.HandleError(os.MkdirAll(clipseDir, 0755))
 		utils.HandleError(err)
 	}
 
@@ -53,41 +53,32 @@ func Init() (string, string, bool, error) {
 	// Create TempDir for images if it does not exist.
 	_, err = os.Stat(ClipseConfig.TempDirPath)
 	if os.IsNotExist(err) {
-		utils.HandleError(createDir(ClipseConfig.TempDirPath))
+		utils.HandleError(os.MkdirAll(ClipseConfig.TempDirPath, 0755))
 	}
 
 	ds := DisplayServer()
-	var ie bool // imagesEnabled?
-	if ds == "unknown" {
-		ie = false
-	} else {
-		ie = shell.ImagesEnabled(ds)
-	}
+	ie := shell.ImagesEnabled(ds) // images enabled?
 
 	return ClipseConfig.LogFilePath, ds, ie, nil
 }
 
 func loadConfig(configPath string) {
 	_, err := os.Stat(configPath)
+
 	if os.IsNotExist(err) {
 		baseConfig := defaultConfig()
-
 		jsonData, err := json.MarshalIndent(baseConfig, "", "    ")
 		utils.HandleError(err)
-
-		err = os.WriteFile(configPath, jsonData, 0644)
-		if err != nil {
-			fmt.Println("Failed to create:", configPath)
-		}
+		utils.HandleError(os.WriteFile(configPath, jsonData, 0644))
 	}
 
 	configDir := filepath.Dir(configPath)
-
 	confData, err := os.ReadFile(configPath)
 	utils.HandleError(err)
 
 	if err = json.Unmarshal(confData, &ClipseConfig); err != nil {
 		fmt.Println("Failed to read config. Skipping.\nErr: %w", err)
+		utils.LogERROR(fmt.Sprintf("failed to read config. Skipping.\nsrr: %s", err))
 	}
 
 	// Expand HistoryFile, ThemeFile, LogFile and TempDir paths
