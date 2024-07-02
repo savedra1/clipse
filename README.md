@@ -2,7 +2,7 @@
 
 https://github.com/savedra1/clipse/assets/99875823/c9c1998d-e96d-4c75-b7d9-060e39ac40ab
 
-[![nix](https://img.shields.io/static/v1?label=Nix&message=0.1.0&color=blue)](https://search.nixos.org/packages?channel=unstable&show=clipse&from=0&size=50&sort=relevance&type=packages&query=clipse)
+[![nix](https://img.shields.io/static/v1?label=Nix&message=1.0.0&color=blue)](https://search.nixos.org/packages?channel=unstable&show=clipse&from=0&size=50&sort=relevance&type=packages&query=clipse)
 [![AUR](https://img.shields.io/aur/version/clipse.svg)](https://aur.archlinux.org/packages/clipse/)
 <br>
 
@@ -48,32 +48,32 @@ An example `custom_theme.json` file:
 
 ```json
 {
-    "UseCustom":          false,
-		"TitleFore":          "#ffffff",
-		"TitleBack":          "#6F4CBC",
-		"TitleInfo":          "#3498db",
-		"NormalTitle":        "#ffffff",
-		"DimmedTitle":        "#808080",
-		"SelectedTitle":      "#FF69B4",
-		"NormalDesc":         "#808080",
-		"DimmedDesc":         "#808080",
-		"SelectedDesc":       "#FF69B4",
-		"StatusMsg":          "#2ecc71",
-		"PinIndicatorColor":  "#FFD700",
-		"SelectedBorder":     "#3498db",
-		"SelectedDescBorder": "#3498db",
-		"FilteredMatch":      "#ffffff",
-		"FilterPrompt":       "#2ecc71",
-		"FilterInfo":         "#3498db",
-		"FilterText":         "#ffffff",
-		"FilterCursor":       "#FFD700",
-		"HelpKey":            "#999999",
-		"HelpDesc":           "#808080",
-		"PageActiveDot":      "#3498db",
-		"PageInactiveDot":    "#808080",
-		"DividerDot":         "#3498db",
-		"PreviewedText":      "#ffffff",
-		"PreviewBorder":      "#3498db",
+	"UseCustom":          false,
+	"TitleFore":          "#ffffff",
+	"TitleBack":          "#6F4CBC",
+	"TitleInfo":          "#3498db",
+	"NormalTitle":        "#ffffff",
+	"DimmedTitle":        "#808080",
+	"SelectedTitle":      "#FF69B4",
+	"NormalDesc":         "#808080",
+	"DimmedDesc":         "#808080",
+	"SelectedDesc":       "#FF69B4",
+	"StatusMsg":          "#2ecc71",
+	"PinIndicatorColor":  "#FFD700",
+	"SelectedBorder":     "#3498db",
+	"SelectedDescBorder": "#3498db",
+	"FilteredMatch":      "#ffffff",
+	"FilterPrompt":       "#2ecc71",
+	"FilterInfo":         "#3498db",
+	"FilterText":         "#ffffff",
+	"FilterCursor":       "#FFD700",
+	"HelpKey":            "#999999",
+	"HelpDesc":           "#808080",
+	"PageActiveDot":      "#3498db",
+	"PageInactiveDot":    "#808080",
+	"DividerDot":         "#3498db",
+	"PreviewedText":      "#ffffff",
+	"PreviewBorder":      "#3498db",
 }
 ```
 
@@ -162,7 +162,7 @@ If building `clipse` from the unstable branch as a system package, I would sugge
 
 buildGoModule rec {
   pname = "clipse";
-  version = "0.1.0";
+  version = "1.0.0";
 
   src = fetchFromGitHub {
     owner = "savedra1";
@@ -203,7 +203,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux arm64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.1.0_linux_arm64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_1.0.0_linux_arm64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -211,7 +211,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux amd64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v0.1.0/clipse_0.1.0_linux_amd64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.0/clipse_1.0.0_linux_amd64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -219,7 +219,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux 836</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v0.1.0/clipse_0.1.0_linux_836.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.0/clipse_1.0.0_linux_836.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -227,7 +227,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Darwin arm64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v0.1.0/clipse_0.1.0_darwin_arm64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.0/clipse_1.0.0_darwin_arm64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -235,7 +235,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Darwin amd64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v0.1.0/clipse_0.1.0_darwin_amd64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.0/clipse_1.0.0_darwin_amd64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -244,7 +244,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
 
 ```shell
 
-go install github.com/savedra1/clipse@v0.1.0
+go install github.com/savedra1/clipse@v1.0.0
 
 ```
 
@@ -467,7 +467,7 @@ I would love to receive contributions to this project and welcome PRs from anyon
   [Desktop Entry]
   Name=clipse
   Comment=Clipse event listener autostart.
-  Exec=/home/brayan/Applications/bin/clipse/clipse_0.1.0_linux_amd64/clipse --listen %f
+  Exec=/home/brayan/Applications/bin/clipse/clipse_1.0.0_linux_amd64/clipse --listen %f
   Terminal=false
   Type=Application
   ```
