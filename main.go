@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	version     = "v0.0.7"
+	version     = "v0.1.0"
 	help        = flag.Bool("help", false, "Show help message.")
 	v           = flag.Bool("v", false, "Show app version.")
 	add         = flag.Bool("a", false, "Add the following arg to the clipboard history.")
