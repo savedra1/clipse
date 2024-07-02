@@ -366,16 +366,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.prevDirection = ""
 
 		case key.Matches(msg, m.keys.preview):
-			cmds = append(
-				cmds,
-				m.list.NewStatusMessage(statusMessageStyle("preview")),
-			)
 			m.showPreview = !m.showPreview
-			content := i.titleFull
-			if i.filePath != "null" {
-				content = getImgPreview(i.filePath)
+			if m.showPreview {
+				content := i.titleFull
+				if i.filePath != "null" {
+					content = getImgPreview(i.filePath)
+				}
+				m.preview.SetContent(content)
+				m.toggleKeysEnabled(false)
+				break
 			}
-			m.preview.SetContent(content)
+			m.toggleKeysEnabled(true)
 		}
 	}
 
@@ -531,4 +532,25 @@ func (m *Model) removeCachedItem(ts string) {
 			m.list.RemoveItem(i)
 		}
 	}
+}
+
+func (m *Model) toggleKeysEnabled(v bool) {
+	m.list.KeyMap.CursorUp.SetEnabled(v)
+	m.list.KeyMap.CursorDown.SetEnabled(v)
+	m.list.KeyMap.Filter.SetEnabled(v)
+	m.list.KeyMap.GoToEnd.SetEnabled(v)
+	m.list.KeyMap.GoToStart.SetEnabled(v)
+	m.list.KeyMap.Quit.SetEnabled(v)
+	m.list.KeyMap.NextPage.SetEnabled(v)
+	m.list.KeyMap.PrevPage.SetEnabled(v)
+	m.list.KeyMap.ShowFullHelp.SetEnabled(v)
+
+	m.keys.remove.SetEnabled(v)
+	m.keys.choose.SetEnabled(v)
+	m.keys.togglePin.SetEnabled(v)
+	m.keys.togglePinned.SetEnabled(v)
+	m.keys.selectDown.SetEnabled(v)
+	m.keys.selectUp.SetEnabled(v)
+	m.keys.selectSingle.SetEnabled(v)
+	m.keys.clearSelected.SetEnabled(v)
 }
