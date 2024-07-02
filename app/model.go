@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
@@ -32,7 +33,8 @@ type Model struct {
 	confirmationList list.Model          // secondary list Model used for confirmation screen
 	showConfirmation bool                // whether to show confirmation screen
 	itemCache        []SelectedItem      // easy access for related items following confirmation screen
-	preview          PreviewModel
+	preview          viewport.Model
+	previewReady     bool
 	showPreview      bool
 }
 
@@ -86,7 +88,7 @@ func NewModel() Model {
 		theme:            theme,
 		prevDirection:    "",
 		showConfirmation: false,
-		preview:          newPreviewModel(),
+		preview:          NewPreview(),
 		showPreview:      false,
 	}
 

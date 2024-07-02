@@ -15,7 +15,7 @@ func (m Model) View() string {
 	switch {
 
 	case m.showPreview:
-		return fmt.Sprintf("%s\n%s\n%s", m.preview.headerView(), m.preview.View(), m.preview.footerView())
+		return fmt.Sprintf("%s\n%s\n%s", headerView(m.preview), m.preview.View(), footerView(m.preview))
 
 	case m.showConfirmation:
 		listView = m.confirmationList.View()

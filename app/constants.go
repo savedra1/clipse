@@ -5,4 +5,5 @@ const (
 	pinColorDefault   = "#FF0000"
 	clipboardTitle    = "Clipboard History"
 	confirmationTitle = "Delete pinned item(s)?"
+	previewHeader     = "Preview"
 )

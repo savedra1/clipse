@@ -30,19 +30,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 		m.confirmationList.SetSize(msg.Width-h, msg.Height-v)
 
-		headerHeight := lipgloss.Height(m.preview.headerView())
-		footerHeight := lipgloss.Height(m.preview.footerView())
+		headerHeight := lipgloss.Height(headerView(m.preview))
+		footerHeight := lipgloss.Height(footerView(m.preview))
 		verticalMarginHeight := headerHeight + footerHeight
 
-		if !m.preview.ready {
-			m.preview.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
-			m.preview.viewport.YPosition = headerHeight
-			m.preview.ready = true
+		if !m.previewReady {
+			m.preview = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
+			m.preview.YPosition = headerHeight
+			m.previewReady = true
 
-			m.preview.viewport.YPosition = headerHeight + 1
+			m.preview.YPosition = headerHeight + 1
 		} else {
-			m.preview.viewport.Width = msg.Width
-			m.preview.viewport.Height = msg.Height - verticalMarginHeight
+			m.preview.Width = msg.Width
+			m.preview.Height = msg.Height - verticalMarginHeight
 		}
 
 	case tea.KeyMsg:
@@ -375,7 +375,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if i.filePath != "null" {
 				content = getImgPreview(i.filePath)
 			}
-			m.preview.viewport.SetContent(content)
+			m.preview.SetContent(content)
 		}
 	}
 
@@ -386,7 +386,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.confirmationList, cmd = m.confirmationList.Update(msg)
 	cmds = append(cmds, cmd)
 
-	m.preview.viewport, cmd = m.preview.viewport.Update(msg)
+	m.preview, cmd = m.preview.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
