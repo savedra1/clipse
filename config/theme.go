@@ -89,11 +89,12 @@ func initDefaultTheme() error {
 	return nil
 }
 
+// hardcoded default theme when UseCustom set to false
 func defaultTheme() CustomTheme {
 	return CustomTheme{
 		UseCustom:          false,
 		TitleFore:          "#ffffff",
-		TitleBack:          "#8A2BE2",
+		TitleBack:          "#6F4CBC",
 		TitleInfo:          "#3498db",
 		NormalTitle:        "#ffffff",
 		DimmedTitle:        "#808080",
@@ -110,7 +111,7 @@ func defaultTheme() CustomTheme {
 		FilterInfo:         "#3498db",
 		FilterText:         "#ffffff",
 		FilterCursor:       "#FFD700",
-		HelpKey:            "#808080",
+		HelpKey:            "#999999",
 		HelpDesc:           "#808080",
 		PageActiveDot:      "#ffffff",
 		PageInactiveDot:    "#808080",

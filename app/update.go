@@ -85,7 +85,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				for _, item := range m.itemCache {
 					if item.Value == currentContent {
 						if err := clipboard.WriteAll(""); err != nil {
-							utils.LogERROR(fmt.Sprintf("ERROR: could not delete all items from history: %s", err))
+							utils.LogERROR(fmt.Sprintf("could not delete all items from history: %s", err))
 
 						}
 					}
@@ -93,15 +93,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.removeCachedItem(item.TimeStamp)
 				}
 
-				statusMsg := "Deleted: "
+				statusMsg := "Deleted: *selected items*"
 				if len(m.itemCache) == 1 {
-					statusMsg += m.itemCache[0].Value
-				} else {
-					statusMsg += "*selected items*"
+					statusMsg += strings.Replace(statusMsg, "*selected items*", m.itemCache[0].Value, 1)
 				}
 
 				if err := config.DeleteItems(timeStamps); err != nil {
-					utils.LogERROR(fmt.Sprintf("ERROR: could not delete all items from history: %s", err))
+					utils.LogERROR(fmt.Sprintf("could not delete all items from history: %s", err))
 				}
 
 				cmds = append(
@@ -160,8 +158,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case len(os.Args) > 1 && os.Args[1] == "keep":
 				statusMsg := "Copied to clipboard: *selected items*"
-				err := clipboard.WriteAll(yank)
-				if err != nil {
+				if err := clipboard.WriteAll(yank); err != nil {
 					statusMsg = "Could not copy all selected items."
 				}
 				cmds = append(
@@ -171,8 +168,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Batch(cmds...)
 
 			default:
-				err := clipboard.WriteAll(yank)
-				if err == nil {
+				if err := clipboard.WriteAll(yank); err == nil {
 					return m, tea.Quit
 				}
 				cmds = append(
@@ -222,7 +218,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				for _, item := range selectedItems {
 					if item.Value == currentContent {
 						if err := clipboard.WriteAll(""); err != nil {
-							utils.LogERROR(fmt.Sprintf("ERROR: failed to reset clipboard buffer value: %s", err))
+							utils.LogERROR(fmt.Sprintf("failed to reset clipboard buffer value: %s", err))
 						}
 					}
 				}
@@ -236,7 +232,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				timeStamps = append(timeStamps, timestamp)
 				statusMsg += "*selected items*"
 				if err := config.DeleteItems(timeStamps); err != nil {
-					utils.LogERROR(fmt.Sprintf("ERROR: failed to delete all items from history file: %s", err))
+					utils.LogERROR(fmt.Sprintf("failed to delete all items from history file: %s", err))
 				}
 			} else {
 				m.list.RemoveItem(currentIndex)
@@ -263,17 +259,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			utils.HandleError(err)
 			m.togglePinUpdate()
 
-			if isPinned {
-				cmds = append(
-					cmds,
-					m.list.NewStatusMessage(statusMessageStyle("UnPinned: "+title)),
-				)
-			} else {
-				cmds = append(
-					cmds,
-					m.list.NewStatusMessage(statusMessageStyle("Pinned: "+title)),
-				)
+			pinEvent := "Pinned"
+			if !isPinned {
+				pinEvent = "Unpinned"
 			}
+			cmds = append(
+				cmds,
+				m.list.NewStatusMessage(statusMessageStyle(fmt.Sprintf("%s: %s", pinEvent, title))),
+			)
 
 		case key.Matches(msg, m.keys.togglePinned):
 			if len(m.list.Items()) == 0 {
@@ -294,44 +287,45 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					cmds,
 					m.list.NewStatusMessage(statusMessageStyle("No pinned items")),
 				)
-			} else {
-				for i := len(m.list.Items()) - 1; i >= 0; i-- { // clear all items
-					m.list.RemoveItem(i)
-				}
-				for _, i := range filteredItems { // redraw all required items
-					m.list.InsertItem(len(m.list.Items()), i)
-				}
+				break
+			}
+
+			for i := len(m.list.Items()) - 1; i >= 0; i-- { // clear all items
+				m.list.RemoveItem(i)
+			}
+			for _, i := range filteredItems { // redraw all required items
+				m.list.InsertItem(len(m.list.Items()), i)
 			}
 
 		case key.Matches(msg, m.keys.selectDown):
 			if m.list.IsFiltered() {
 				cmds = append(
 					cmds,
-					m.list.NewStatusMessage(statusMessageStyle("cannot select with filter applied")),
+					m.list.NewStatusMessage(statusMessageStyle("cannot select items with filter applied")),
 				)
-			} else {
-				m.toggleSelected("down")
+				break
 			}
+			m.toggleSelected("down")
 
 		case key.Matches(msg, m.keys.selectUp):
 			if m.list.IsFiltered() {
 				cmds = append(
 					cmds,
-					m.list.NewStatusMessage(statusMessageStyle("cannot select with filter applied")),
+					m.list.NewStatusMessage(statusMessageStyle("cannot select items with filter applied")),
 				)
-			} else {
-				m.toggleSelected("up")
+				break
 			}
+			m.toggleSelected("up")
 
 		case key.Matches(msg, m.keys.selectSingle):
 			if m.list.IsFiltered() {
 				cmds = append(
 					cmds,
-					m.list.NewStatusMessage(statusMessageStyle("cannot select with filter applied")),
+					m.list.NewStatusMessage(statusMessageStyle("cannot select items with filter applied")),
 				)
-			} else {
-				m.toggleSelectedSingle()
+				break
 			}
+			m.toggleSelectedSingle()
 
 		case key.Matches(msg, m.keys.clearSelected), key.Matches(msg, m.keys.filter):
 			m.resetSelected()
@@ -419,11 +413,12 @@ func (m *Model) toggleSelected(direction string) {
 
 	index := m.list.Index()
 
-	if item.selected {
+	switch {
+	case item.selected:
 		item.selected = false
-	} else if m.prevDirection == direction && !item.selected {
+	case m.prevDirection == direction && !item.selected:
 		item.selected = true
-	} else {
+	default:
 		m.prevDirection = ""
 	}
 
