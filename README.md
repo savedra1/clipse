@@ -2,13 +2,13 @@
 
 https://github.com/savedra1/clipse/assets/99875823/c9c1998d-e96d-4c75-b7d9-060e39ac40ab
 
-[![nix](https://img.shields.io/static/v1?label=Nix&message=0.0.71&color=blue)](https://search.nixos.org/packages?channel=unstable&show=clipse&from=0&size=50&sort=relevance&type=packages&query=clipse)
+[![nix](https://img.shields.io/static/v1?label=Nix&message=0.1.0&color=blue)](https://search.nixos.org/packages?channel=unstable&show=clipse&from=0&size=50&sort=relevance&type=packages&query=clipse)
 [![AUR](https://img.shields.io/aur/version/clipse.svg)](https://aur.archlinux.org/packages/clipse/)
 <br>
 
 ### Table of contents
 
-- [Why use clipse?](#why-use-clipse)
+- [Features](#features)
 - [Installation](#installation)
 - [Set up](#set-up)
 - [Configuration](#configuration)
@@ -34,93 +34,63 @@ This requires a standard system clipboard, something like *one* of the following
 - xsel
 - termux-clipboard
 
-__[go-ps](github.com/mitchellh/go-ps)__
-
-Does not require any additional dependency.
-
 __[BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea)__
 
-Does not require any additional dependency.
+Does not require any additional dependency, but may require you to use a terminal environment that's compatible with [termenv](https://github.com/muesli/termenv).
 
-# Why use *clipse*? 
+# Features 
 
-### 1. Configurability 🧰 
+### 1. Customization 🧰 
 
 A customizable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is editable from a `custom_theme.json` file that gets created when the program is run for the first time. Some example themes (based on my terminal)...
-
-**Nord**
-
-<p align="left">
-
-  <img src="./resources/examples/nord.png?raw=true" alt="Nord" />
-
-</p>
-
-**Dracula**
-
-<p align="left">
-
-  <img src="./resources/examples/dracula.png?raw=true" alt="Dracula" />
-
-</p>
-
-**Gruvbox**
-
-<p align="left">
-
-  <img src="./resources/examples/gruvbox.png?raw=true" alt="Gruvbox" />
-
-</p>
 
 An example `custom_theme.json` file: 
 
 ```json
 {
-    "useCustomTheme": true,
-    "DimmedDesc": "#4C566A",
-    "DimmedTitle": "#4C566A",
-    "FilteredMatch": "#A3BE8C",
-    "NormalDesc": "#81A1C1",
-    "NormalTitle": "#B48EAD",
-    "SelectedDesc": "#A3BE8C",
-    "SelectedTitle": "#A3BE8C",
-    "SelectedBorder": "#88C0D0",
-    "SelectedDescBorder": "#88C0D0",
-    "TitleFore": "#D8DEE9",
-    "Titleback": "#3B4252",
-    "StatusMsg": "#8FBCBB",
-    "PinIndicatorColor": "#ff0000"
+    "UseCustom":          false,
+		"TitleFore":          "#ffffff",
+		"TitleBack":          "#6F4CBC",
+		"TitleInfo":          "#3498db",
+		"NormalTitle":        "#ffffff",
+		"DimmedTitle":        "#808080",
+		"SelectedTitle":      "#FF69B4",
+		"NormalDesc":         "#808080",
+		"DimmedDesc":         "#808080",
+		"SelectedDesc":       "#FF69B4",
+		"StatusMsg":          "#2ecc71",
+		"PinIndicatorColor":  "#FFD700",
+		"SelectedBorder":     "#3498db",
+		"SelectedDescBorder": "#3498db",
+		"FilteredMatch":      "#ffffff",
+		"FilterPrompt":       "#2ecc71",
+		"FilterInfo":         "#3498db",
+		"FilterText":         "#ffffff",
+		"FilterCursor":       "#FFD700",
+		"HelpKey":            "#999999",
+		"HelpDesc":           "#808080",
+		"PageActiveDot":      "#3498db",
+		"PageInactiveDot":    "#808080",
+		"DividerDot":         "#3498db",
+		"PreviewedText":      "#ffffff",
+		"PreviewBorder":      "#3498db",
 }
-
 ```
 
-Simply leaving this file alone or setting the `useCustomTheme` value to `false` will give you a nice default theme... 
-
-<p align="left">
-
-  <img src="./resources/examples/default.png?raw=true" alt="Gruvbox" />
-
-</p>
+See the [library]() for some example themes. 
 
 You can also easily specify source config like custom paths and max history limit in the apps `config.json` file. For more information see [Configuration](#configuration) section.  
 
 ### 2. Usability ✨
 
-Easily recall, add, and delete clipboard history via a smooth TUI experience built with Go's excellent [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) library. A simple fuzzy finder, callable with the `/` key can easily match content from a theoretically unlimited amount of time in the past: 
+Easily recall, add, and delete clipboard history via a smooth TUI experience built with Go's excellent [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) library. As shown in the above video demo, the TUI offers the following features:
 
-<p align="left">
-
-  <img src="./resources/examples/fuzzy.png?raw=true" alt="Gruvbox" />
-
-</p>
-
-Items can be pinned using the `p` key and toggled using `tab`, these pinned items will be not be removed from your history unless explicitly deleted with `backpace`/`x` in the TUI or `clipse -clear`. 
-
-<p align="left">
-
-  <img src="./resources/examples/pinned.png?raw=true" alt="Gruvbox" />
-
-</p>
+- Filter items using a fuzzy find
+- Image and text previews
+- Mult-selection of items for copy and delete operations
+- Copy all filter matches at once
+- Pin items/pinned items view 
+- Vim-like keybindings for navigation available  
 
 Content can also be added explicitly from the command-line using the `-a` or `-c` flags. This would allow you to easily pipe any CLI output directly into your history with commands like:
 
@@ -138,7 +108,7 @@ clipse -a "a custom string value"
 
 ### 3. Efficiency 💥
 
-Due to Go's inbuilt garbage collection system and the way the application is built, `clipse` is pretty selfless when it comes to CPU consumption and memory. The below image shows how little resources are required to run the background event listener used to continually update the history displayed in the TUI... 
+`clipse` is pretty selfless when it comes to CPU consumption and memory. The below image shows how little resources are required to run the background event listener used to continually update the history displayed in the TUI... 
 
 <p align="left">
 
@@ -192,7 +162,7 @@ If building `clipse` from the unstable branch as a system package, I would sugge
 
 buildGoModule rec {
   pname = "clipse";
-  version = "0.0.71";
+  version = "0.1.0";
 
   src = fetchFromGitHub {
     owner = "savedra1";
@@ -233,7 +203,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux arm64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.0.71_linux_arm64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_0.1.0_linux_arm64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -241,7 +211,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux amd64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_linux_amd64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v0.1.0/clipse_0.1.0_linux_amd64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -249,7 +219,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux 836</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_linux_836.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v0.1.0/clipse_0.1.0_linux_836.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -257,7 +227,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Darwin arm64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_darwin_arm64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v0.1.0/clipse_0.1.0_darwin_arm64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -265,7 +235,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Darwin amd64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.71/clipse_0.0.71_darwin_amd64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v0.1.0/clipse_0.1.0_darwin_amd64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -274,7 +244,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
 
 ```shell
 
-go install github.com/savedra1/clipse@v0.0.71
+go install github.com/savedra1/clipse@v0.1.0
 
 ```
 
@@ -387,7 +357,8 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
     "historyFile": "clipboard_history.json",
     "maxHistory": 100,
     "themeFile": "custom_theme.json",
-    "tempDir": "tmp_files"
+    "tempDir": "tmp_files",
+    "logFile": "clipse.log"
 }
 ```
 
@@ -421,6 +392,8 @@ clipse -p             # Prints the current clipboard content to the console.
 
 # TUI management commands
 
+clipse                # Open Clipboard TUI in persistent/debug mode
+
 clipse -fc $PPID      # Open Clipboard TUI in 'force kill' mode 
 
 clipse -listen        # Run a background listener process
@@ -431,23 +404,22 @@ clipse -help          # Display menu option
 
 clipse -v             # Get version
 
-clipse -clear         # Wipe all clipboard history and current system clipboard value
+clipse -clear         # Wipe all clipboard history except for pinned items
+
+clipse -clear-images  # Wipe all images from the history 
+
+clipse -clear-text    # Wipe all text items from the clipboard history
+
+clipse -clear-all     # Wipe entire clipboard history
 
 clipse keep           # Keep the TUI open after selecting an item to copy (useful for debugging)
 
 clipse -kill          # Kill any existing background processes
 
-clipse                # Open Clipboard TUI in persistent/debug mode
-
 ```
 
-You can view the full list of key bind commands when in the TUI by hitting the `?` key: 
+You can also view the full list of TUI key commands by hitting the `?` key when the `clipse` UI is open. 
 
-<p align="left">
-
-  <img src="./resources/examples/menu.png?raw=true" alt="Gruvbox" />
-
-</p>
 
 ## How it works 🤔
 
@@ -460,20 +432,21 @@ The maximum item storage limit defaults at **100** but can be customized to anyt
 ## Contributing 🙏
 
 I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
-- [ ] Image previews in TUI view
+- [x] ~~Image previews in TUI view~~
 - [x] ~~Pinned items~~
+- [x] ~~Warn on deleting pinned items~~
+- [x] ~~Color theme customizations for all UI elements~~
 - [ ] Customisations for:
   - [x] ~~max history limit~~
   - [x] ~~config file paths~~
   - [ ] key bindings
 - [ ] Auto-forget feature based on where the text was copied
-- [ ] Multi-select feature for copying multiple items at once
+- [x] ~~Multi-select feature for copying multiple items at once~~
 - [ ] Categorized pinned items with _potentially_ different tabs/views  
 - [ ] System paste option _(building functionality to paste the chosen item directly into the next place of focus after the TUI closes)_
 - [ ] Packages for apt, dnf, brew etc
 - [ ] Theme/config adjustments made available via CLI
-- [ ] Better debugging / debug mode _(eg `clipse --debug` / debug file / system alert on panic)_
-- [ ] Use of a GUI library such as fyne/GIO (only with minimal CPU cost)
+- [ ] debug mode _(eg `clipse --debug` / debug file / system alert on panic)_
 - [ ] Cross compile binaries for `wl-clipboard`/`xclip` to remove dependency
 - [x] TUI / theming enhancements:
   - [x] ~~Menu theme~~
@@ -494,7 +467,7 @@ I would love to receive contributions to this project and welcome PRs from anyon
   [Desktop Entry]
   Name=clipse
   Comment=Clipse event listener autostart.
-  Exec=/home/brayan/Applications/bin/clipse/clipse_0.0.71_linux_amd64/clipse --listen %f
+  Exec=/home/brayan/Applications/bin/clipse/clipse_0.1.0_linux_amd64/clipse --listen %f
   Terminal=false
   Type=Application
   ```
