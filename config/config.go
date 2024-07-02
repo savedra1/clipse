@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
@@ -40,8 +41,7 @@ func Init() (string, string, bool, error) {
 	// Does Config dir exist, if no make it.
 	_, err = os.Stat(clipseDir)
 	if os.IsNotExist(err) {
-		err = createDir(clipseDir)
-		utils.HandleError(err)
+		utils.HandleError(os.MkdirAll(clipseDir, 0755))
 	}
 
 	// load the config from file into ClipseConfig struct
@@ -53,41 +53,32 @@ func Init() (string, string, bool, error) {
 	// Create TempDir for images if it does not exist.
 	_, err = os.Stat(ClipseConfig.TempDirPath)
 	if os.IsNotExist(err) {
-		utils.HandleError(createDir(ClipseConfig.TempDirPath))
+		utils.HandleError(os.MkdirAll(ClipseConfig.TempDirPath, 0755))
 	}
 
 	ds := DisplayServer()
-	var ie bool // imagesEnabled?
-	if ds == "unknown" {
-		ie = false
-	} else {
-		ie = shell.ImagesEnabled(ds)
-	}
+	ie := shell.ImagesEnabled(ds) // images enabled?
 
 	return ClipseConfig.LogFilePath, ds, ie, nil
 }
 
 func loadConfig(configPath string) {
 	_, err := os.Stat(configPath)
+
 	if os.IsNotExist(err) {
 		baseConfig := defaultConfig()
-
 		jsonData, err := json.MarshalIndent(baseConfig, "", "    ")
 		utils.HandleError(err)
-
-		err = os.WriteFile(configPath, jsonData, 0644)
-		if err != nil {
-			fmt.Println("Failed to create:", configPath)
-		}
+		utils.HandleError(os.WriteFile(configPath, jsonData, 0644))
 	}
 
 	configDir := filepath.Dir(configPath)
-
 	confData, err := os.ReadFile(configPath)
 	utils.HandleError(err)
 
 	if err = json.Unmarshal(confData, &ClipseConfig); err != nil {
 		fmt.Println("Failed to read config. Skipping.\nErr: %w", err)
+		utils.LogERROR(fmt.Sprintf("failed to read config. Skipping.\nsrr: %s", err))
 	}
 
 	// Expand HistoryFile, ThemeFile, LogFile and TempDir paths
@@ -95,4 +86,24 @@ func loadConfig(configPath string) {
 	ClipseConfig.TempDirPath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), configDir)
 	ClipseConfig.ThemeFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.ThemeFilePath), configDir)
 	ClipseConfig.LogFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.LogFilePath), configDir)
+}
+
+func DisplayServer() string {
+	/* Determine runtime and return appropriate window server.
+	used to determine which dependency is required for handling
+	image files.
+	*/
+	osName := runtime.GOOS
+	switch osName {
+	case "linux":
+		waylandDisplay := os.Getenv("WAYLAND_DISPLAY")
+		if waylandDisplay != "" {
+			return "wayland"
+		}
+		return "x11"
+	case "darwin":
+		return "darwin"
+	default:
+		return "unknown"
+	}
 }

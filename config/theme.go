@@ -40,6 +40,7 @@ func GetTheme() CustomTheme {
 	if os.IsNotExist(err) {
 		if err = initDefaultTheme(); err != nil {
 			utils.LogERROR(fmt.Sprintf("could not initialize theme: %s", err))
+			return defaultTheme()
 		}
 	}
 
@@ -49,12 +50,18 @@ func GetTheme() CustomTheme {
 	}
 
 	var theme CustomTheme
-	if err := json.NewDecoder(file).Decode(&theme); err != nil {
-		fmt.Println("Error decoding JSON for custom_theme.json. Try creating this file manually instead. Err:", err)
-		// handleError(err) // No need to terminate program here as default theme can be kept
-	}
 
-	// Extract clipboard history items
+	if err := json.NewDecoder(file).Decode(&theme); err != nil {
+		utils.LogERROR(
+			fmt.Sprintf(
+				"Error decoding JSON for custom_theme.json. Try creating this file manually instead. Err: %s",
+				err,
+			),
+		)
+	}
+	if !theme.UseCustom {
+		return defaultTheme()
+	}
 	return theme
 }
 
@@ -66,45 +73,48 @@ func initDefaultTheme() error {
 	_, err := os.Stat(ClipseConfig.ThemeFilePath)
 	if os.IsNotExist(err) {
 
-		baseConfig := CustomTheme{
-			UseCustom:          false,
-			TitleFore:          "#ffffff",
-			TitleBack:          "#434C5E",
-			TitleInfo:          "#ffffff",
-			NormalTitle:        "#ffffff",
-			DimmedTitle:        "#ffffff",
-			SelectedTitle:      "#ffffff",
-			NormalDesc:         "#ffffff",
-			DimmedDesc:         "#ffffff",
-			SelectedDesc:       "#ffffff",
-			StatusMsg:          "#ffffff",
-			PinIndicatorColor:  "#ff0000",
-			SelectedBorder:     "#ffffff",
-			SelectedDescBorder: "#ffffff",
-			FilteredMatch:      "#ffffff",
-			FilterPrompt:       "#ffffff",
-			FilterInfo:         "#ffffff",
-			FilterText:         "#ffffff",
-			FilterCursor:       "#ffffff",
-			HelpKey:            "#ffffff",
-			HelpDesc:           "#ffffff",
-			PageActiveDot:      "#ffffff",
-			PageInactiveDot:    "#ffffff",
-			DividerDot:         "#ffffff",
-		}
+		baseConfig := defaultTheme()
 
 		jsonData, err := json.MarshalIndent(baseConfig, "", "    ")
 		if err != nil {
 			return err
 		}
 
-		err = os.WriteFile(ClipseConfig.ThemeFilePath, jsonData, 0644)
-		if err != nil {
+		if err = os.WriteFile(ClipseConfig.ThemeFilePath, jsonData, 0644); err != nil {
 			return err
 		}
 
 		return nil
-
 	}
 	return nil
+}
+
+// hardcoded default theme when UseCustom set to false
+func defaultTheme() CustomTheme {
+	return CustomTheme{
+		UseCustom:          false,
+		TitleFore:          "#ffffff",
+		TitleBack:          "#6F4CBC",
+		TitleInfo:          "#3498db",
+		NormalTitle:        "#ffffff",
+		DimmedTitle:        "#808080",
+		SelectedTitle:      "#FF69B4",
+		NormalDesc:         "#808080",
+		DimmedDesc:         "#808080",
+		SelectedDesc:       "#FF69B4",
+		StatusMsg:          "#2ecc71",
+		PinIndicatorColor:  "#FFD700",
+		SelectedBorder:     "#3498db",
+		SelectedDescBorder: "#3498db",
+		FilteredMatch:      "#ffffff",
+		FilterPrompt:       "#2ecc71",
+		FilterInfo:         "#3498db",
+		FilterText:         "#ffffff",
+		FilterCursor:       "#FFD700",
+		HelpKey:            "#999999",
+		HelpDesc:           "#808080",
+		PageActiveDot:      "#ffffff",
+		PageInactiveDot:    "#808080",
+		DividerDot:         "#3498db",
+	}
 }

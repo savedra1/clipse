@@ -73,7 +73,7 @@ func NewModel() Model {
 
 	clipboardItems := config.GetHistory()
 
-	ct := config.GetTheme()
+	theme := config.GetTheme()
 
 	m := Model{
 		keys:             listKeys,
@@ -81,7 +81,7 @@ func NewModel() Model {
 		confirmationKeys: confirmationKeys,
 		help:             help.New(),
 		togglePinned:     false,
-		theme:            ct,
+		theme:            theme,
 		prevDirection:    "",
 		showConfirmation: false,
 	}
@@ -110,16 +110,10 @@ func NewModel() Model {
 		clipboardList.SetShowStatusBar(false) // remove duplicate "No items"
 	}
 
-	if !ct.UseCustom {
-		m.list = setDefaultStyling(clipboardList)
-		m.confirmationList = setDefaultStyling(confirmationList)
-		return m
-	}
-
-	statusMessageStyle = styledStatusMessage(ct)
-	m.help = styledHelp(m.help, ct)
-	m.list = styledList(clipboardList, ct)
-	m.confirmationList = styledList(confirmationList, ct)
+	statusMessageStyle = styledStatusMessage(theme)
+	m.help = styledHelp(m.help, theme)
+	m.list = styledList(clipboardList, theme)
+	m.confirmationList = styledList(confirmationList, theme)
 
 	return m
 }

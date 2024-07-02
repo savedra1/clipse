@@ -9,7 +9,9 @@ import (
 func HandleError(err error) {
 	if err != nil {
 		debug.PrintStack()
-		LogERROR(fmt.Sprint(err))
+		if logger != nil {
+			LogERROR(fmt.Sprint(err))
+		}
 		os.Exit(1)
 	}
 }

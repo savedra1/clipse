@@ -60,11 +60,11 @@ func main() {
 	case *add:
 		handleAdd()
 
-	case *copyInput:
-		handleCopy()
-
 	case *paste:
 		handlePaste()
+
+	case *copyInput:
+		handleCopy()
 
 	case *listen:
 		handleListen()
@@ -94,14 +94,13 @@ func launchTUI() {
 
 func handleAdd() {
 	var input string
-	if len(os.Args) < 3 {
+	switch {
+	case len(os.Args) < 3:
 		input = utils.GetStdin()
-	} else {
+	default:
 		input = os.Args[2]
 	}
-
-	err := config.AddClipboardItem(input, "null")
-	utils.HandleError(err)
+	utils.HandleError(config.AddClipboardItem(input, "null"))
 }
 
 func handleListen() {
@@ -113,8 +112,7 @@ func handleListen() {
 }
 
 func handleListenShell(displayServer string, imgEnabled bool) {
-	err := handlers.RunListener(displayServer, imgEnabled)
-	utils.HandleError(err)
+	utils.HandleError(handlers.RunListener(displayServer, imgEnabled))
 }
 
 func handleKill() {
@@ -122,31 +120,38 @@ func handleKill() {
 }
 
 func handleClear() {
-	var err error
-	if err = clipboard.WriteAll(""); err != nil {
-		fmt.Printf("failed to reset clipboard buffer value: %s", err)
+	if err := clipboard.WriteAll(""); err != nil {
+		utils.LogERROR(fmt.Sprintf("failed to reset clipboard buffer value: %s", err))
 	}
-	if *clearImages {
-		err = config.ClearHistory("images")
-	} else if *clearAll {
-		err = config.ClearHistory("all")
-	} else if *clearText {
-		err = config.ClearHistory("text")
-	} else {
-		err = config.ClearHistory("default") // this string can be anything
+
+	var clearType string
+
+	switch {
+	case *clearImages:
+		clearType = "images"
+	case *clearAll:
+		clearType = "all"
+	case *clearText:
+		clearType = "text"
+	default:
+		clearType = "default"
 	}
-	utils.HandleError(err)
+
+	utils.HandleError(config.ClearHistory(clearType))
 }
 
 func handleCopy() {
 	var input string
-	if len(os.Args) < 3 {
+	switch {
+	case len(os.Args) < 3:
 		input = utils.GetStdin()
-	} else {
+	default:
 		input = os.Args[2]
 	}
-	err := clipboard.WriteAll(input)
-	utils.HandleError(err)
+	if input != "" {
+		fmt.Println(input)
+		utils.HandleError(clipboard.WriteAll(input))
+	}
 }
 
 func handlePaste() {
@@ -161,7 +166,9 @@ func handleForceClose() {
 	if len(os.Args) < 3 {
 		fmt.Printf("No PPID provided. Usage: %s' -fc $PPID'", os.Args[0])
 		return
-	} else if len(os.Args) > 3 {
+	}
+
+	if len(os.Args) > 3 {
 		fmt.Printf("Too many args. Usage: %s' -fc $PPID'", os.Args[0])
 		return
 	}
