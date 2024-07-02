@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"runtime"
 
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
@@ -40,41 +39,18 @@ func initHistoryFile() error {
 		if err != nil {
 			return err
 		}
-		err = os.WriteFile(ClipseConfig.HistoryFilePath, jsonData, 0644)
-
-		if err != nil {
-			fmt.Println("Failed to create:", ClipseConfig.HistoryFilePath)
-			os.Exit(1)
+		if err = os.WriteFile(ClipseConfig.HistoryFilePath, jsonData, 0644); err != nil {
+			utils.LogERROR(fmt.Sprintf("Failed to create %s", ClipseConfig.HistoryFilePath))
+			return err
 		}
-
-		// fmt.Println("Created history file:", ClipseConfig.HistoryFilePath)
-
-	} else if err != nil {
-		fmt.Println("Unable to check if history file exists. Please update binary permissions.")
-		os.Exit(1)
+		return nil
 	}
 
+	if err != nil {
+		utils.LogERROR("Unable to check if history file exists. Please update binary permissions.")
+		return err
+	}
 	return nil
-}
-
-func DisplayServer() string {
-	/* Determine runtime and return appropriate window server.
-	used to determine which dependency is required for handling
-	image files.
-	*/
-	osName := runtime.GOOS
-	switch osName {
-	case "linux":
-		waylandDisplay := os.Getenv("WAYLAND_DISPLAY")
-		if waylandDisplay != "" {
-			return "wayland"
-		}
-		return "x11"
-	case "darwin":
-		return "darwin"
-	default:
-		return "unknown"
-	}
 }
 
 func GetHistory() []ClipboardItem {
@@ -105,11 +81,11 @@ func fileContents() ClipboardHistory {
 func WriteUpdate(data ClipboardHistory) error {
 	updatedJSON, err := json.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("error marshaling JSON: %w", err)
+		return fmt.Errorf("failed to marshal JSON: %w", err)
 	}
 
 	if err := os.WriteFile(ClipseConfig.HistoryFilePath, updatedJSON, 0644); err != nil {
-		return fmt.Errorf("error writing file: %w", err)
+		return fmt.Errorf("failed writing to file: %w", err)
 	}
 
 	return nil
