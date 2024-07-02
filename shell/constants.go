@@ -3,7 +3,7 @@ package shell
 const (
 	listenCmd     = "--listen-shell"
 	pgrepCmd      = "pgrep -a clipse"
-	wlVersionCmd  = "wl-copy"
+	wlVersionCmd  = "wl-copy -v"
 	wlCopyImgCmd  = "wl-copy -t image/png <"
 	wlPasteImgCmd = "wl-paste -t image/png >"
 	xVersionCmd   = "xclip -v"

@@ -13,18 +13,6 @@ import (
 var style = lipgloss.NewStyle()
 var titleStyle, descStyle string
 
-func setDefaultStyling(clipboardList list.Model) list.Model {
-	// align list elements
-	clipboardList.FilterInput.PromptStyle = style.PaddingTop(1)
-	clipboardList.Styles.Title = style.MarginTop(1)
-	clipboardList.Styles.StatusBar = style.MarginBottom(1).MarginLeft(2)
-	clipboardList.Styles.DividerDot = style.PaddingLeft(1).PaddingRight(1)
-	clipboardList.Help.FullSeparator = style.PaddingLeft(1).PaddingRight(1).Render("•")
-	clipboardList.Help.ShortSeparator = style.PaddingLeft(1).PaddingRight(1).Render("•")
-	clipboardList.Styles.NoItems = style.PaddingBottom(1).PaddingLeft(2)
-	return clipboardList
-}
-
 func (d itemDelegate) itemFilterStyle(i item) string {
 	titleStyle := style.
 		Foreground(lipgloss.Color(d.theme.DimmedTitle)).

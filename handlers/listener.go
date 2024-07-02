@@ -38,12 +38,15 @@ func RunListener(displayServer string, imgEnabled bool) error {
 	// Goroutine to monitor clipboard
 	go func() {
 		for {
-			input, _ := clipboard.ReadAll() // ignoring err here to prevent system crash if input ever not recognized
+			input, err := clipboard.ReadAll()
+			if err != nil {
+				time.Sleep(1 * time.Second) // wait for boot
+			}
 			if input != prevClipboardContent {
 				clipboardData <- input       // Pass clipboard data to main goroutine
 				prevClipboardContent = input // update previous content
 			}
-			if dataType == "text" {
+			if dataType == Text {
 				time.Sleep(defaultPollInterval)
 				continue
 			}
@@ -60,31 +63,31 @@ MainLoop:
 			}
 			dataType = utils.DataType(input)
 			switch dataType {
-			case "text":
-				if input != "" && !config.Contains(input) {
+			case Text:
+				if !config.Contains(input) {
 					if err := config.AddClipboardItem(input, "null"); err != nil {
-						utils.LogERROR(fmt.Sprintf("ERROR: failed to add new item `( %s )` | %s", input, err))
+						utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", input, err))
 					}
 				}
-			case "png", "jpeg":
-				if imgEnabled { // need to add something here to only check the same media image once to save CPU
+			case PNG, JPEG:
+				if imgEnabled {
 					fileName := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dataType)
 					title := fmt.Sprintf("%s %s", imgIcon, fileName)
 					if !config.Contains(title) {
 						filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
 
 						if err := shell.SaveImage(filePath, displayServer); err != nil {
-							utils.LogERROR(fmt.Sprintf("ERROR: failed to save image | %s", err))
+							utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
 							break
 						}
 						if err := config.AddClipboardItem(title, filePath); err != nil {
-							utils.LogERROR(fmt.Sprintf("ERROR: failed to save image | %s", err))
+							utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
 						}
 					}
 				}
 			}
 		case <-interrupt:
-			break MainLoop // Exit main loop on interrupt signal
+			break MainLoop
 		}
 	}
 
