@@ -183,3 +183,34 @@ func (ck confirmationKeyMap) ConfirmationHelp() []key.Binding {
 		ck.up, ck.down, ck.choose,
 	}
 }
+
+// Not currently used
+
+type previewKeymap struct {
+	up   key.Binding
+	down key.Binding
+	back key.Binding
+}
+
+func newPreviewKeyMap() *previewKeymap {
+	return &previewKeymap{
+		up: key.NewBinding(
+			key.WithKeys("up", "k"),
+			key.WithHelp("↑/k", "up"),
+		),
+		down: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("↓/k", "down"),
+		),
+		back: key.NewBinding(
+			key.WithKeys(" "),
+			key.WithHelp("␣", "back"),
+		),
+	}
+}
+
+func (pk previewKeymap) PreviewHelp() []key.Binding {
+	return []key.Binding{
+		pk.up, pk.down, pk.back,
+	}
+}

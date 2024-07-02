@@ -10,8 +10,29 @@ import (
 	"github.com/savedra1/clipse/config"
 )
 
-var style = lipgloss.NewStyle()
-var titleStyle, descStyle string
+var (
+	style                 = lipgloss.NewStyle()
+	titleStyle, descStyle string
+	appStyle              = style.Padding(1, 2)
+	statusMessageStyle    = style.Foreground(
+		lipgloss.AdaptiveColor{
+			Light: defaultMsgColor,
+			Dark:  defaultMsgColor,
+		},
+	).Render
+
+	previewTitleStyle = func() lipgloss.Style {
+		b := lipgloss.RoundedBorder()
+		b.Right = borderRightChar
+		return style.BorderStyle(b) //.MarginTop(1)
+	}()
+
+	previewInfoStyle = func() lipgloss.Style {
+		b := lipgloss.RoundedBorder()
+		b.Left = borderLeftChar
+		return style.BorderStyle(b) //MarginBottom(1)
+	}()
+)
 
 func (d itemDelegate) itemFilterStyle(i item) string {
 	titleStyle := style.
@@ -163,4 +184,23 @@ func styledPin(theme config.CustomTheme) string {
 	return style.
 		Foreground(lipgloss.Color(theme.PinIndicatorColor)).
 		Render(pinChar)
+}
+
+func (m *Model) styledPreviewHeader(str string) string {
+	return style.
+		Foreground(lipgloss.Color(m.theme.PreviewBorder)).
+		MarginTop(2).
+		Render(str)
+}
+
+func (m *Model) styledPreviewFooter(str string) string {
+	return style.
+		Foreground(lipgloss.Color(m.theme.PreviewBorder)).
+		Render(str)
+}
+
+func (m *Model) styledPreviewContent(content string) string {
+	return style.
+		Foreground(lipgloss.Color(m.theme.PreviewedText)).
+		Render(content)
 }

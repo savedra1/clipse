@@ -30,20 +30,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 		m.confirmationList.SetSize(msg.Width-h, msg.Height-v)
 
-		headerHeight := lipgloss.Height(headerView(m.preview))
-		footerHeight := lipgloss.Height(footerView(m.preview))
+		headerHeight := lipgloss.Height(m.previewHeaderView())
+		footerHeight := lipgloss.Height(m.previewFooterView())
 		verticalMarginHeight := headerHeight + footerHeight
 
 		if !m.previewReady {
 			m.preview = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
-			m.preview.YPosition = headerHeight
 			m.previewReady = true
-
 			m.preview.YPosition = headerHeight + 1
-		} else {
-			m.preview.Width = msg.Width
-			m.preview.Height = msg.Height - verticalMarginHeight
+			break
 		}
+		m.preview.Width = msg.Width
+		m.preview.Height = msg.Height - verticalMarginHeight
 
 	case tea.KeyMsg:
 		if key.Matches(msg, m.keys.filter) && m.list.ShowHelp() {
@@ -368,7 +366,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.preview):
 			m.showPreview = !m.showPreview
 			if m.showPreview {
-				content := i.titleFull
+				content := m.styledPreviewContent(i.titleFull)
 				if i.filePath != "null" {
 					content = getImgPreview(i.filePath)
 				}

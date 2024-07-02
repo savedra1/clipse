@@ -33,6 +33,8 @@ type CustomTheme struct {
 	PageActiveDot      string `json:"PageActiveDot"`
 	PageInactiveDot    string `json:"PageInactiveDot"`
 	DividerDot         string `json:"DividerDot"`
+	PreviewedText      string `json:"PreviewedText"`
+	PreviewBorder      string `json:"PreviewBorder"`
 }
 
 func GetTheme() CustomTheme {
@@ -113,8 +115,10 @@ func defaultTheme() CustomTheme {
 		FilterCursor:       "#FFD700",
 		HelpKey:            "#999999",
 		HelpDesc:           "#808080",
-		PageActiveDot:      "#ffffff",
+		PageActiveDot:      "#3498db",
 		PageInactiveDot:    "#808080",
 		DividerDot:         "#3498db",
+		PreviewedText:      "#ffffff",
+		PreviewBorder:      "#3498db",
 	}
 }

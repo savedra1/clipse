@@ -8,17 +8,9 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/utils"
-)
-
-var (
-	appStyle           = lipgloss.NewStyle().Padding(1, 2) // default padding
-	statusMessageStyle = lipgloss.NewStyle().Foreground(
-		lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"},
-	).Render // default styling func used to render message
 )
 
 type Model struct {
@@ -33,9 +25,10 @@ type Model struct {
 	confirmationList list.Model          // secondary list Model used for confirmation screen
 	showConfirmation bool                // whether to show confirmation screen
 	itemCache        []SelectedItem      // easy access for related items following confirmation screen
-	preview          viewport.Model
-	previewReady     bool
-	showPreview      bool
+	preview          viewport.Model      // viewport model used for displaying previews
+	previewReady     bool                // viewport needs to wait for the initial window size message
+	showPreview      bool                // whether the viewport preview should be displayed
+	previewKeys      *previewKeymap      // keybindings for the viewport model
 }
 
 type item struct {
@@ -90,6 +83,7 @@ func NewModel() Model {
 		showConfirmation: false,
 		preview:          NewPreview(),
 		showPreview:      false,
+		previewKeys:      newPreviewKeyMap(),
 	}
 
 	entryItems := filterItems(clipboardItems, false, m.theme)
@@ -104,6 +98,7 @@ func NewModel() Model {
 	//clipboardList.StatusMessageLifetime = time.Second // can override this if necessary
 	clipboardList.AdditionalFullHelpKeys = func() []key.Binding {
 		return []key.Binding{
+			listKeys.preview,
 			listKeys.selectDown,
 			listKeys.selectSingle,
 			listKeys.clearSelected,
