@@ -152,12 +152,11 @@ func filterItems(clipboardItems []config.ClipboardItem, isPinned bool, theme con
 func newConfirmationList(del itemDelegate) list.Model {
 	items := confirmationItems()
 	l := list.New(items, del, 0, 10)
+	l.Title = confirmationTitle
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
 	l.SetShowHelp(false)
 	l.SetShowPagination(false)
-	l.Title = confirmationTitle
-	l.DisableQuitKeybindings()
 	return l
 }
 
