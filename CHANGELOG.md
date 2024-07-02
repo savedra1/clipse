@@ -13,7 +13,7 @@
 - feat: multi-select for copy and delete
 - feat: multi-select copy from active filter
 - feat: warn on deleting a pinned item in the ui
-- feat: custom theme support for all ui componants   
+- feat: custom theme support for all ui components   
 - feat: previews for text and images
 - feat: added debug logging 
 - ci: `golangci-lint` added to build workflow (thank you @ccoVeille)
