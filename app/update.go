@@ -7,6 +7,7 @@ import (
 
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
@@ -28,6 +29,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		h, v := appStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 		m.confirmationList.SetSize(msg.Width-h, msg.Height-v)
+
+		headerHeight := lipgloss.Height(m.previewHeaderView())
+		footerHeight := lipgloss.Height(m.previewFooterView())
+		verticalMarginHeight := headerHeight + footerHeight
+
+		if !m.previewReady {
+			m.preview = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
+			m.previewReady = true
+			m.preview.YPosition = headerHeight + 1
+			break
+		}
+		m.preview.Width = msg.Width
+		m.preview.Height = msg.Height - verticalMarginHeight
 
 	case tea.KeyMsg:
 		if key.Matches(msg, m.keys.filter) && m.list.ShowHelp() {
@@ -349,14 +363,31 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			key.Matches(msg, m.keys.end):
 			m.prevDirection = ""
 
+		case key.Matches(msg, m.keys.preview):
+			m.showPreview = !m.showPreview
+			if m.showPreview {
+				content := m.styledPreviewContent(i.titleFull)
+				if i.filePath != "null" {
+					content = getImgPreview(i.filePath)
+				}
+				m.preview.SetContent(content)
+				m.toggleKeysEnabled(false)
+				break
+			}
+			m.toggleKeysEnabled(true)
 		}
 	}
 
 	newListModel, cmd := m.list.Update(msg)
 	m.list = newListModel
 	cmds = append(cmds, cmd)
+
 	m.confirmationList, cmd = m.confirmationList.Update(msg)
 	cmds = append(cmds, cmd)
+
+	m.preview, cmd = m.preview.Update(msg)
+	cmds = append(cmds, cmd)
+
 	return m, tea.Batch(cmds...)
 }
 
@@ -499,4 +530,25 @@ func (m *Model) removeCachedItem(ts string) {
 			m.list.RemoveItem(i)
 		}
 	}
+}
+
+func (m *Model) toggleKeysEnabled(v bool) {
+	m.list.KeyMap.CursorUp.SetEnabled(v)
+	m.list.KeyMap.CursorDown.SetEnabled(v)
+	m.list.KeyMap.Filter.SetEnabled(v)
+	m.list.KeyMap.GoToEnd.SetEnabled(v)
+	m.list.KeyMap.GoToStart.SetEnabled(v)
+	m.list.KeyMap.Quit.SetEnabled(v)
+	m.list.KeyMap.NextPage.SetEnabled(v)
+	m.list.KeyMap.PrevPage.SetEnabled(v)
+	m.list.KeyMap.ShowFullHelp.SetEnabled(v)
+
+	m.keys.remove.SetEnabled(v)
+	m.keys.choose.SetEnabled(v)
+	m.keys.togglePin.SetEnabled(v)
+	m.keys.togglePinned.SetEnabled(v)
+	m.keys.selectDown.SetEnabled(v)
+	m.keys.selectUp.SetEnabled(v)
+	m.keys.selectSingle.SetEnabled(v)
+	m.keys.clearSelected.SetEnabled(v)
 }

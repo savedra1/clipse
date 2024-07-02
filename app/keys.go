@@ -13,6 +13,7 @@ type keyMap struct {
 	remove        key.Binding
 	togglePin     key.Binding
 	togglePinned  key.Binding
+	preview       key.Binding
 	selectDown    key.Binding
 	selectUp      key.Binding
 	selectSingle  key.Binding
@@ -56,6 +57,10 @@ func newKeyMap() *keyMap {
 		togglePinned: key.NewBinding(
 			key.WithKeys("tab"),
 			key.WithHelp("↹", "show pinned"),
+		),
+		preview: key.NewBinding(
+			key.WithKeys(" "),
+			key.WithHelp("␣", "preview"),
 		),
 		selectDown: key.NewBinding(
 			key.WithKeys("ctrl+down", "ctrl+j"),
@@ -176,5 +181,36 @@ func newConfirmationKeymap() *confirmationKeyMap {
 func (ck confirmationKeyMap) ConfirmationHelp() []key.Binding {
 	return []key.Binding{
 		ck.up, ck.down, ck.choose,
+	}
+}
+
+// Not currently used
+
+type previewKeymap struct {
+	up   key.Binding
+	down key.Binding
+	back key.Binding
+}
+
+func newPreviewKeyMap() *previewKeymap {
+	return &previewKeymap{
+		up: key.NewBinding(
+			key.WithKeys("up", "k"),
+			key.WithHelp("↑/k", "up"),
+		),
+		down: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("↓/k", "down"),
+		),
+		back: key.NewBinding(
+			key.WithKeys(" "),
+			key.WithHelp("␣", "back"),
+		),
+	}
+}
+
+func (pk previewKeymap) PreviewHelp() []key.Binding {
+	return []key.Binding{
+		pk.up, pk.down, pk.back,
 	}
 }
