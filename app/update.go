@@ -88,11 +88,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.choose):
 			if m.showConfirmation && m.confirmationList.Index() == 0 { // No
+				m.list.KeyMap.Quit.SetEnabled(true)
 				m.itemCache = []SelectedItem{}
 				m.showConfirmation = false
 				break
 
 			} else if m.showConfirmation && m.confirmationList.Index() == 1 { // Yes
+				m.list.KeyMap.Quit.SetEnabled(true)
 				m.showConfirmation = false
 				currentContent, _ := clipboard.ReadAll()
 				timeStamps := []string{}
@@ -220,6 +222,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if pinnedItemSelected {
+				m.list.KeyMap.Quit.SetEnabled(false)
 				m.showConfirmation = true
 				break
 			}
