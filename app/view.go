@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -11,6 +13,10 @@ func (m Model) View() string {
 	helpView := lipgloss.NewStyle().PaddingLeft(2).Render(m.help.View(m.keys))
 
 	switch {
+
+	case m.showPreview:
+		return fmt.Sprintf("%s\n%s\n%s", m.preview.headerView(), m.preview.View(), m.preview.footerView())
+
 	case m.showConfirmation:
 		listView = m.confirmationList.View()
 		helpView = lipgloss.NewStyle().PaddingLeft(2).Render(

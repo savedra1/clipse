@@ -32,6 +32,8 @@ type Model struct {
 	confirmationList list.Model          // secondary list Model used for confirmation screen
 	showConfirmation bool                // whether to show confirmation screen
 	itemCache        []SelectedItem      // easy access for related items following confirmation screen
+	preview          PreviewModel
+	showPreview      bool
 }
 
 type item struct {
@@ -84,6 +86,8 @@ func NewModel() Model {
 		theme:            theme,
 		prevDirection:    "",
 		showConfirmation: false,
+		preview:          newPreviewModel(),
+		showPreview:      false,
 	}
 
 	entryItems := filterItems(clipboardItems, false, m.theme)

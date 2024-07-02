@@ -7,6 +7,7 @@ import (
 
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
@@ -28,6 +29,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		h, v := appStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 		m.confirmationList.SetSize(msg.Width-h, msg.Height-v)
+
+		headerHeight := lipgloss.Height(m.preview.headerView())
+		footerHeight := lipgloss.Height(m.preview.footerView())
+		verticalMarginHeight := headerHeight + footerHeight
+
+		if !m.preview.ready {
+			m.preview.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
+			m.preview.viewport.YPosition = headerHeight
+			m.preview.ready = true
+
+			m.preview.viewport.YPosition = headerHeight + 1
+		} else {
+			m.preview.viewport.Width = msg.Width
+			m.preview.viewport.Height = msg.Height - verticalMarginHeight
+		}
 
 	case tea.KeyMsg:
 		if key.Matches(msg, m.keys.filter) && m.list.ShowHelp() {
@@ -349,14 +365,30 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			key.Matches(msg, m.keys.end):
 			m.prevDirection = ""
 
+		case key.Matches(msg, m.keys.preview):
+			cmds = append(
+				cmds,
+				m.list.NewStatusMessage(statusMessageStyle("preview")),
+			)
+			m.showPreview = !m.showPreview
+			content := i.titleFull
+			if i.filePath != "null" {
+				content = getImgPreview(i.filePath)
+			}
+			m.preview.viewport.SetContent(content)
 		}
 	}
 
 	newListModel, cmd := m.list.Update(msg)
 	m.list = newListModel
 	cmds = append(cmds, cmd)
+
 	m.confirmationList, cmd = m.confirmationList.Update(msg)
 	cmds = append(cmds, cmd)
+
+	m.preview.viewport, cmd = m.preview.viewport.Update(msg)
+	cmds = append(cmds, cmd)
+
 	return m, tea.Batch(cmds...)
 }
 

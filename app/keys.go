@@ -13,6 +13,7 @@ type keyMap struct {
 	remove        key.Binding
 	togglePin     key.Binding
 	togglePinned  key.Binding
+	preview       key.Binding
 	selectDown    key.Binding
 	selectUp      key.Binding
 	selectSingle  key.Binding
@@ -56,6 +57,10 @@ func newKeyMap() *keyMap {
 		togglePinned: key.NewBinding(
 			key.WithKeys("tab"),
 			key.WithHelp("↹", "show pinned"),
+		),
+		preview: key.NewBinding(
+			key.WithKeys(" "),
+			key.WithHelp("␣", "preview"),
 		),
 		selectDown: key.NewBinding(
 			key.WithKeys("ctrl+down", "ctrl+j"),
