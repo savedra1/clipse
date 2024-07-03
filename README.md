@@ -38,9 +38,22 @@ __[BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea)__
 
 Does not require any additional dependency, but may require you to use a terminal environment that's compatible with [termenv](https://github.com/muesli/termenv).
 
-# Features 
+# Features ✨
 
-### 1. Customization 🧰 
+- Persistent history
+- Supports text and image
+- [Customizable UI theme](#Customization)
+- [Customizable file paths](#Configuration)
+- [Customizable maximum history limit](#Configuration)
+- Filter items using a fuzzy find
+- Image and text previews
+- Mult-selection of items for copy and delete operations
+- Bulk copy all active filter matches
+- Pin items/pinned items view 
+- Vim-like keybindings for navigation available
+- [Run on any Unix machine](#Versatility) with single binary for the clipbboard monitor and TUI 
+
+### Customization 🧰 
 
 A customizable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is editable from a `custom_theme.json` file that gets created when the program is run for the first time. Some example themes (based on my terminal)...
 
@@ -48,7 +61,7 @@ An example `custom_theme.json` file:
 
 ```json
 {
-	"UseCustom":          false,
+	"UseCustom":          true,
 	"TitleFore":          "#ffffff",
 	"TitleBack":          "#6F4CBC",
 	"TitleInfo":          "#3498db",
@@ -81,42 +94,7 @@ See the [library]() for some example themes.
 
 You can also easily specify source config like custom paths and max history limit in the apps `config.json` file. For more information see [Configuration](#configuration) section.  
 
-### 2. Usability ✨
-
-Easily recall, add, and delete clipboard history via a smooth TUI experience built with Go's excellent [BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea) library. As shown in the above video demo, the TUI offers the following features:
-
-- Filter items using a fuzzy find
-- Image and text previews
-- Mult-selection of items for copy and delete operations
-- Copy all filter matches at once
-- Pin items/pinned items view 
-- Vim-like keybindings for navigation available  
-
-Content can also be added explicitly from the command-line using the `-a` or `-c` flags. This would allow you to easily pipe any CLI output directly into your history with commands like:
-
-```shell
-
-ls /home | clipse -a
-
-``` 
-
-```shell
-
-clipse -a "a custom string value"
-
-```
-
-### 3. Efficiency 💥
-
-`clipse` is pretty selfless when it comes to CPU consumption and memory. The below image shows how little resources are required to run the background event listener used to continually update the history displayed in the TUI... 
-
-<p align="left">
-
-  <img src="./resources/examples/htop.png?raw=true" alt="Gruvbox" />
-
-</p>
-
-### 4. Versatility 🌐
+### Versatility 🌐
 
 The `clipse` binary, installable from the repository, can run on pretty much any Unix-based OS, though currently optimized for Linux. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown at the top of the page using [Hyprland window manager](https://hyprland.org/) on __NixOs__.
 
@@ -154,6 +132,7 @@ environment.systemPackages = [
 ```
 
 If building `clipse` from the unstable branch as a system package, I would suggest referencing [this article](https://discourse.nixos.org/t/installing-only-a-single-package-from-unstable/5598) for best practice. The derivation can also be built from source using the following: 
+
 ```nix
 { lib
 , buildGoModule
@@ -168,10 +147,10 @@ buildGoModule rec {
     owner = "savedra1";
     repo = "clipse";
     rev = "v${version}";
-    hash = "sha256-88GuYGJO5AgWae6LyMO/TpGqtk2yS7pDPS0MkgmJUQ4=";
+    hash = "sha256-9r/Ih73eYb45LYOu8HMXqdme/rUwLBI6+gctF603C2w=";
   };
 
-  vendorHash = "sha256-GIUEx4h3xvLySjBAQKajby2cdH8ioHkv8aPskHN0V+w=";
+  vendorHash = "sha256-QEBRlwNS8K44chB3fMOJZxYnIaWMnuDySIhKfF7XtxM=";
 
   meta = {
     description = "Useful clipboard manager TUI for Unix";
@@ -185,7 +164,7 @@ buildGoModule rec {
 ```
 
 ### Installing on Arch
-Shout out to [mcdenkijin](https://www.reddit.com/user/mcdenkijin/) for creating the AUR package!  
+Shout out to [@raininja](https://github.com/raininja) for creating and maintaining the AUR package!  
 
 **Installing with yay**
 ```shell
@@ -264,7 +243,7 @@ go build -o clipse
 
 ## Set up
 
-As mentioned earlier, to get the most out of `clipse` you'll want to bind the two key commands to your systems config. The first key command is to open the clipboard history TUI:
+As mentioned earlier, to get the most out of `clipse`, it's recommended to bind the two primary key commands to your system's config. The first key command is to open the clipboard history TUI:
 
 ```shell
 
@@ -347,6 +326,7 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
 - Setting custom paths for:
   - The clipboard history file
   - The clipboard binaries directory (copied images and other binary data is stored in here)
+  - The debug log file
   - The clipboard UI theme file
 - Setting a custom max history limit 
 - Custom themes
@@ -431,7 +411,8 @@ The maximum item storage limit defaults at **100** but can be customized to anyt
 
 ## Contributing 🙏
 
-I would love to receive contributions to this project and welcome PRs from anyone and everyone. The following is a list of example future enhancements I'd like to implement:
+I would love to receive contributions to this project and welcome PRs from everyone. The following is a list of example future enhancements I'd like to implement:
+
 - [x] ~~Image previews in TUI view~~
 - [x] ~~Pinned items~~
 - [x] ~~Warn on deleting pinned items~~
@@ -444,8 +425,13 @@ I would love to receive contributions to this project and welcome PRs from anyon
 - [x] ~~Multi-select feature for copying multiple items at once~~
 - [ ] Categorized pinned items with _potentially_ different tabs/views  
 - [ ] System paste option _(building functionality to paste the chosen item directly into the next place of focus after the TUI closes)_
-- [ ] Packages for apt, dnf, brew etc
+- [ ] Packages for:
+  - [ ] apt 
+  - [ ] dnf 
+  - [ ] brew
+  - [ ] other
 - [ ] Theme/config adjustments made available via CLI
+- [ ] Your custom theme for the [library]() 
 - [ ] debug mode _(eg `clipse --debug` / debug file / system alert on panic)_
 - [ ] Cross compile binaries for `wl-clipboard`/`xclip` to remove dependency
 - [x] TUI / theming enhancements:
@@ -473,3 +459,4 @@ I would love to receive contributions to this project and welcome PRs from anyon
   ```
 
 <br>
+
