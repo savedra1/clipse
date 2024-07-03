@@ -421,6 +421,7 @@ I would love to receive contributions to this project and welcome PRs from every
   - [x] ~~max history limit~~
   - [x] ~~config file paths~~
   - [ ] key bindings
+- [ ] Option to disable duplicate items
 - [ ] Auto-forget feature based on where the text was copied
 - [x] ~~Multi-select feature for copying multiple items at once~~
 - [ ] Categorized pinned items with _potentially_ different tabs/views  
