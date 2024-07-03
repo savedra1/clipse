@@ -43,6 +43,10 @@ func GetTime() string {
 	return strings.TrimSpace(strings.Split(time.Now().String(), "+")[0])
 }
 
+func GetTimeStamp() string {
+	return strings.Split(GetTime(), ".")[1]
+}
+
 // Expands the path to include the home directory if the path is prefixed
 // with `~`. If it isn't prefixed with `~`, the path is returned as-is.
 func ExpandHome(relPath string) string {

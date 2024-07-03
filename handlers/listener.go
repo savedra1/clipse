@@ -71,7 +71,7 @@ MainLoop:
 				}
 			case PNG, JPEG:
 				if imgEnabled {
-					fileName := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dataType)
+					fileName := fmt.Sprintf("%s-%s.%s", strconv.Itoa(len(input)), utils.GetTimeStamp(), dataType)
 					title := fmt.Sprintf("%s %s", imgIcon, fileName)
 					if !config.Contains(title) {
 						filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
