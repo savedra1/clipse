@@ -1,6 +1,6 @@
 <a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a> [![Last Commit](https://img.shields.io/github/last-commit/savedra1/clipse)](https://github.com/savedra1/clipse) [![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/savedra1/clipse.svg?color=green)](https://github.com/savedra1/clipse/issues) <br>
 
-https://github.com/savedra1/clipse/assets/99875823/c9c1998d-e96d-4c75-b7d9-060e39ac40ab
+https://github.com/savedra1/clipse/assets/99875823/40af797c-2297-49b5-88ec-b8c04e8c829b
 
 [![nix](https://img.shields.io/static/v1?label=Nix&message=1.0.0&color=blue)](https://search.nixos.org/packages?channel=unstable&show=clipse&from=0&size=50&sort=relevance&type=packages&query=clipse)
 [![AUR](https://img.shields.io/aur/version/clipse.svg)](https://aur.archlinux.org/packages/clipse/)
@@ -90,7 +90,7 @@ An example `custom_theme.json` file:
 }
 ```
 
-See the [library]() for some example themes. 
+See the [library](https://github.com/savedra1/clipse/blob/main/resources/library.md) for some example themes. 
 
 You can also easily specify source config like custom paths and max history limit in the apps `config.json` file. For more information see [Configuration](#configuration) section.  
 
