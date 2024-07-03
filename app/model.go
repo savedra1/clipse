@@ -157,6 +157,7 @@ func newConfirmationList(del itemDelegate) list.Model {
 	l.SetFilteringEnabled(false)
 	l.SetShowHelp(false)
 	l.SetShowPagination(false)
+	l.KeyMap.Quit.SetEnabled(false)
 	return l
 }
 

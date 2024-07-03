@@ -66,6 +66,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Don't match any of the keys below if we're actively filtering.
 		if m.list.SettingFilter() {
+			m.toggleQuitEnabled(false) // disable main list quit to allow filter cancel
 			break
 		}
 
@@ -88,13 +89,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.choose):
 			if m.showConfirmation && m.confirmationList.Index() == 0 { // No
-				m.list.KeyMap.Quit.SetEnabled(true)
+				m.togglePreviewKeys(true)
 				m.itemCache = []SelectedItem{}
 				m.showConfirmation = false
 				break
 
 			} else if m.showConfirmation && m.confirmationList.Index() == 1 { // Yes
-				m.list.KeyMap.Quit.SetEnabled(true)
+				m.togglePreviewKeys(true)
 				m.showConfirmation = false
 				currentContent, _ := clipboard.ReadAll()
 				timeStamps := []string{}
@@ -222,7 +223,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if pinnedItemSelected {
-				m.list.KeyMap.Quit.SetEnabled(false)
+				m.toggleConfirmationKeys(false)
 				m.showConfirmation = true
 				break
 			}
@@ -374,10 +375,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					content = getImgPreview(i.filePath)
 				}
 				m.preview.SetContent(content)
-				m.toggleKeysEnabled(false)
+				m.togglePreviewKeys(false)
 				break
 			}
-			m.toggleKeysEnabled(true)
+			m.togglePreviewKeys(true)
 		}
 	}
 
@@ -535,7 +536,7 @@ func (m *Model) removeCachedItem(ts string) {
 	}
 }
 
-func (m *Model) toggleKeysEnabled(v bool) {
+func (m *Model) togglePreviewKeys(v bool) {
 	m.list.KeyMap.CursorUp.SetEnabled(v)
 	m.list.KeyMap.CursorDown.SetEnabled(v)
 	m.list.KeyMap.Filter.SetEnabled(v)
@@ -554,4 +555,28 @@ func (m *Model) toggleKeysEnabled(v bool) {
 	m.keys.selectUp.SetEnabled(v)
 	m.keys.selectSingle.SetEnabled(v)
 	m.keys.clearSelected.SetEnabled(v)
+}
+
+func (m *Model) toggleConfirmationKeys(v bool) {
+	m.list.KeyMap.CursorUp.SetEnabled(v)
+	m.list.KeyMap.CursorDown.SetEnabled(v)
+	m.list.KeyMap.Filter.SetEnabled(v)
+	m.list.KeyMap.GoToEnd.SetEnabled(v)
+	m.list.KeyMap.GoToStart.SetEnabled(v)
+	m.list.KeyMap.Quit.SetEnabled(v)
+	m.list.KeyMap.NextPage.SetEnabled(v)
+	m.list.KeyMap.PrevPage.SetEnabled(v)
+	m.list.KeyMap.ShowFullHelp.SetEnabled(v)
+
+	m.keys.remove.SetEnabled(v)
+	m.keys.togglePin.SetEnabled(v)
+	m.keys.togglePinned.SetEnabled(v)
+	m.keys.selectDown.SetEnabled(v)
+	m.keys.selectUp.SetEnabled(v)
+	m.keys.selectSingle.SetEnabled(v)
+	m.keys.clearSelected.SetEnabled(v)
+}
+
+func (m *Model) toggleQuitEnabled(v bool) {
+	m.list.KeyMap.Quit.SetEnabled(v)
 }
