@@ -66,7 +66,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Don't match any of the keys below if we're actively filtering.
 		if m.list.SettingFilter() {
-			m.toggleQuitEnabled(false) // disable main list quit to allow filter cancel
+			m.setQuitEnabled(false) // disable main list quit to allow filter cancel
 			break
 		}
 
@@ -89,13 +89,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.choose):
 			if m.showConfirmation && m.confirmationList.Index() == 0 { // No
-				m.togglePreviewKeys(true)
+				m.setPreviewKeys(true)
 				m.itemCache = []SelectedItem{}
 				m.showConfirmation = false
 				break
 
 			} else if m.showConfirmation && m.confirmationList.Index() == 1 { // Yes
-				m.togglePreviewKeys(true)
+				m.setPreviewKeys(true)
 				m.showConfirmation = false
 				currentContent, _ := clipboard.ReadAll()
 				timeStamps := []string{}
@@ -223,7 +223,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if pinnedItemSelected {
-				m.toggleConfirmationKeys(false)
+				m.setConfirmationKeys(false)
 				m.showConfirmation = true
 				break
 			}
@@ -278,7 +278,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.togglePinUpdate()
 
 			pinEvent := "Pinned"
-			if !isPinned {
+			if isPinned {
 				pinEvent = "Unpinned"
 			}
 			cmds = append(
@@ -375,10 +375,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					content = getImgPreview(i.filePath)
 				}
 				m.preview.SetContent(content)
-				m.togglePreviewKeys(false)
+				m.setPreviewKeys(false)
 				break
 			}
-			m.togglePreviewKeys(true)
+			m.setPreviewKeys(true)
 		}
 	}
 
@@ -536,7 +536,7 @@ func (m *Model) removeCachedItem(ts string) {
 	}
 }
 
-func (m *Model) togglePreviewKeys(v bool) {
+func (m *Model) setPreviewKeys(v bool) {
 	m.list.KeyMap.CursorUp.SetEnabled(v)
 	m.list.KeyMap.CursorDown.SetEnabled(v)
 	m.list.KeyMap.Filter.SetEnabled(v)
@@ -557,7 +557,7 @@ func (m *Model) togglePreviewKeys(v bool) {
 	m.keys.clearSelected.SetEnabled(v)
 }
 
-func (m *Model) toggleConfirmationKeys(v bool) {
+func (m *Model) setConfirmationKeys(v bool) {
 	m.list.KeyMap.CursorUp.SetEnabled(v)
 	m.list.KeyMap.CursorDown.SetEnabled(v)
 	m.list.KeyMap.Filter.SetEnabled(v)
@@ -577,6 +577,6 @@ func (m *Model) toggleConfirmationKeys(v bool) {
 	m.keys.clearSelected.SetEnabled(v)
 }
 
-func (m *Model) toggleQuitEnabled(v bool) {
+func (m *Model) setQuitEnabled(v bool) {
 	m.list.KeyMap.Quit.SetEnabled(v)
 }
