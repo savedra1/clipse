@@ -180,6 +180,7 @@ func textItems() []ClipboardItem {
 	}
 	return textItems
 }
+
 func AddClipboardItem(text, fp string) error {
 	data := fileContents()
 	item := ClipboardItem{
@@ -187,6 +188,10 @@ func AddClipboardItem(text, fp string) error {
 		Recorded: utils.GetTime(),
 		FilePath: fp,
 		Pinned:   false,
+	}
+
+	if !ClipseConfig.AllowDuplicates {
+		data.ClipboardHistory = removeDuplicate(data.ClipboardHistory, item)
 	}
 
 	// Append the new item to the beginning of the array to appear at top of list
@@ -203,6 +208,25 @@ func AddClipboardItem(text, fp string) error {
 	}
 
 	return WriteUpdate(data)
+}
+
+func removeDuplicate(curentHistory []ClipboardItem, newItem ClipboardItem) []ClipboardItem {
+	updatedData := []ClipboardItem{}
+	for _, item := range curentHistory {
+		if item.FilePath == "null" && item.Value == newItem.Value {
+			continue
+		}
+		if item.FilePath != "null" &&
+			utils.GetImgIdentifier(item.Value) == utils.GetImgIdentifier(newItem.Value) {
+
+			shell.DeleteImage(item.FilePath)
+			continue
+		}
+
+		updatedData = append(updatedData, item)
+	}
+
+	return updatedData
 }
 
 // This pins and unpins an item in the clipboard

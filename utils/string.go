@@ -36,7 +36,6 @@ func GetStdin() string {
 		return "Error reading Stdin"
 	}
 	return string(buffer[:n])
-
 }
 
 func GetTime() string {
@@ -45,6 +44,16 @@ func GetTime() string {
 
 func GetTimeStamp() string {
 	return strings.Split(GetTime(), ".")[1]
+}
+
+// extact the byte data size from the image's clipboard title
+func GetImgIdentifier(itemName string) string {
+	itemName = strings.TrimSpace(itemName)
+	if !strings.Contains(itemName, " ") || !strings.Contains(itemName, "-") {
+		LogERROR(fmt.Sprintf("could not get img identifier due to irregular filename | '%s'", itemName))
+		return ""
+	}
+	return strings.Split(strings.Split(itemName, "-")[0], " ")[1]
 }
 
 // Expands the path to include the home directory if the path is prefixed

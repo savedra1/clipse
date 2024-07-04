@@ -14,6 +14,7 @@ import (
 type Config struct {
 	HistoryFilePath string `json:"historyFile"`
 	MaxHistory      int    `json:"maxHistory"`
+	AllowDuplicates bool   `json:"allowDuplicates"`
 	ThemeFilePath   string `json:"themeFile"`
 	LogFilePath     string `json:"logFile"`
 	TempDirPath     string `json:"tempDir"`
@@ -21,6 +22,8 @@ type Config struct {
 
 // Global config object, accessed and used when any configuration is needed.
 var ClipseConfig = defaultConfig()
+
+//var duplicatesAllowed bool
 
 func Init() (string, string, bool, error) {
 	/*
