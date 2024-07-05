@@ -47,7 +47,7 @@ func KillExistingFG() {
 		310228 clipse
 	*/
 	if err != nil {
-		utils.LogERROR(fmt.Sprintf("failed to get processes | err msg: %s | output: %s", err, output))
+		utils.LogWARN(fmt.Sprintf("failed to get processes | err msg: %s | output: %s", err, output))
 		return
 	}
 	if output == nil {

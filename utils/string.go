@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -36,11 +37,40 @@ func GetStdin() string {
 		return "Error reading Stdin"
 	}
 	return string(buffer[:n])
-
 }
 
 func GetTime() string {
 	return strings.TrimSpace(strings.Split(time.Now().String(), "+")[0])
+}
+
+func GetTimeStamp() string {
+	return strings.Split(GetTime(), ".")[1]
+}
+
+func GetImgIdentifier(filename string) string {
+	parts := strings.SplitN(filename, " ", 2)
+	if len(parts) < 2 {
+		LogERROR(
+			fmt.Sprintf(
+				"could not get img identifier due to missing space in filename | '%s'",
+				filename,
+			),
+		)
+		return ""
+	}
+	filename = parts[1]
+	fileNamePattern := regexp.MustCompile(imgNameRegEx)
+	matches := fileNamePattern.FindStringSubmatch(filename)
+	if matches == nil {
+		LogERROR(
+			fmt.Sprintf(
+				"could not get img identifier due to irregular filename | '%s'",
+				filename,
+			),
+		)
+		return ""
+	}
+	return matches[1]
 }
 
 // Expands the path to include the home directory if the path is prefixed

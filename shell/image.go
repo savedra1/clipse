@@ -26,34 +26,26 @@ func ImagesEnabled(displayServer string) bool {
 }
 
 func CopyImage(imagePath, displayServer string) error {
-	var cmd string
+	cmd := fmt.Sprintf("%s %s", xCopyImgCmd, imagePath)
 	if displayServer == "wayland" {
 		cmd = fmt.Sprintf("%s %s", wlCopyImgCmd, imagePath)
-	} else {
-		cmd = fmt.Sprintf("%s %s", xCopyImgCmd, imagePath)
 	}
-	err := exec.Command("sh", "-c", cmd).Run()
-	if err != nil {
+	if err := exec.Command("sh", "-c", cmd).Run(); err != nil {
 		return err
 	}
 	return nil
 }
 
 func SaveImage(imagePath, displayServer string) error {
-	var cmd string
+	cmd := fmt.Sprintf("%s %s", xPasteImgCmd, imagePath)
 	if displayServer == "wayland" {
 		cmd = fmt.Sprintf("%s %s", wlPasteImgCmd, imagePath)
-	} else {
-		cmd = fmt.Sprintf("%s %s", xPasteImgCmd, imagePath)
 	}
-
-	err := exec.Command("sh", "-c", cmd).Run()
-	if err != nil {
+	if err := exec.Command("sh", "-c", cmd).Run(); err != nil {
 		return err
 	}
 	return nil
 }
-
 func DeleteImage(imagePath string) error {
 	if err := os.Remove(imagePath); err != nil {
 		return err

@@ -64,25 +64,21 @@ MainLoop:
 			dataType = utils.DataType(input)
 			switch dataType {
 			case Text:
-				if !config.Contains(input) {
-					if err := config.AddClipboardItem(input, "null"); err != nil {
-						utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", input, err))
-					}
+				if err := config.AddClipboardItem(input, "null"); err != nil {
+					utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", input, err))
 				}
 			case PNG, JPEG:
 				if imgEnabled {
-					fileName := fmt.Sprintf("%s.%s", strconv.Itoa(len(input)), dataType)
-					title := fmt.Sprintf("%s %s", imgIcon, fileName)
-					if !config.Contains(title) {
-						filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
+					fileName := fmt.Sprintf("%s-%s.%s", strconv.Itoa(len(input)), utils.GetTimeStamp(), dataType)
+					itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
+					filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
 
-						if err := shell.SaveImage(filePath, displayServer); err != nil {
-							utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
-							break
-						}
-						if err := config.AddClipboardItem(title, filePath); err != nil {
-							utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
-						}
+					if err := shell.SaveImage(filePath, displayServer); err != nil {
+						utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
+						break
+					}
+					if err := config.AddClipboardItem(itemTitle, filePath); err != nil {
+						utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
 					}
 				}
 			}

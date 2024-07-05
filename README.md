@@ -330,12 +330,14 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
   - The clipboard UI theme file
 - Setting a custom max history limit 
 - Custom themes
+- If duplicates are allowed
 
 `clipse` looks for a base config file in `$CONFIG_DIR/clipse/config.json` _(`$CONFIG_DIR` being `$XDG_DATA_HOME` or `$HOME/.config`)_, and creates a default file if it does not find anything. The default config looks like this:
 ```json
 {
     "historyFile": "clipboard_history.json",
     "maxHistory": 100,
+    "allowDuplicates": false,
     "themeFile": "custom_theme.json",
     "tempDir": "tmp_files",
     "logFile": "clipse.log"
@@ -421,6 +423,7 @@ I would love to receive contributions to this project and welcome PRs from every
   - [x] ~~max history limit~~
   - [x] ~~config file paths~~
   - [ ] key bindings
+- [x] ~~Option to disable duplicate items~~
 - [ ] Auto-forget feature based on where the text was copied
 - [x] ~~Multi-select feature for copying multiple items at once~~
 - [ ] Categorized pinned items with _potentially_ different tabs/views  
@@ -457,6 +460,6 @@ I would love to receive contributions to this project and welcome PRs from every
   Terminal=false
   Type=Application
   ```
-
+  
 <br>
 
