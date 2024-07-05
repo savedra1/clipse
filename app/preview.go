@@ -1,11 +1,8 @@
 package app
 
 import (
-	"bytes"
-	"encoding/base64"
 	"fmt"
 	"image"
-	"image/jpeg"
 	"os"
 	"strings"
 
@@ -17,16 +14,16 @@ import (
 )
 
 func NewPreview() viewport.Model {
-	return viewport.New(20, 40)
+	return viewport.New(20, 40) // default sizing updated on tea.WindowSizeMsg
 }
 
-func getImgPreview(fp string) string {
+func getImgPreview(fp string, windowSize int) string {
 	img, err := getDecodedImg(fp)
 	if err != nil {
 		utils.LogERROR(fmt.Sprintf("failed to decode image file for preview | %s", err))
 		return fmt.Sprintf("failed to open image file for preview | %s", err)
 	}
-	img = resize.Resize(80, 0, img, resize.Lanczos3)
+	img = resize.Resize(uint(windowSize), 0, img, resize.Lanczos3)
 
 	bounds := img.Bounds()
 	width, height := bounds.Max.X, bounds.Max.Y
@@ -65,19 +62,6 @@ func getDecodedImg(fp string) (image.Image, error) {
 	defer file.Close()
 
 	img, _, err := image.Decode(file)
-	if err != nil {
-		return nil, err
-	}
-
-	var buf bytes.Buffer
-	if err = jpeg.Encode(&buf, img, nil); err != nil {
-		return nil, err
-	}
-
-	base64Image := base64.StdEncoding.EncodeToString(buf.Bytes())
-	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(base64Image))
-
-	img, _, err = image.Decode(reader)
 	if err != nil {
 		return nil, err
 	}
