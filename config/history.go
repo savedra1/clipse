@@ -191,7 +191,9 @@ func AddClipboardItem(text, fp string) error {
 	}
 
 	if !ClipseConfig.AllowDuplicates {
-		data.ClipboardHistory = removeDuplicate(data.ClipboardHistory, item)
+		duplicates, isPinned := duplicateItems(data.ClipboardHistory, item)
+		data.ClipboardHistory = removeDuplicates(data.ClipboardHistory, duplicates)
+		item.Pinned = isPinned
 	}
 
 	// Append the new item to the beginning of the array to appear at top of list
@@ -206,27 +208,54 @@ func AddClipboardItem(text, fp string) error {
 			}
 		}
 	}
-
 	return WriteUpdate(data)
 }
 
-func removeDuplicate(curentHistory []ClipboardItem, newItem ClipboardItem) []ClipboardItem {
-	updatedData := []ClipboardItem{}
-	for _, item := range curentHistory {
-		if item.FilePath == "null" && item.Value == newItem.Value {
-			continue
-		}
-		if item.FilePath != "null" &&
-			utils.GetImgIdentifier(item.Value) == utils.GetImgIdentifier(newItem.Value) {
+func duplicateItems(currentHistory []ClipboardItem, newItem ClipboardItem) ([]string, bool) {
+	isPinned := false
+	timestamps := []string{}
 
-			shell.DeleteImage(item.FilePath)
-			continue
+	for _, item := range currentHistory {
+		if isItemDuplicate(item, newItem) {
+			timestamps = append(timestamps, item.Recorded)
+			if item.Pinned {
+				isPinned = true
+			}
 		}
-
-		updatedData = append(updatedData, item)
 	}
 
-	return updatedData
+	return timestamps, isPinned
+}
+
+func isItemDuplicate(item, newItem ClipboardItem) bool {
+	if item.FilePath == "null" && newItem.FilePath == "null" {
+		return item.Value == newItem.Value
+	}
+	if item.FilePath != "null" && newItem.FilePath != "null" {
+		return utils.GetImgIdentifier(item.Value) == utils.GetImgIdentifier(newItem.Value)
+	}
+	return false
+}
+
+func removeDuplicates(clipboardHistory []ClipboardItem, duplicates []string) []ClipboardItem {
+	toDelete := make(map[string]bool)
+	for _, ts := range duplicates {
+		toDelete[ts] = true
+	}
+	updatedHistory := []ClipboardItem{}
+	for _, item := range clipboardHistory {
+		if !toDelete[item.Recorded] {
+			updatedHistory = append(updatedHistory, item)
+			continue
+		}
+
+		if item.FilePath != "null" {
+			if err := shell.DeleteImage(item.FilePath); err != nil {
+				utils.LogERROR(fmt.Sprintf("failed to delete image | %s | %s", item.FilePath, err))
+			}
+		}
+	}
+	return updatedHistory
 }
 
 // This pins and unpins an item in the clipboard
@@ -247,18 +276,4 @@ func TogglePinClipboardItem(timeStamp string) (bool, error) {
 		return pinned, err
 	}
 	return pinned, nil
-}
-
-// Contains checks if a string exists in the most recent 3 items
-func Contains(str string) bool {
-	data := GetHistory()
-	if len(data) > 3 {
-		data = data[:3]
-	}
-	for _, item := range data {
-		if item.Value == str {
-			return true
-		}
-	}
-	return false
 }

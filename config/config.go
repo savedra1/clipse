@@ -12,11 +12,11 @@ import (
 )
 
 type Config struct {
+	AllowDuplicates bool   `json:"allowDuplicates"`
 	HistoryFilePath string `json:"historyFile"`
 	MaxHistory      int    `json:"maxHistory"`
-	AllowDuplicates bool   `json:"allowDuplicates"`
-	ThemeFilePath   string `json:"themeFile"`
 	LogFilePath     string `json:"logFile"`
+	ThemeFilePath   string `json:"themeFile"`
 	TempDirPath     string `json:"tempDir"`
 }
 

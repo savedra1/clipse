@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -46,14 +47,30 @@ func GetTimeStamp() string {
 	return strings.Split(GetTime(), ".")[1]
 }
 
-// extact the byte data size from the image's clipboard title
-func GetImgIdentifier(itemName string) string {
-	itemName = strings.TrimSpace(itemName)
-	if !strings.Contains(itemName, " ") || !strings.Contains(itemName, "-") {
-		LogERROR(fmt.Sprintf("could not get img identifier due to irregular filename | '%s'", itemName))
+func GetImgIdentifier(filename string) string {
+	parts := strings.SplitN(filename, " ", 2)
+	if len(parts) < 2 {
+		LogERROR(
+			fmt.Sprintf(
+				"could not get img identifier due to missing space in filename | '%s'",
+				filename,
+			),
+		)
 		return ""
 	}
-	return strings.Split(strings.Split(itemName, "-")[0], " ")[1]
+	filename = parts[1]
+	fileNamePattern := regexp.MustCompile(imgNameRegEx)
+	matches := fileNamePattern.FindStringSubmatch(filename)
+	if matches == nil {
+		LogERROR(
+			fmt.Sprintf(
+				"could not get img identifier due to irregular filename | '%s'",
+				filename,
+			),
+		)
+		return ""
+	}
+	return matches[1]
 }
 
 // Expands the path to include the home directory if the path is prefixed
