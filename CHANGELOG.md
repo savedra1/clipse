@@ -21,3 +21,9 @@
 - bug fix: removed duplicate `No items.` status message when clipboard empty
 - optimization: improved the listener's go routine pattern to save CPU usage 
 - optimization: refactored the core codebase to make fewer calls to external files
+
+## v1.0.0 -> v1.0.3
+
+- bug fix: toggle pin status message showing opposite event
+- bug fix: duplicated images sharing the same reference file
+- feat: optional duplicates

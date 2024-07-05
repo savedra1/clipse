@@ -2,7 +2,7 @@
 
 https://github.com/savedra1/clipse/assets/99875823/40af797c-2297-49b5-88ec-b8c04e8c829b
 
-[![nix](https://img.shields.io/static/v1?label=Nix&message=1.0.0&color=blue)](https://search.nixos.org/packages?channel=unstable&show=clipse&from=0&size=50&sort=relevance&type=packages&query=clipse)
+[![nix](https://img.shields.io/static/v1?label=Nix&message=1.0.3&color=blue)](https://search.nixos.org/packages?channel=unstable&show=clipse&from=0&size=50&sort=relevance&type=packages&query=clipse)
 [![AUR](https://img.shields.io/aur/version/clipse.svg)](https://aur.archlinux.org/packages/clipse/)
 <br>
 
@@ -182,7 +182,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux arm64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v0.0.6/clipse_1.0.0_linux_arm64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.3/clipse_1.0.3_linux_arm64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -190,7 +190,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux amd64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.0/clipse_1.0.0_linux_amd64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.3/clipse_1.0.3_linux_amd64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -198,7 +198,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux 836</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.0/clipse_1.0.0_linux_836.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.3/clipse_1.0.3_linux_836.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -206,7 +206,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Darwin arm64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.0/clipse_1.0.0_darwin_arm64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.3/clipse_1.0.3_darwin_arm64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -214,7 +214,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Darwin amd64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.0/clipse_1.0.0_darwin_amd64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.3/clipse_1.0.3_darwin_amd64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -223,7 +223,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
 
 ```shell
 
-go install github.com/savedra1/clipse@v1.0.0
+go install github.com/savedra1/clipse@v1.0.3
 
 ```
 
@@ -456,7 +456,7 @@ I would love to receive contributions to this project and welcome PRs from every
   [Desktop Entry]
   Name=clipse
   Comment=Clipse event listener autostart.
-  Exec=/home/brayan/Applications/bin/clipse/clipse_1.0.0_linux_amd64/clipse --listen %f
+  Exec=/home/brayan/Applications/bin/clipse/clipse_1.0.3_linux_amd64/clipse --listen %f
   Terminal=false
   Type=Application
   ```
