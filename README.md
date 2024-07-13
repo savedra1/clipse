@@ -28,11 +28,8 @@ If moving to a new release of `clipse` please review the [changelog](https://git
 ### Dependency info and libraries used 
 __[atotto/clipboard](https://github.com/atotto/clipboard)__
 
-This requires a standard system clipboard, something like *one* of the following:
-- wl-clipboard
-- xclip
-- xsel
-- termux-clipboard
+This requires a system clipboard. I would recommend using `wl-clipboard` (Wayland) or `xclip` (X11/MacOs) to get the best results. You can also use `xsel` and `termux-clipboard` but these will not allow you to copy images. 
+
 
 __[BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea)__
 
@@ -52,10 +49,11 @@ Does not require any additional dependency, but may require you to use a termina
 - Pin items/pinned items view 
 - Vim-like keybindings for navigation available
 - [Run on any Unix machine](#Versatility) with single binary for the clipbboard monitor and TUI 
+- Optiopnal duplicates
 
 ### Customization 🧰 
 
-A customizable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is editable from a `custom_theme.json` file that gets created when the program is run for the first time. Some example themes (based on my terminal)...
+A customizable TUI allows you to easily match your system's theme. The app is based on your terminal's theme by default but is editable from a `custom_theme.json` file that gets created when the program is run for the first time. See the [library](https://github.com/savedra1/clipse/blob/main/resources/library.md) for some example themes to give you inspiration.
 
 An example `custom_theme.json` file: 
 
@@ -88,9 +86,7 @@ An example `custom_theme.json` file:
 	"PreviewedText":      "#ffffff",
 	"PreviewBorder":      "#3498db",
 }
-```
-
-See the [library](https://github.com/savedra1/clipse/blob/main/resources/library.md) for some example themes. 
+``` 
 
 You can also easily specify source config like custom paths and max history limit in the apps `config.json` file. For more information see [Configuration](#configuration) section.  
 
@@ -445,13 +441,21 @@ I would love to receive contributions to this project and welcome PRs from every
 
 ## FAQ
 
-- __My terminal window does not close on selection, even when using `clipse -fc $PPID`__ - _Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. The 'close on selection functionality is also not currently available for macOS as killing the terminals ppid does not close the window - it seems AppleScript is needed to achieve this._
+- __My terminal window does not close on selection, even when using `clipse -fc $PPID`__ 
+<br>
+_Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. The 'close on selection functionality is also not currently available for macOS as killing the terminals ppid does not close the window - it seems AppleScript is needed to achieve this._
 
-- __Is there risk of multiple parallel processes running?__ - _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
+- __Is there risk of multiple parallel processes running?__
+<br> 
+_No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
 
-- __High CPU usage?__ - When an image file has an irregular binary data pattern it can cause a lot of strain on the program when `clipse` reads its history file (even when the TUI is not open). If this happens, you will need to remove the image file from the TUI or buy using `clipse -clear` or `clipse -clear-images` to remove all files if you don't want to spend the time figuring out which one is causing the issue. See issue #33 for an example.
+- __High CPU usage?__ 
+<br>
+When an image file has an irregular binary data pattern it can cause a lot of strain on the program when `clipse` reads its history file (even when the TUI is not open). If this happens, you will need to remove the image file from the TUI or buy using `clipse -clear` or `clipse -clear-images` to remove all files if you don't want to spend the time figuring out which one is causing the issue. See issue #33 for an example.
 
-- __My copied entries are not recorded when starting the clipse listener on boot with a systemd service__ - There may be a few ways around this but the workaround discovered in issue #41 was to use a `.desktop` file, stored in `~/.config/autostart/`. Eg:
+- __My copied entries are not recorded when starting the clipse listener on boot with a systemd service__ 
+<br> 
+There may be a few ways around this but the workaround discovered in issue #41 was to use a `.desktop` file, stored in `~/.config/autostart/`. Eg:
   ```shell
   [Desktop Entry]
   Name=clipse
@@ -460,6 +464,13 @@ I would love to receive contributions to this project and welcome PRs from every
   Terminal=false
   Type=Application
   ```
+
+- __Copying images from a browser does not work correctly__  
+Depending on the clipboard utility you are using (`wl-clipboard`/`xclip` etc) the data sent to the system clipboard is read differently when copying from browser locations. 
+<br>
+If using `wayland`, Copying images from your browser should now work from most sites if using `v1.0.4` or later. This may copy the binary data as well as the metadata sting as a separate entry. Some sites/browsers may add the browser image data to the stdin in a way that `wl-clipboard` does not recognize.
+<br>
+If using `x11`, `MacOs` or other and copying browser images does not work, feel free to raise and issue (or a PR) detailing which sites/browser engines this does not work with for you.
   
 <br>
 
