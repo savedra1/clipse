@@ -16,13 +16,13 @@ import (
 )
 
 var (
-	version     = "v1.0.3"
+	version     = "v1.0.4"
 	help        = flag.Bool("help", false, "Show help message.")
 	v           = flag.Bool("v", false, "Show app version.")
 	add         = flag.Bool("a", false, "Add the following arg to the clipboard history.")
 	copyInput   = flag.Bool("c", false, "Copy the input to your systems clipboard.")
 	paste       = flag.Bool("p", false, "Prints the current clipboard content.")
-	listen      = flag.Bool("listen", false, "Start background process for monitoring clipboard activity.")
+	listen      = flag.Bool("listen", false, "Start background process for monitoring clipboard activity on wayland/x11/macOs.")
 	listenShell = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
 	kill        = flag.Bool("kill", false, "Kill any existing background processes.")
 	clear       = flag.Bool("clear", false, "Remove all contents from the clipboard history except for pinned items.")
@@ -30,6 +30,7 @@ var (
 	clearImages = flag.Bool("clear-images", false, "Removes all images from the clipboard history including pinned images.")
 	clearText   = flag.Bool("clear-text", false, "Removes all text from the clipboard history including pinned text entries.")
 	forceClose  = flag.Bool("fc", false, "Forces the terminal session to quick by taking the $PPID var as an arg. EG `clipse -fc $PPID`")
+	wlStore     = flag.Bool("wl-store", false, "Store data from the stdin directly using the wl-clipboard API.")
 )
 
 func main() {
@@ -67,7 +68,7 @@ func main() {
 		handleCopy()
 
 	case *listen:
-		handleListen()
+		handleListen(displayServer)
 
 	case *listenShell:
 		handleListenShell(displayServer, imgEnabled)
@@ -80,6 +81,9 @@ func main() {
 
 	case *forceClose:
 		handleForceClose()
+
+	case *wlStore:
+		handlers.StoreWLData()
 
 	default:
 		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])
@@ -103,12 +107,12 @@ func handleAdd() {
 	utils.HandleError(config.AddClipboardItem(input, "null"))
 }
 
-func handleListen() {
+func handleListen(displayServer string) {
 	if err := shell.KillExisting(); err != nil {
 		fmt.Printf("ERROR: failed to kill existing listener process: %s", err)
 		utils.LogERROR(fmt.Sprintf("failed to kill existing listener process: %s", err))
 	}
-	shell.RunNohupListener()
+	shell.RunNohupListener(displayServer)
 }
 
 func handleListenShell(displayServer string, imgEnabled bool) {
