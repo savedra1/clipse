@@ -31,10 +31,11 @@ func StoreWLData() {
 
 	switch dataType {
 	case "text":
-		if string(input) == "" {
+		inputStr := string(input)
+		if inputStr == "" {
 			return
 		}
-		if err := config.AddClipboardItem(string(input), "null"); err != nil {
+		if err := config.AddClipboardItem(inputStr, "null"); err != nil {
 			utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", input, err))
 		}
 	case "image":

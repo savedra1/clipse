@@ -142,6 +142,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case fp != "null":
 					ds := config.DisplayServer() // eg "wayland"
 					utils.HandleError(shell.CopyImage(fp, ds))
+
+					if err := config.DeleteItems([]string{timestamp}); err != nil { // always delete old image from store
+						utils.LogERROR(fmt.Sprintf("failed to delete old image: %s", err))
+					}
+
 					return m, tea.Quit
 
 				case len(os.Args) > 2 && utils.IsInt(os.Args[2]):

@@ -27,3 +27,12 @@
 - bug fix: toggle pin status message showing opposite event
 - bug fix: duplicated images sharing the same reference file
 - feat: optional duplicates
+
+## v1.0.3 -> v1.0.5
+
+- feat: added a separate Wayland listener client to access data directly from the stdin using `wl-clipboard --watch`. 
+- feat: significantly improved CPU usage if using Wayland 
+- fix: not able to copy images from a browser if using Wayland
+- bug fix: images copied form stdin and from their temp file no longer share the same byte length for wayland. This lead to a bug where the initial image would not be 'de-duplicated' and would sometimes cause rendering issues. Implemented a fix where all no images can now be duplicated, even if `duplicatesAllowed` is set to `true`. 
+
+
