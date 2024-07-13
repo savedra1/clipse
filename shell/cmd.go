@@ -56,7 +56,7 @@ func KillExistingFG() {
 
 	psList := strings.Split(string(output), "\n")
 	for _, ps := range psList {
-		if strings.Contains(ps, currentPS) || strings.Contains(ps, listenCmd) {
+		if strings.Contains(ps, currentPS) || strings.Contains(ps, listenCmd) || strings.Contains(ps, wlStoreCmd) {
 			continue
 		}
 		if ps != "" {
