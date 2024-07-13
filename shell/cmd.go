@@ -56,7 +56,7 @@ func KillExistingFG() {
 
 	psList := strings.Split(string(output), "\n")
 	for _, ps := range psList {
-		if strings.Contains(ps, currentPS) || strings.Contains(ps, listenCmd) {
+		if strings.Contains(ps, currentPS) || strings.Contains(ps, listenCmd) || strings.Contains(ps, wlStoreCmd) {
 			continue
 		}
 		if ps != "" {
@@ -74,9 +74,34 @@ func KillAll(bin string) {
 	}
 }
 
-func RunNohupListener() {
-	cmd := exec.Command("nohup", os.Args[0], listenCmd, ">/dev/null", "2>&1", "&")
-	utils.HandleError(cmd.Start())
+func RunNohupListener(displayServer string) {
+	switch displayServer {
+	case "wayland":
+		// run optimized wl-clipboard listener
+		utils.HandleError(nohupCmdWL("image").Start())
+		utils.HandleError(nohupCmdWL("text").Start())
+
+	default:
+		// run default poll listener
+		cmd := exec.Command("nohup", os.Args[0], listenCmd, ">/dev/null", "2>&1", "&")
+		utils.HandleError(cmd.Start())
+	}
+}
+
+func nohupCmdWL(dataType string) *exec.Cmd {
+	cmd := exec.Command(
+		"nohup",
+		wlPasteHandler,
+		wlTypeSpec,
+		dataType,
+		wlPasteWatcher,
+		os.Args[0],
+		wlStoreCmd,
+		">/dev/null",
+		"2>&1",
+		"&",
+	)
+	return cmd
 }
 
 func KillProcess(ppid string) {
