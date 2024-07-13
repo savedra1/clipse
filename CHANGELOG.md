@@ -28,7 +28,8 @@
 - bug fix: duplicated images sharing the same reference file
 - feat: optional duplicates
 
-## v1.0.3 -> v1.0.6
+## v1.0.3 -> v1.0.7
+This release introduced using `wl-paste --watch` as the default listener client for Wayland users. This also introduced a weird bug where the terminal session will need to initialize the full environment for image data to parse properly. If using `1.0.7` or higher be sure to add a `sleep 0.1` before calling the TUI with a keybinding.
 
 - feat: added a separate Wayland listener client to access data directly from the stdin using `wl-clipboard --watch`. 
 - feat: significantly improved CPU usage if using Wayland 
