@@ -443,7 +443,7 @@ I would love to receive contributions to this project and welcome PRs from every
 
 - __My terminal window does not close on selection, even when using `clipse -fc $PPID`__ 
 <br>
-_Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. To get the "close on selection" effect for macOs, you will need to install a differnet terminal environment like `Alacritty`._
+_Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. To get the "close on selection" effect for macOs, you will need to install a different terminal environment like `Alacritty`._
 
 - __Is there risk of multiple parallel processes running?__
 <br> 
