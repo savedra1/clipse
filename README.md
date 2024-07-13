@@ -267,11 +267,12 @@ Add the following lines to your Hyprland config file:
 
 exec-once = clipse -listen # run listener on startup
 
-windowrulev2 = float,class:(floating) # ensure you have defined a floating window class
+windowrulev2 = float,class:(clipse) # ensure you have a floating window class set if you want this behaviour
+windowrulev2 = size 622 652,class:(clipse) # set the size of the window as necessary
 
-bind = SUPER, V, exec,  <terminal name> --class floating -e <shell-env>  -c 'sleep 0.1 && clipse'  # bind the open clipboard operation to a nice key. 
+bind = SUPER, V, exec,  <terminal name> --class clipse -e clipse' 
 
-# Example: bind = SUPER, V, exec, alacritty --class floating -e zsh -c 'clipse'
+# Example: bind = SUPER, V, exec, alacritty --class clipse -e 'clipse'
 ```
 
 [Hyprland reference](https://wiki.hyprland.org/Configuring/Window-Rules/)
