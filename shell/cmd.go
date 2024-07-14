@@ -78,7 +78,7 @@ func RunNohupListener(displayServer string) {
 	switch displayServer {
 	case "wayland":
 		// run optimized wl-clipboard listener
-		utils.HandleError(nohupCmdWL("image").Start())
+		utils.HandleError(nohupCmdWL("image/png").Start())
 		utils.HandleError(nohupCmdWL("text").Start())
 
 	default:

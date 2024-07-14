@@ -23,14 +23,15 @@ func StoreWLData() {
 		return
 	}
 
-	dataType = "text" // defined in defaultHandler
-	img, format, err := image.Decode(bytes.NewReader(input))
-	if err == nil {
-		dataType = "image"
+	dt := Text
+	if len(input) > 0 && input[0] == 0x89 && string(input[1:4]) == "PNG" {
+		dt = PNG
+	} else if len(input) > 10 && string(input[6:10]) == "JFIF" {
+		dt = JPEG
 	}
 
-	switch dataType {
-	case "text":
+	switch dt {
+	case Text:
 		inputStr := string(input)
 		if inputStr == "" {
 			return
@@ -39,7 +40,7 @@ func StoreWLData() {
 			utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", input, err))
 		}
 
-	case "image":
+	case PNG, JPEG:
 		/*
 			When saving image data from the stdin using wl-paste --watch,
 			the byte size if different to when the image data is copied
@@ -50,21 +51,40 @@ func StoreWLData() {
 			auto-removed during the AddClipboardItem call in the same way
 			as non-wayland specific data.
 		*/
-		fileName := fmt.Sprintf("%s.%s", utils.GetTimeStamp(), format)
+
+		img, format, err := image.Decode(bytes.NewReader(input))
+		if err != nil {
+			/*
+				if the image data cannot be decoded here it means this has
+				not loaded properly from the wl-paste --watch api.
+				skipping the rest of this func will leave the existing image
+				file in the same position. usually this only happens when an
+				image is copied form the existing clipboard contents
+			*/
+			// this log can be added but there is not necessarily a fix:
+			// utils.LogWARN(fmt.Sprintf("img data not synced. skipping entry reorder: %s", err))
+			return
+		}
+
+		fileName := fmt.Sprintf("%s.%s", utils.GetTimeStamp(), "png")
 		filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
+
+		if err = os.WriteFile(filePath, input, 0644); err != nil {
+			utils.LogERROR(fmt.Sprintf("error writing to file: %s", err))
+		}
 
 		out, err := os.Create(filePath)
 		if err != nil {
-			utils.LogERROR(fmt.Sprintf("failed to store img file: %s", err))
+			utils.LogERROR(fmt.Sprintf("failed to create img file: %s", err))
 			return
 		}
 
 		defer out.Close()
 
 		switch format {
-		case "png":
+		case PNG:
 			err = png.Encode(out, img)
-		case "jpeg", "jpg":
+		case JPEG, JPG:
 			err = jpeg.Encode(out, img, nil)
 		default:
 			// default to PNG if format not recognized
@@ -87,7 +107,7 @@ func StoreWLData() {
 			"%s-%s.%s",
 			strconv.Itoa(int(fileSize)),
 			strings.Split(fileName, ".")[0],
-			format,
+			dt,
 		)
 		updatedFilePath := filepath.Join(config.ClipseConfig.TempDirPath, updatedFileName)
 
@@ -101,6 +121,5 @@ func StoreWLData() {
 		if err := config.AddClipboardItem(itemTitle, updatedFilePath); err != nil {
 			utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
 		}
-
 	}
 }
