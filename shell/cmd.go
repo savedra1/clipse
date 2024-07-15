@@ -24,7 +24,7 @@ func KillExisting() error {
 	}
 
 	for _, p := range psList {
-		if strings.Contains(os.Args[0], p.Executable()) {
+		if strings.Contains(os.Args[0], p.Executable()) || strings.Contains(wlPasteHandler, p.Executable()) {
 			if p.Pid() != currentPS {
 				KillProcess(strconv.Itoa(p.Pid()))
 			}
@@ -78,7 +78,7 @@ func RunNohupListener(displayServer string) {
 	switch displayServer {
 	case "wayland":
 		// run optimized wl-clipboard listener
-		utils.HandleError(nohupCmdWL("image").Start())
+		utils.HandleError(nohupCmdWL("image/png").Start())
 		utils.HandleError(nohupCmdWL("text").Start())
 
 	default:

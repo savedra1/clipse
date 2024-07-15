@@ -442,20 +442,23 @@ I would love to receive contributions to this project and welcome PRs from every
 
 ## FAQ
 
-- __My terminal window does not close on selection, even when using `clipse -fc $PPID`__ 
-<br>
-_Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. To get the "close on selection" effect for macOs, you will need to install a different terminal environment like `Alacritty`._
+__My terminal window does not close on selection, even when using `clipse -fc $PPID`__ 
 
-- __Is there risk of multiple parallel processes running?__
-<br> 
+Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. To get the "close on selection" effect for macOs, you will need to install a different terminal environment like `Alacritty`._
+<br>
+
+__Is there risk of multiple parallel processes running?__
+ 
 _No. The `clipse` command kills any existing TUI processes before opening up and the `clipse -listen`  command kills any existing background listeners before starting a new one._
-
-- __High CPU usage?__ 
 <br>
-When an image file has an irregular binary data pattern it can cause a lot of strain on the program when `clipse` reads its history file (even when the TUI is not open). If this happens, you will need to remove the image file from the TUI or by using `clipse -clear-images`. See issue #33 for an example.
 
-- __My copied entries are not recorded when starting the clipse listener on boot with a systemd service__ 
-<br> 
+__High CPU usage?__ 
+
+When an image file has an irregular binary data pattern it can cause a lot of strain on the program when `clipse` reads its history file (even when the TUI is not open). If this happens, you will need to remove the image file from the TUI or by using `clipse -clear-images`. See issue #33 for an example.
+<br>
+
+__My copied entries are not recorded when starting the clipse listener on boot with a systemd service__ 
+ 
 There may be a few ways around this but the workaround discovered in issue #41 was to use a `.desktop` file, stored in `~/.config/autostart/`. Eg:
   ```shell
   [Desktop Entry]
@@ -465,8 +468,10 @@ There may be a few ways around this but the workaround discovered in issue #41 w
   Terminal=false
   Type=Application
   ```
+<br>
 
-- __Copying images from a browser does not work correctly__  
+__Copying images from a browser does not work correctly__  
+
 Depending on the clipboard utility you are using (`wl-clipboard`/`xclip` etc) the data sent to the system clipboard is read differently when copying from browser locations. 
 <br>
 If using `wayland`, copying images from your browser should now work from most sites if using `v1.0.4` or later. This may copy the binary data as well as the metadata sting as a separate entry. Some sites/browsers may add the browser image data to the stdin in a way that `wl-clipboard` does not recognize.
