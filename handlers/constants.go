@@ -9,4 +9,5 @@ const (
 	Text                = "text"
 	PNG                 = "png"
 	JPEG                = "jpeg"
+	JPG                 = "jpg"
 )

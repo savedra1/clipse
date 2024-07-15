@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
 
@@ -23,14 +24,15 @@ func StoreWLData() {
 		return
 	}
 
-	dataType = "text" // defined in defaultHandler
-	img, format, err := image.Decode(bytes.NewReader(input))
-	if err == nil {
-		dataType = "image"
+	dt := Text
+	if len(input) > 0 && input[0] == 0x89 && string(input[1:4]) == "PNG" {
+		dt = PNG
+	} else if len(input) > 10 && string(input[6:10]) == "JFIF" {
+		dt = JPEG
 	}
 
-	switch dataType {
-	case "text":
+	switch dt {
+	case Text:
 		inputStr := string(input)
 		if inputStr == "" {
 			return
@@ -39,7 +41,7 @@ func StoreWLData() {
 			utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", input, err))
 		}
 
-	case "image":
+	case PNG, JPEG:
 		/*
 			When saving image data from the stdin using wl-paste --watch,
 			the byte size if different to when the image data is copied
@@ -50,21 +52,51 @@ func StoreWLData() {
 			auto-removed during the AddClipboardItem call in the same way
 			as non-wayland specific data.
 		*/
-		fileName := fmt.Sprintf("%s.%s", utils.GetTimeStamp(), format)
+
+		fileName := fmt.Sprintf("%s.%s", utils.GetTimeStamp(), "png")
 		filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
+
+		img, format, err := image.Decode(bytes.NewReader(input))
+
+		if err != nil {
+			/*
+				if the image data cannot be decoded here it means this has
+				not loaded properly from the wl-paste --watch api.
+				the image is then created using `wl-paste -t image/png <path>`
+			*/
+
+			if err = shell.SaveImage(filePath, "wayland"); err != nil {
+				utils.LogERROR(fmt.Sprintf("failed to save new image: %s", err))
+				return
+			}
+
+			updatedFileName, updatedFilePath, err := renameImgFile(filePath, fileName, dt)
+			if err != nil {
+				utils.LogERROR(fmt.Sprintf("failed to rename new image file: %s", err))
+				return
+			}
+
+			itemTitle := fmt.Sprintf("%s %s", imgIcon, updatedFileName)
+
+			if err := config.AddClipboardItem(itemTitle, updatedFilePath); err != nil {
+				utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
+			}
+
+			return
+		}
 
 		out, err := os.Create(filePath)
 		if err != nil {
-			utils.LogERROR(fmt.Sprintf("failed to store img file: %s", err))
+			utils.LogERROR(fmt.Sprintf("failed to create img file: %s", err))
 			return
 		}
 
 		defer out.Close()
 
 		switch format {
-		case "png":
+		case PNG:
 			err = png.Encode(out, img)
-		case "jpeg", "jpg":
+		case JPEG, JPG:
 			err = jpeg.Encode(out, img, nil)
 		default:
 			// default to PNG if format not recognized
@@ -76,22 +108,9 @@ func StoreWLData() {
 			return
 		}
 
-		fileInfo, err := os.Stat(filePath)
+		updatedFileName, updatedFilePath, err := renameImgFile(filePath, fileName, dt)
+
 		if err != nil {
-			utils.LogERROR(fmt.Sprintf("failed to read new image file: %s", err))
-			return
-		}
-
-		fileSize := fileInfo.Size()
-		updatedFileName := fmt.Sprintf(
-			"%s-%s.%s",
-			strconv.Itoa(int(fileSize)),
-			strings.Split(fileName, ".")[0],
-			format,
-		)
-		updatedFilePath := filepath.Join(config.ClipseConfig.TempDirPath, updatedFileName)
-
-		if err = os.Rename(filePath, updatedFilePath); err != nil {
 			utils.LogERROR(fmt.Sprintf("failed to rename new image file: %s", err))
 			return
 		}
@@ -101,6 +120,27 @@ func StoreWLData() {
 		if err := config.AddClipboardItem(itemTitle, updatedFilePath); err != nil {
 			utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
 		}
-
 	}
+}
+
+func renameImgFile(filePath, fileName, dt string) (string, string, error) {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return "", "", err
+	}
+
+	fileSize := fileInfo.Size()
+	updatedFileName := fmt.Sprintf(
+		"%s-%s.%s",
+		strconv.Itoa(int(fileSize)),
+		strings.Split(fileName, ".")[0],
+		dt,
+	)
+	updatedFilePath := filepath.Join(config.ClipseConfig.TempDirPath, updatedFileName)
+
+	if err = os.Rename(filePath, updatedFilePath); err != nil {
+		return "", "", err
+	}
+
+	return updatedFileName, updatedFilePath, nil
 }
