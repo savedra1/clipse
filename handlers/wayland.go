@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
 
@@ -52,25 +53,36 @@ func StoreWLData() {
 			as non-wayland specific data.
 		*/
 
+		fileName := fmt.Sprintf("%s.%s", utils.GetTimeStamp(), "png")
+		filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
+
 		img, format, err := image.Decode(bytes.NewReader(input))
+
 		if err != nil {
 			/*
 				if the image data cannot be decoded here it means this has
 				not loaded properly from the wl-paste --watch api.
-				skipping the rest of this func will leave the existing image
-				file in the same position. usually this only happens when an
-				image is copied form the existing clipboard contents
+				the image is then created using `wl-paste -t image/png <path>`
 			*/
-			// this log can be added but there is not necessarily a fix:
-			// utils.LogWARN(fmt.Sprintf("img data not synced. skipping entry reorder: %s", err))
+
+			if err = shell.SaveImage(filePath, "wayland"); err != nil {
+				utils.LogERROR(fmt.Sprintf("failed to save new image: %s", err))
+				return
+			}
+
+			updatedFileName, updatedFilePath, err := renameImgFile(filePath, fileName, dt)
+			if err != nil {
+				utils.LogERROR(fmt.Sprintf("failed to rename new image file: %s", err))
+				return
+			}
+
+			itemTitle := fmt.Sprintf("%s %s", imgIcon, updatedFileName)
+
+			if err := config.AddClipboardItem(itemTitle, updatedFilePath); err != nil {
+				utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
+			}
+
 			return
-		}
-
-		fileName := fmt.Sprintf("%s.%s", utils.GetTimeStamp(), "png")
-		filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
-
-		if err = os.WriteFile(filePath, input, 0644); err != nil {
-			utils.LogERROR(fmt.Sprintf("error writing to file: %s", err))
 		}
 
 		out, err := os.Create(filePath)
@@ -96,22 +108,9 @@ func StoreWLData() {
 			return
 		}
 
-		fileInfo, err := os.Stat(filePath)
+		updatedFileName, updatedFilePath, err := renameImgFile(filePath, fileName, dt)
+
 		if err != nil {
-			utils.LogERROR(fmt.Sprintf("failed to read new image file: %s", err))
-			return
-		}
-
-		fileSize := fileInfo.Size()
-		updatedFileName := fmt.Sprintf(
-			"%s-%s.%s",
-			strconv.Itoa(int(fileSize)),
-			strings.Split(fileName, ".")[0],
-			dt,
-		)
-		updatedFilePath := filepath.Join(config.ClipseConfig.TempDirPath, updatedFileName)
-
-		if err = os.Rename(filePath, updatedFilePath); err != nil {
 			utils.LogERROR(fmt.Sprintf("failed to rename new image file: %s", err))
 			return
 		}
@@ -122,4 +121,26 @@ func StoreWLData() {
 			utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
 		}
 	}
+}
+
+func renameImgFile(filePath, fileName, dt string) (string, string, error) {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return "", "", err
+	}
+
+	fileSize := fileInfo.Size()
+	updatedFileName := fmt.Sprintf(
+		"%s-%s.%s",
+		strconv.Itoa(int(fileSize)),
+		strings.Split(fileName, ".")[0],
+		dt,
+	)
+	updatedFilePath := filepath.Join(config.ClipseConfig.TempDirPath, updatedFileName)
+
+	if err = os.Rename(filePath, updatedFilePath); err != nil {
+		return "", "", err
+	}
+
+	return updatedFileName, updatedFilePath, nil
 }

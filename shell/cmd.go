@@ -24,7 +24,7 @@ func KillExisting() error {
 	}
 
 	for _, p := range psList {
-		if strings.Contains(os.Args[0], p.Executable()) {
+		if strings.Contains(os.Args[0], p.Executable()) || strings.Contains(wlPasteHandler, p.Executable()) {
 			if p.Pid() != currentPS {
 				KillProcess(strconv.Itoa(p.Pid()))
 			}
