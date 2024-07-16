@@ -2,7 +2,7 @@
 
 https://github.com/savedra1/clipse/assets/99875823/40af797c-2297-49b5-88ec-b8c04e8c829b
 
-[![nix](https://img.shields.io/static/v1?label=Nix&message=1.0.7&color=blue)](https://search.nixos.org/packages?channel=unstable&show=clipse&from=0&size=50&sort=relevance&type=packages&query=clipse)
+[![nix](https://img.shields.io/static/v1?label=Nix&message=1.0.8&color=blue)](https://search.nixos.org/packages?channel=unstable&show=clipse&from=0&size=50&sort=relevance&type=packages&query=clipse)
 [![AUR](https://img.shields.io/aur/version/clipse.svg)](https://aur.archlinux.org/packages/clipse/)
 <br>
 
@@ -137,7 +137,7 @@ If building `clipse` from the unstable branch as a system package, I would sugge
 
 buildGoModule rec {
   pname = "clipse";
-  version = "1.0.7";
+  version = "1.0.8";
 
   src = fetchFromGitHub {
     owner = "savedra1";
@@ -178,7 +178,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux arm64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.7/clipse_1.0.7_linux_arm64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.8/clipse_1.0.8_linux_arm64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -186,7 +186,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux amd64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.7/clipse_1.0.7_linux_amd64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.8/clipse_1.0.8_linux_amd64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -194,7 +194,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Linux 836</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.7/clipse_1.0.7_linux_836.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.8/clipse_1.0.8_linux_836.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -202,7 +202,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Darwin arm64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.7/clipse_1.0.7_darwin_arm64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.8/clipse_1.0.8_darwin_arm64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -210,7 +210,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
   <summary><b>Darwin amd64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.7/clipse_1.0.7_darwin_amd64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.8/clipse_1.0.8_darwin_amd64.tar.gz -O - | tar -xz
   ```
 </details>
 
@@ -219,7 +219,7 @@ git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
 
 ```shell
 
-go install github.com/savedra1/clipse@v1.0.7
+go install github.com/savedra1/clipse@v1.0.8
 
 ```
 
@@ -419,9 +419,10 @@ I would love to receive contributions to this project and welcome PRs from every
 - [ ] Customisations for:
   - [x] ~~max history limit~~
   - [x] ~~config file paths~~
+  - [x] ~~Duplicates allowed~~ 
   - [ ] key bindings
 - [x] ~~Option to disable duplicate items~~
-- [ ] Auto-forget feature based on where the text was copied
+- [ ] Auto-forget based on where the text was copied
 - [x] ~~Multi-select feature for copying multiple items at once~~
 - [ ] Categorized pinned items with _potentially_ different tabs/views  
 - [ ] System paste option _(building functionality to paste the chosen item directly into the next place of focus after the TUI closes)_
@@ -431,7 +432,7 @@ I would love to receive contributions to this project and welcome PRs from every
   - [ ] brew
   - [ ] other
 - [ ] Theme/config adjustments made available via CLI
-- [ ] Your custom theme for the [library]() 
+- [ ] Your custom theme for the [library](https://github.com/savedra1/clipse/blob/main/resources/library.md)
 - [ ] debug mode _(eg `clipse --debug` / debug file / system alert on panic)_
 - [ ] Cross compile binaries for `wl-clipboard`/`xclip` to remove dependency
 - [x] TUI / theming enhancements:
@@ -464,7 +465,7 @@ There may be a few ways around this but the workaround discovered in issue #41 w
   [Desktop Entry]
   Name=clipse
   Comment=Clipse event listener autostart.
-  Exec=/home/brayan/Applications/bin/clipse/clipse_1.0.7_linux_amd64/clipse --listen %f
+  Exec=/home/brayan/Applications/bin/clipse/clipse_1.0.8_linux_amd64/clipse --listen %f
   Terminal=false
   Type=Application
   ```
@@ -479,4 +480,3 @@ If using `wayland`, copying images from your browser should now work from most s
 If using `x11`, `MacOs` or other and copying browser images does not work, feel free to raise and issue (or a PR) detailing which sites/browser engines this does not work with for you.
   
 <br>
-

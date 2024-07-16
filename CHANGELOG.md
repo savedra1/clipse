@@ -37,3 +37,8 @@
 - bug fix: images not keeping pinned status after being chosen on Wayland
 
 
+## v1.0.7 -> v1.0.8
+
+- bug fix: image binary data sometimes parsing as a string on Wayland
+- bug fix: inconsistent viewport start position
+- bug fix: inconsistent confirmation list start position
