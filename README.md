@@ -270,7 +270,7 @@ exec-once = clipse -listen # run listener on startup
 windowrulev2 = float,class:(clipse) # ensure you have a floating window class set if you want this behaviour
 windowrulev2 = size 622 652,class:(clipse) # set the size of the window as necessary
 
-bind = SUPER, V, exec,  <terminal name> --class clipse -e clipse' 
+bind = SUPER, V, exec,  <terminal name> --class clipse -e 'clipse' 
 
 # Example: bind = SUPER, V, exec, alacritty --class clipse -e 'clipse'
 ```
