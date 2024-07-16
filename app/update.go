@@ -92,14 +92,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.choose):
 			if m.showConfirmation && m.confirmationList.Index() == 0 { // No
-				m.setPreviewKeys(true)
 				m.itemCache = []SelectedItem{}
 				m.showConfirmation = false
+				m.setPreviewKeys(false)
+				m.enableConfirmationKeys(false)
+				m.setConfirmationKeys(false)
 				break
 
 			} else if m.showConfirmation && m.confirmationList.Index() == 1 { // Yes
-				m.setPreviewKeys(true)
 				m.showConfirmation = false
+				m.setPreviewKeys(false)
+				m.enableConfirmationKeys(false)
+				m.setConfirmationKeys(false)
 				currentContent, _ := clipboard.ReadAll()
 				timeStamps := []string{}
 				for _, item := range m.itemCache {
@@ -226,7 +230,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if pinnedItemSelected {
-				m.setConfirmationKeys(false)
+				m.confirmationList.Select(0)
+				m.setConfirmationKeys(true)
+				m.enableConfirmationKeys(true)
 				m.showConfirmation = true
 				break
 			}
@@ -383,11 +389,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.preview, cmd = m.preview.Update(msg)
 				cmds = append(cmds, cmd)
 				m.preview.GotoTop()
-				m.setPreviewKeys(false)
+				m.setPreviewKeys(true)
 
 				return m, tea.Batch(cmds...)
 			}
-			m.setPreviewKeys(true)
+			m.setPreviewKeys(false)
 		}
 	}
 
@@ -545,45 +551,54 @@ func (m *Model) removeCachedItem(ts string) {
 	}
 }
 
+// enable/disable the main keys relevant to the preview view
 func (m *Model) setPreviewKeys(v bool) {
-	m.list.KeyMap.CursorUp.SetEnabled(v)
-	m.list.KeyMap.CursorDown.SetEnabled(v)
-	m.list.KeyMap.Filter.SetEnabled(v)
-	m.list.KeyMap.GoToEnd.SetEnabled(v)
-	m.list.KeyMap.GoToStart.SetEnabled(v)
-	m.list.KeyMap.Quit.SetEnabled(v)
-	m.list.KeyMap.NextPage.SetEnabled(v)
-	m.list.KeyMap.PrevPage.SetEnabled(v)
-	m.list.KeyMap.ShowFullHelp.SetEnabled(v)
+	m.list.KeyMap.CursorUp.SetEnabled(!v)
+	m.list.KeyMap.CursorDown.SetEnabled(!v)
+	m.list.KeyMap.Filter.SetEnabled(!v)
+	m.list.KeyMap.GoToEnd.SetEnabled(!v)
+	m.list.KeyMap.GoToStart.SetEnabled(!v)
+	m.list.KeyMap.Quit.SetEnabled(!v)
+	m.list.KeyMap.NextPage.SetEnabled(!v)
+	m.list.KeyMap.PrevPage.SetEnabled(!v)
+	m.list.KeyMap.ShowFullHelp.SetEnabled(!v)
 
-	m.keys.remove.SetEnabled(v)
-	m.keys.choose.SetEnabled(v)
-	m.keys.togglePin.SetEnabled(v)
-	m.keys.togglePinned.SetEnabled(v)
-	m.keys.selectDown.SetEnabled(v)
-	m.keys.selectUp.SetEnabled(v)
-	m.keys.selectSingle.SetEnabled(v)
-	m.keys.clearSelected.SetEnabled(v)
+	m.keys.remove.SetEnabled(!v)
+	m.keys.choose.SetEnabled(!v)
+	m.keys.togglePin.SetEnabled(!v)
+	m.keys.togglePinned.SetEnabled(!v)
+	m.keys.selectDown.SetEnabled(!v)
+	m.keys.selectUp.SetEnabled(!v)
+	m.keys.selectSingle.SetEnabled(!v)
+	m.keys.clearSelected.SetEnabled(!v)
 }
 
+// enable/disable the main keys relevant to the confirmation view
 func (m *Model) setConfirmationKeys(v bool) {
-	m.list.KeyMap.CursorUp.SetEnabled(v)
-	m.list.KeyMap.CursorDown.SetEnabled(v)
-	m.list.KeyMap.Filter.SetEnabled(v)
-	m.list.KeyMap.GoToEnd.SetEnabled(v)
-	m.list.KeyMap.GoToStart.SetEnabled(v)
-	m.list.KeyMap.Quit.SetEnabled(v)
-	m.list.KeyMap.NextPage.SetEnabled(v)
-	m.list.KeyMap.PrevPage.SetEnabled(v)
-	m.list.KeyMap.ShowFullHelp.SetEnabled(v)
+	m.list.KeyMap.CursorUp.SetEnabled(!v)
+	m.list.KeyMap.CursorDown.SetEnabled(!v)
+	m.list.KeyMap.Filter.SetEnabled(!v)
+	m.list.KeyMap.GoToEnd.SetEnabled(!v)
+	m.list.KeyMap.GoToStart.SetEnabled(!v)
+	m.list.KeyMap.Quit.SetEnabled(!v)
+	m.list.KeyMap.NextPage.SetEnabled(!v)
+	m.list.KeyMap.PrevPage.SetEnabled(!v)
+	m.list.KeyMap.ShowFullHelp.SetEnabled(!v)
 
-	m.keys.remove.SetEnabled(v)
-	m.keys.togglePin.SetEnabled(v)
-	m.keys.togglePinned.SetEnabled(v)
-	m.keys.selectDown.SetEnabled(v)
-	m.keys.selectUp.SetEnabled(v)
-	m.keys.selectSingle.SetEnabled(v)
-	m.keys.clearSelected.SetEnabled(v)
+	m.keys.remove.SetEnabled(!v)
+	m.keys.togglePin.SetEnabled(!v)
+	m.keys.togglePinned.SetEnabled(!v)
+	m.keys.selectDown.SetEnabled(!v)
+	m.keys.selectUp.SetEnabled(!v)
+	m.keys.selectSingle.SetEnabled(!v)
+	m.keys.clearSelected.SetEnabled(!v)
+	m.keys.preview.SetEnabled(!v)
+}
+
+// enable/disable the navigation for the confirmation list
+func (m *Model) enableConfirmationKeys(v bool) {
+	m.confirmationList.KeyMap.CursorUp.SetEnabled(v)
+	m.confirmationList.KeyMap.CursorDown.SetEnabled(v)
 }
 
 func (m *Model) setQuitEnabled(v bool) {
