@@ -115,6 +115,7 @@ func NewModel() Model {
 	m.help = styledHelp(m.help, theme)
 	m.list = styledList(clipboardList, theme)
 	m.confirmationList = styledList(confirmationList, theme)
+	m.enableConfirmationKeys(false)
 
 	return m
 }
