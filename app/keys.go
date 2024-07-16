@@ -187,9 +187,11 @@ func (ck confirmationKeyMap) ConfirmationHelp() []key.Binding {
 // Not currently used
 
 type previewKeymap struct {
-	up   key.Binding
-	down key.Binding
-	back key.Binding
+	up       key.Binding
+	down     key.Binding
+	back     key.Binding
+	pageDown key.Binding
+	pageUp   key.Binding
 }
 
 func newPreviewKeyMap() *previewKeymap {
@@ -200,7 +202,15 @@ func newPreviewKeyMap() *previewKeymap {
 		),
 		down: key.NewBinding(
 			key.WithKeys("enter"),
-			key.WithHelp("↓/k", "down"),
+			key.WithHelp("↓/j", "down"),
+		),
+		pageDown: key.NewBinding(
+			key.WithKeys("PgDn"),
+			key.WithHelp("PgDn", "page down"),
+		),
+		pageUp: key.NewBinding(
+			key.WithKeys("PgUp"),
+			key.WithHelp("PgUp", "page up"),
 		),
 		back: key.NewBinding(
 			key.WithKeys(" "),
@@ -211,6 +221,6 @@ func newPreviewKeyMap() *previewKeymap {
 
 func (pk previewKeymap) PreviewHelp() []key.Binding {
 	return []key.Binding{
-		pk.up, pk.down, pk.back,
+		pk.up, pk.down, pk.pageDown, pk.pageUp, pk.back,
 	}
 }
