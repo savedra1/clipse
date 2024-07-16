@@ -137,16 +137,16 @@ If building `clipse` from the unstable branch as a system package, I would sugge
 
 buildGoModule rec {
   pname = "clipse";
-  version = "1.0.8";
+  version = "1.0.9";
 
   src = fetchFromGitHub {
     owner = "savedra1";
     repo = "clipse";
     rev = "v${version}";
-    hash = "sha256-G26xPABF2Cdxk1N71EaMjKzju0jl5tDJ1WrISjebZVM=";
+    hash = "sha256-Kpe/LiAreZXRqh6BHvUIn0GcHloKo3A0WOdlRF2ygdc=";
   };
 
-  vendorHash = "sha256-QEBRlwNS8K44chB3fMOJZxYnIaWMnuDySIhKfF7XtxM=";
+  vendorHash = "sha256-Hdr9NRqHJxpfrV2G1KuHGg3T+cPLKhZXEW02f1ptgsw=";
 
   meta = {
     description = "Useful clipboard manager TUI for Unix";
