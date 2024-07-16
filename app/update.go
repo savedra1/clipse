@@ -40,7 +40,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !m.previewReady {
 			m.preview = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
 			m.previewReady = true
-			m.preview.YPosition = headerHeight + 1
+			m.preview.YPosition = headerHeight // '+ 1' needed for high performance rendering only
 			break
 		}
 		m.preview.Width = msg.Width
@@ -378,8 +378,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					content = getImgPreview(i.filePath, windowWidth)
 				}
 				m.preview.SetContent(content)
+
+				var cmd tea.Cmd
+				m.preview, cmd = m.preview.Update(msg)
+				cmds = append(cmds, cmd)
+				m.preview.GotoTop()
 				m.setPreviewKeys(false)
-				break
+
+				return m, tea.Batch(cmds...)
 			}
 			m.setPreviewKeys(true)
 		}
