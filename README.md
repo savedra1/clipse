@@ -465,7 +465,7 @@ There may be a few ways around this but the workaround discovered in issue #41 w
   [Desktop Entry]
   Name=clipse
   Comment=Clipse event listener autostart.
-  Exec=/home/brayan/Applications/bin/clipse/clipse_1.0.9_linux_amd64/clipse --listen %f
+  Exec=/home/usrname/Applications/bin/clipse/clipse_1.0.9_linux_amd64/clipse --listen %f
   Terminal=false
   Type=Application
   ```
