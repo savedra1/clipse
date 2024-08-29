@@ -160,7 +160,7 @@ buildGoModule rec {
 ```
 
 ### Installing on Arch
-Shout out to [@raininja](https://github.com/raininja) for creating and maintaining the AUR package!  
+Thank you [@raininja](https://github.com/raininja) for creating and maintaining the [AUR package](https://aur.archlinux.org/packages/clipse)!  
 
 **Installing with yay**
 ```shell
@@ -170,6 +170,13 @@ yay -S clipse
 **Installing from pkg source**
 ```shell
 git clone https://aur.archlinux.org/clipse.git && cd clipse && makepkg -si
+```
+
+### Installing on Fedora/Rhel
+Thank you [@RadioAndrea](https://github.com/RadioAndrea) for creating and maintaining the [COPR package](https://copr.fedorainfracloud.org/coprs/azandure/clipse/)!
+
+```shell
+dnf copr enable azandure/clipse
 ```
 
 ### Installing with wget
@@ -267,7 +274,7 @@ Add the following lines to your Hyprland config file:
 
 exec-once = clipse -listen # run listener on startup
 
-windowrulev2 = float,class:(clipse) # ensure you have a floating window class set if you want this behaviour
+windowrulev2 = float,class:(clipse) # ensure you have a floating window class set if you want this behavior
 windowrulev2 = size 622 652,class:(clipse) # set the size of the window as necessary
 
 bind = SUPER, V, exec,  <terminal name> --class clipse -e 'clipse' 
@@ -416,7 +423,7 @@ I would love to receive contributions to this project and welcome PRs from every
 - [x] ~~Pinned items~~
 - [x] ~~Warn on deleting pinned items~~
 - [x] ~~Color theme customizations for all UI elements~~
-- [ ] Customisations for:
+- [ ] Customizations for:
   - [x] ~~max history limit~~
   - [x] ~~config file paths~~
   - [x] ~~Duplicates allowed~~ 
