@@ -435,7 +435,7 @@ I would love to receive contributions to this project and welcome PRs from every
 - [ ] System paste option _(building functionality to paste the chosen item directly into the next place of focus after the TUI closes)_
 - [ ] Packages for:
   - [ ] apt 
-  - [ ] dnf 
+  - [x] ~~dnf~~
   - [ ] brew
   - [ ] other
 - [ ] Theme/config adjustments made available via CLI
