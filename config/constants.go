@@ -13,36 +13,41 @@ const (
 	maxChar                = 65
 )
 
+// Initialize default key bindings
+func defaultKeyBindings() map[string]string {
+	return map[string]string{
+		"filter":        "/",
+		"quit":          "q",
+		"more":          "?",
+		"choose":        "enter",
+		"remove":        "x",
+		"togglePin":     "p",
+		"togglePinned":  "tab",
+		"preview":       " ",
+		"selectDown":    "ctrl+down",
+		"selectUp":      "ctrl+up",
+		"selectSingle":  "s",
+		"clearSelected": "S",
+		"fuzzySelect":   "F",
+		"yankFilter":    "ctrl+s",
+		"up":            "up",
+		"down":          "down",
+		"nextPage":      "right",
+		"prevPage":      "left",
+		"home":          "home",
+		"end":           "end",
+	}
+}
+
 // Because Go does not support constant Structs :(
 func defaultConfig() Config {
 	return Config{
-		AllowDuplicates: true,
-		HistoryFilePath: "clipboard_history.json",
-		MaxHistory:      1000,
-		LogFilePath:     "log.txt",
-		ThemeFilePath:   "theme.json",
-		TempDirPath:     "temp",
-		KeyBindings: map[string]string{
-			"filter":        "/",
-			"quit":          "q",
-			"more":          "?",
-			"choose":        "enter",
-			"remove":        "x",
-			"togglePin":     "p",
-			"togglePinned":  "tab",
-			"preview":       " ",
-			"selectDown":    "ctrl+down",
-			"selectUp":      "ctrl+up",
-			"selectSingle":  "s",
-			"clearSelected": "S",
-			"fuzzySelect":   "F",
-			"yankFilter":    "ctrl+s",
-			"up":            "up",
-			"down":          "down",
-			"nextPage":      "right",
-			"prevPage":      "left",
-			"home":          "home",
-			"end":           "end",
-		},
+		HistoryFilePath: defaultHistoryFile,
+		MaxHistory:      defaultMaxHist,
+		AllowDuplicates: defaultAllowDuplicates,
+		TempDirPath:     defaultTempDir,
+		LogFilePath:     defaultLogFile,
+		ThemeFilePath:   defaultThemeFile,
+		KeyBindings:     defaultKeyBindings(),
 	}
 }
