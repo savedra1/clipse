@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/savedra1/clipse/config"
 )
 
 // default keybind definitions
@@ -29,80 +30,82 @@ type keyMap struct {
 }
 
 func newKeyMap() *keyMap {
+	config := config.ClipseConfig.KeyBindings
+
 	return &keyMap{
 		filter: key.NewBinding(
-			key.WithKeys("/"),
-			key.WithHelp("/", "filter"),
+			key.WithKeys(config["filter"]),
+			key.WithHelp(config["filter"], "filter"),
 		),
 		quit: key.NewBinding(
-			key.WithKeys("q"),
-			key.WithHelp("q/esc", "quit"),
+			key.WithKeys(config["quit"]),
+			key.WithHelp(config["quit"], "quit"),
 		),
 		more: key.NewBinding(
-			key.WithKeys("?"),
-			key.WithHelp("?", "more"),
+			key.WithKeys(config["more"]),
+			key.WithHelp(config["more"], "more"),
 		),
 		choose: key.NewBinding(
-			key.WithKeys("enter"),
+			key.WithKeys(config["choose"]),
 			key.WithHelp("↵", "copy"),
 		),
 		remove: key.NewBinding(
-			key.WithKeys("x", "backspace"),
-			key.WithHelp("x/⌫", "delete"),
+			key.WithKeys(config["remove"]),
+			key.WithHelp(config["remove"], "delete"),
 		),
 		togglePin: key.NewBinding(
-			key.WithKeys("p"),
-			key.WithHelp("p", "pin/unpin"),
+			key.WithKeys(config["togglePin"]),
+			key.WithHelp(config["togglePin"], "pin/unpin"),
 		),
 		togglePinned: key.NewBinding(
-			key.WithKeys("tab"),
-			key.WithHelp("↹", "show pinned"),
+			key.WithKeys(config["togglePinned"]),
+			key.WithHelp(config["togglePinned"], "show pinned"),
 		),
 		preview: key.NewBinding(
-			key.WithKeys(" "),
-			key.WithHelp("␣", "preview"),
+			key.WithKeys(config["preview"]),
+			key.WithHelp(config["preview"], "preview"),
 		),
 		selectDown: key.NewBinding(
-			key.WithKeys("ctrl+down", "ctrl+j"),
-			key.WithHelp("ctrl+↓/↑", "select"),
+			key.WithKeys(config["selectDown"]),
+			key.WithHelp(config["selectDown"], "select"),
 		),
 		selectUp: key.NewBinding(
-			key.WithKeys("ctrl+up", "ctrl+k"),
-			key.WithHelp("ctrl+↓/↑", "select"),
+			key.WithKeys(config["selectUp"]),
+			key.WithHelp(config["selectUp"], "select"),
 		),
 		selectSingle: key.NewBinding(
-			key.WithKeys("s"),
-			key.WithHelp("s", "select single"),
+			key.WithKeys(config["selectSingle"]),
+			key.WithHelp(config["selectSingle"], "select single"),
 		),
 		clearSelected: key.NewBinding(
-			key.WithKeys("S"),
-			key.WithHelp("S", "clear selected"),
+			key.WithKeys(config["clearSelected"]),
+			key.WithHelp(config["clearSelected"], "clear selected"),
 		),
 		fuzzySelect: key.NewBinding(
-			key.WithKeys("F"),
-			key.WithHelp("F", "select search"),
+			key.WithKeys(config["fuzzySelect"]),
+			key.WithHelp(config["fuzzySelect"], "select search"),
 		),
 		yankFilter: key.NewBinding(
-			key.WithKeys("ctrl+s"),
-			key.WithHelp("ctrl+s", "yank filter results"),
+			key.WithKeys(config["yankFilter"]),
+			key.WithHelp(config["yankFilter"], "yank filter results"),
 		),
 		up: key.NewBinding(
-			key.WithKeys("up", "k"),
+			key.WithKeys(config["up"]),
 		),
 		down: key.NewBinding(
-			key.WithKeys("down", "j"),
+			key.WithKeys(config["down"]),
 		),
 		nextPage: key.NewBinding(
-			key.WithKeys("right", "l"),
+			key.WithKeys(config["nextPage"]),
 		),
 		prevPage: key.NewBinding(
-			key.WithKeys("left", "h"),
+			key.WithKeys(config["prevPage"]),
 		),
 		home: key.NewBinding(
-			key.WithKeys("home", "g"),
+			key.WithKeys(config["home"]),
 		),
 		end: key.NewBinding(
-			key.WithKeys("end", "G"),
+			key.WithKeys(config["end"]),
 		),
 	}
 }
