@@ -132,18 +132,20 @@ type filterKeyMap struct {
 }
 
 func newFilterKeymap() *filterKeyMap {
+	config := config.ClipseConfig.KeyBindings
+
 	return &filterKeyMap{
 		apply: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("↵", "apply"),
+			key.WithKeys(config["choose"]),
+			key.WithHelp(config["choose"], "apply"),
 		),
 		cancel: key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "cancel"),
+			key.WithKeys(config["quit"]),
+			key.WithHelp(config["quit"], "cancel"),
 		),
 		yankMatches: key.NewBinding(
-			key.WithKeys("ctrl+s"),
-			key.WithHelp("ctrl+s", "yank matched"),
+			key.WithKeys(config["yankFilter"]),
+			key.WithHelp(config["yankFilter"], "yank matched"),
 		),
 	}
 }
@@ -161,18 +163,20 @@ type confirmationKeyMap struct {
 }
 
 func newConfirmationKeymap() *confirmationKeyMap {
+	config := config.ClipseConfig.KeyBindings
+
 	return &confirmationKeyMap{
 		up: key.NewBinding(
-			key.WithKeys("up", "k"),
-			key.WithHelp("↑/k", "up"),
+			key.WithKeys(config["up"]),
+			key.WithHelp(config["up"], "↑"),
 		),
 		down: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("↓/k", "down"),
+			key.WithKeys(config["down"]),
+			key.WithHelp(config["down"], "↓"),
 		),
 		choose: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("↵", "choose"),
+			key.WithKeys(config["choose"]),
+			key.WithHelp(config["choose"], "choose"),
 		),
 	}
 }
@@ -194,26 +198,28 @@ type previewKeymap struct {
 }
 
 func newPreviewKeyMap() *previewKeymap {
+	config := config.ClipseConfig.KeyBindings
+
 	return &previewKeymap{
 		up: key.NewBinding(
-			key.WithKeys("up", "k"),
-			key.WithHelp("↑/k", "up"),
+			key.WithKeys(config["up"]),
+			key.WithHelp(config["up"], "↑"),
 		),
 		down: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("↓/j", "down"),
+			key.WithKeys(config["down"]),
+			key.WithHelp(config["down"], "↓"),
 		),
 		pageDown: key.NewBinding(
-			key.WithKeys("PgDn"),
-			key.WithHelp("PgDn", "page down"),
+			key.WithKeys(config["nextPage"]),
+			key.WithHelp(config["nextPage"], "next page"),
 		),
 		pageUp: key.NewBinding(
-			key.WithKeys("PgUp"),
-			key.WithHelp("PgUp", "page up"),
+			key.WithKeys(config["prevPage"]),
+			key.WithHelp(config["prevPage"], "previous page"),
 		),
 		back: key.NewBinding(
-			key.WithKeys(" "),
-			key.WithHelp("␣", "back"),
+			key.WithKeys(config["quit"]),
+			key.WithHelp(config["quit"], "back"),
 		),
 	}
 }
