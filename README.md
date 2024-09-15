@@ -349,7 +349,6 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
         "down": "down",
         "end": "end",
         "filter": "/",
-        "fuzzySelect": "F",
         "home": "home",
         "more": "?",
         "nextPage": "right",

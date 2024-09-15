@@ -28,7 +28,6 @@ func defaultKeyBindings() map[string]string {
 		"selectUp":      "ctrl+up",
 		"selectSingle":  "s",
 		"clearSelected": "S",
-		"fuzzySelect":   "F",
 		"yankFilter":    "ctrl+s",
 		"up":            "up",
 		"down":          "down",

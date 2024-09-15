@@ -20,7 +20,6 @@ type keyMap struct {
 	selectUp      key.Binding
 	selectSingle  key.Binding
 	clearSelected key.Binding
-	fuzzySelect   key.Binding
 	yankFilter    key.Binding
 	up            key.Binding
 	down          key.Binding
@@ -81,10 +80,6 @@ func newKeyMap() *keyMap {
 		clearSelected: key.NewBinding(
 			key.WithKeys(config["clearSelected"]),
 			key.WithHelp(config["clearSelected"], "clear selected"),
-		),
-		fuzzySelect: key.NewBinding(
-			key.WithKeys(config["fuzzySelect"]),
-			key.WithHelp(config["fuzzySelect"], "select search"),
 		),
 		yankFilter: key.NewBinding(
 			key.WithKeys(config["yankFilter"]),
