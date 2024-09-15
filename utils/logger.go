@@ -16,13 +16,13 @@ func SetUpLogger(logFilePath string) {
 }
 
 func LogERROR(message string) {
-	logger.Printf("ERROR: " + message)
+	logger.Printf("ERROR: %s", message)
 }
 
 func LogINFO(message string) {
-	logger.Printf("INFO: " + message)
+	logger.Printf("INFO: %s", message)
 }
 
 func LogWARN(message string) {
-	logger.Printf("WARN: " + message)
+	logger.Printf("WARN: %s", message)
 }

@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+
 	"github.com/savedra1/clipse/config"
 )
 
