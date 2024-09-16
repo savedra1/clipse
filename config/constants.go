@@ -13,6 +13,31 @@ const (
 	maxChar                = 65
 )
 
+// Initialize default key bindings
+func defaultKeyBindings() map[string]string {
+	return map[string]string{
+		"filter":        "/",
+		"quit":          "q",
+		"more":          "?",
+		"choose":        "enter",
+		"remove":        "x",
+		"togglePin":     "p",
+		"togglePinned":  "tab",
+		"preview":       " ",
+		"selectDown":    "ctrl+down",
+		"selectUp":      "ctrl+up",
+		"selectSingle":  "s",
+		"clearSelected": "S",
+		"yankFilter":    "ctrl+s",
+		"up":            "up",
+		"down":          "down",
+		"nextPage":      "right",
+		"prevPage":      "left",
+		"home":          "home",
+		"end":           "end",
+	}
+}
+
 // Because Go does not support constant Structs :(
 func defaultConfig() Config {
 	return Config{
@@ -22,5 +47,6 @@ func defaultConfig() Config {
 		TempDirPath:     defaultTempDir,
 		LogFilePath:     defaultLogFile,
 		ThemeFilePath:   defaultThemeFile,
+		KeyBindings:     defaultKeyBindings(),
 	}
 }

@@ -12,12 +12,13 @@ import (
 )
 
 type Config struct {
-	AllowDuplicates bool   `json:"allowDuplicates"`
-	HistoryFilePath string `json:"historyFile"`
-	MaxHistory      int    `json:"maxHistory"`
-	LogFilePath     string `json:"logFile"`
-	ThemeFilePath   string `json:"themeFile"`
-	TempDirPath     string `json:"tempDir"`
+	AllowDuplicates bool              `json:"allowDuplicates"`
+	HistoryFilePath string            `json:"historyFile"`
+	MaxHistory      int               `json:"maxHistory"`
+	LogFilePath     string            `json:"logFile"`
+	ThemeFilePath   string            `json:"themeFile"`
+	TempDirPath     string            `json:"tempDir"`
+	KeyBindings     map[string]string `json:"keyBindings"` // Add this line
 }
 
 // Global config object, accessed and used when any configuration is needed.
