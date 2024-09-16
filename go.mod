@@ -4,13 +4,11 @@ go 1.21.7
 
 require (
 	github.com/atotto/clipboard v0.1.4
-	github.com/charmbracelet/bubbles v0.18.0
+	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.1.1
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/mitchellh/go-ps v1.0.0
 )
-
-require github.com/muesli/reflow v0.3.0 // indirect
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
