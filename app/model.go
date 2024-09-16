@@ -26,6 +26,7 @@ type Model struct {
 	showConfirmation bool                // whether to show confirmation screen
 	itemCache        []SelectedItem      // easy access for related items following confirmation screen
 	preview          viewport.Model      // viewport model used for displaying previews
+	originalHeight   int                 // for restore height of preview viewport in sixel mode
 	previewReady     bool                // viewport needs to wait for the initial window size message
 	showPreview      bool                // whether the viewport preview should be displayed
 	previewKeys      *previewKeymap      // keybindings for the viewport model

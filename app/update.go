@@ -378,13 +378,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.preview):
 			m.showPreview = !m.showPreview
+			if config.ClipseConfig.ImageDisplay == "kitty" {
+				fmt.Print("\x1B_Ga=d\x1B\\")
+			}
 			if m.showPreview {
 				content := m.styledPreviewContent(i.titleFull)
 				if i.filePath != "null" {
-					content = getImgPreview(i.filePath, windowWidth)
+					content = getImgPreview(i.filePath, m.preview.Width, m.preview.Height)
+					if config.ClipseConfig.ImageDisplay != "basic" {
+						m.originalHeight = m.preview.Height
+						m.preview.Height /= config.ClipseConfig.HeightCut
+					}
 				}
 				m.preview.SetContent(content)
-
 				var cmd tea.Cmd
 				m.preview, cmd = m.preview.Update(msg)
 				cmds = append(cmds, cmd)
@@ -392,6 +398,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.setPreviewKeys(true)
 
 				return m, tea.Batch(cmds...)
+			} else {
+				if i.filePath != "null" && config.ClipseConfig.ImageDisplay != "basic" {
+					m.preview.Height = m.originalHeight
+				}
 			}
 			m.setPreviewKeys(false)
 		}
