@@ -71,7 +71,7 @@ func getBasicString(img image.Image, windowSize int) string {
 }
 
 func getSixelString(img image.Image, windowWidth int, windowHeight int) string {
-	img = resize.Resize(uint(windowWidth*config.ClipseConfig.ImageScaleX), uint(windowHeight*config.ClipseConfig.ImageScaleY), img, resize.Lanczos3)
+	img = smartResize(img, windowWidth, windowHeight)
 	palettedImg := image.NewPaletted(img.Bounds(), palette.Plan9)
 	draw.FloydSteinberg.Draw(palettedImg, img.Bounds(), img, image.Point{})
 	var buf bytes.Buffer
@@ -84,7 +84,7 @@ func getSixelString(img image.Image, windowWidth int, windowHeight int) string {
 }
 
 func getKittyString(img image.Image, windowWidth int, windowHeight int) string {
-	img = resize.Resize(uint(windowWidth*config.ClipseConfig.ImageScaleX), uint(windowHeight*config.ClipseConfig.ImageScaleY), img, resize.Lanczos3)
+	img = smartResize(img, windowWidth, windowHeight)
 	var buf bytes.Buffer
 	var opts rasterm.KittyImgOpts
 	err := rasterm.KittyWriteImage(&buf, img, opts)
@@ -93,6 +93,18 @@ func getKittyString(img image.Image, windowWidth int, windowHeight int) string {
 		return fmt.Sprintf("failed to decode image file to kitty | %s", err)
 	}
 	return buf.String()
+}
+
+func smartResize(img image.Image, windowWidth int, windowHeight int) image.Image {
+	maxWidth := windowWidth * config.ClipseConfig.ImageScaleX
+	maxHeight := windowHeight * config.ClipseConfig.ImageScaleY
+	imageWidth := img.Bounds().Dx()
+	imageHeight := img.Bounds().Dy()
+	if imageWidth/imageHeight > maxWidth/maxHeight {
+		return resize.Resize(uint(maxWidth), 0, img, resize.Lanczos3)
+	} else {
+		return resize.Resize(0, uint(maxHeight), img, resize.Lanczos3)
+	}
 }
 
 func getDecodedImg(fp string) (image.Image, error) {
