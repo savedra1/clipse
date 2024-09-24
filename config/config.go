@@ -19,10 +19,13 @@ type Config struct {
 	ThemeFilePath   string            `json:"themeFile"`
 	TempDirPath     string            `json:"tempDir"`
 	KeyBindings     map[string]string `json:"keyBindings"` // Add this line
-	ImageDisplay    string `json:"imageDisplay"`
-	ImageScaleX     int    `json:"imageScaleX"`
-	ImageScaleY     int    `json:"imageScaleY"`
-	HeightCut       int    `json:"heightCut"`
+	ImageDisplay    ImageDisplay      `json:"imageDisplay"`
+}
+type ImageDisplay struct {
+	Type      string `json:"type"`
+	ScaleX    int    `json:"scaleX"`
+	ScaleY    int    `json:"scaleY"`
+	HeightCut int    `json:"heightCut"`
 }
 
 // Global config object, accessed and used when any configuration is needed.

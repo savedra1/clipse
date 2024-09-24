@@ -9,10 +9,6 @@ const (
 	defaultLogFile         = "clipse.log"
 	defaultTempDir         = "tmp_files"
 	defaultThemeFile       = "custom_theme.json"
-	defaultImageDisplay    = "basic"
-	defaultImageScaleX     = 9
-	defaultImageScaleY     = 9
-	defaultHeightCut       = 2
 	listenCmd              = "--listen-shell"
 	maxChar                = 65
 )
@@ -52,9 +48,11 @@ func defaultConfig() Config {
 		LogFilePath:     defaultLogFile,
 		ThemeFilePath:   defaultThemeFile,
 		KeyBindings:     defaultKeyBindings(),
-		ImageDisplay:    defaultImageDisplay,
-		ImageScaleX:     defaultImageScaleX,
-		ImageScaleY:     defaultImageScaleY,
-		HeightCut:       defaultHeightCut,
+		ImageDisplay: ImageDisplay{
+			Type:      "basic",
+			ScaleX:    9,
+			ScaleY:    9,
+			HeightCut: 2,
+		},
 	}
 }
