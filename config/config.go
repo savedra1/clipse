@@ -18,7 +18,7 @@ type Config struct {
 	LogFilePath     string            `json:"logFile"`
 	ThemeFilePath   string            `json:"themeFile"`
 	TempDirPath     string            `json:"tempDir"`
-	KeyBindings     map[string]string `json:"keyBindings"` // Add this line
+	KeyBindings     map[string]string `json:"keyBindings"`
 	ImageDisplay    ImageDisplay      `json:"imageDisplay"`
 }
 type ImageDisplay struct {
@@ -30,8 +30,6 @@ type ImageDisplay struct {
 
 // Global config object, accessed and used when any configuration is needed.
 var ClipseConfig = defaultConfig()
-
-//var duplicatesAllowed bool
 
 func Init() (string, string, bool, error) {
 	/*
