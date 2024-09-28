@@ -21,14 +21,11 @@ import (
 	the Model state.
 */
 
-var windowWidth = 80 // default to use when rendering image preview (upddated on tea.WindowSizeMsg)
-
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		windowWidth = msg.Width
 		h, v := appStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 		m.confirmationList.SetSize(msg.Width-h, msg.Height-v)
@@ -378,13 +375,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.preview):
 			m.showPreview = !m.showPreview
+			if config.ClipseConfig.ImageDisplay.Type == "kitty" {
+				fmt.Print("\x1B_Ga=d\x1B\\")
+			}
 			if m.showPreview {
 				content := m.styledPreviewContent(i.titleFull)
 				if i.filePath != "null" {
-					content = getImgPreview(i.filePath, windowWidth)
+					content = getImgPreview(i.filePath, m.preview.Width, m.preview.Height)
+					if config.ClipseConfig.ImageDisplay.Type != "basic" {
+						m.originalHeight = m.preview.Height
+						m.preview.Height /= config.ClipseConfig.ImageDisplay.HeightCut
+					}
 				}
 				m.preview.SetContent(content)
-
 				var cmd tea.Cmd
 				m.preview, cmd = m.preview.Update(msg)
 				cmds = append(cmds, cmd)
@@ -392,6 +395,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.setPreviewKeys(true)
 
 				return m, tea.Batch(cmds...)
+			} else {
+				if i.filePath != "null" && config.ClipseConfig.ImageDisplay.Type != "basic" {
+					m.preview.Height = m.originalHeight
+				}
 			}
 			m.setPreviewKeys(false)
 		}

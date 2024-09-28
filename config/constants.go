@@ -48,5 +48,11 @@ func defaultConfig() Config {
 		LogFilePath:     defaultLogFile,
 		ThemeFilePath:   defaultThemeFile,
 		KeyBindings:     defaultKeyBindings(),
+		ImageDisplay: ImageDisplay{
+			Type:      "basic",
+			ScaleX:    9,
+			ScaleY:    9,
+			HeightCut: 2,
+		},
 	}
 }

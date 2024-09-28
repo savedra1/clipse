@@ -332,6 +332,7 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
 - Custom themes
 - If duplicates are allowed
 - Setting custom key bindings
+- Image display mode
 
 `clipse` looks for a base config file in `$CONFIG_DIR/clipse/config.json` _(`$CONFIG_DIR` being `$XDG_DATA_HOME` or `$HOME/.config`)_, and creates a default file if it does not find anything. The default config looks like this:
 
@@ -363,6 +364,12 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
         "togglePinned": "tab",
         "up": "up",
         "yankFilter": "ctrl+s"
+     },
+    "imageDisplay": {
+        "type": "basic",
+        "scaleX": 9,
+        "scaleY": 9,
+        "heightCut": 2
      }
 }
 ```
@@ -370,6 +377,8 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
 Note that all the paths provided (the theme, `historyFile`, and `tempDir`) are all relative paths. They are relative to the location of the config file that holds them. Thus, a file `config.json` at location `$HOME/.config/clipse/config.json` will have all relative paths defined in it relative to its directory of `$HOME/.config/clipse`.
 
 Absolute paths starting with `/`, paths relative to the user home dir using `~`, or any environment variables like `$HOME` and `$XDG_CONFIG_HOME` are also valid paths that can be used in this file instead.
+
+There are three ways to display images: basic, kitty, sixel. The scaleX and scaleY are the scaling factors for the images. Depending on the situation, you need to find suitable numbers to ensure the images are displayed correctly and completely. You can make adjustments based on this: [https://github.com/savedra1/clipse/pull/138#issue-2530565414](https://github.com/savedra1/clipse/pull/138#issue-2530565414).
 
 ## All commands 💻
 
