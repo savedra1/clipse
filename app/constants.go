@@ -10,4 +10,5 @@ const (
 	borderLeftChar    = "┤"
 	borderMiddleChar  = "─"
 	defaultMsgColor   = "#04B575"
+	spaceChar         = "␣"
 )

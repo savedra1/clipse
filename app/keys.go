@@ -32,6 +32,11 @@ type keyMap struct {
 func newKeyMap() *keyMap {
 	config := config.ClipseConfig.KeyBindings
 
+	previewChar := config["preview"]
+	if previewChar == " " {
+		previewChar = spaceChar
+	}
+
 	return &keyMap{
 		filter: key.NewBinding(
 			key.WithKeys(config["filter"]),
@@ -63,7 +68,7 @@ func newKeyMap() *keyMap {
 		),
 		preview: key.NewBinding(
 			key.WithKeys(config["preview"]),
-			key.WithHelp(config["preview"], "preview"),
+			key.WithHelp(previewChar, "preview"),
 		),
 		selectDown: key.NewBinding(
 			key.WithKeys(config["selectDown"]),
@@ -187,8 +192,6 @@ func (ck confirmationKeyMap) ConfirmationHelp() []key.Binding {
 	}
 }
 
-// Not currently used
-
 type previewKeymap struct {
 	up       key.Binding
 	down     key.Binding
@@ -200,6 +203,11 @@ type previewKeymap struct {
 func newPreviewKeyMap() *previewKeymap {
 	config := config.ClipseConfig.KeyBindings
 
+	previewChar := config["preview"]
+	if previewChar == " " {
+		previewChar = spaceChar
+	}
+
 	return &previewKeymap{
 		up: key.NewBinding(
 			key.WithKeys(config["up"]),
@@ -210,16 +218,16 @@ func newPreviewKeyMap() *previewKeymap {
 			key.WithHelp(config["down"], "↓"),
 		),
 		pageDown: key.NewBinding(
-			key.WithKeys(config["nextPage"]),
-			key.WithHelp(config["nextPage"], "next page"),
+			key.WithKeys("PgDn"),
+			key.WithHelp("PgDn", "page down"),
 		),
 		pageUp: key.NewBinding(
-			key.WithKeys(config["prevPage"]),
-			key.WithHelp(config["prevPage"], "previous page"),
+			key.WithKeys("PgUp"),
+			key.WithHelp("PgUp", "page up"),
 		),
 		back: key.NewBinding(
-			key.WithKeys(config["quit"]),
-			key.WithHelp(config["quit"], "back"),
+			key.WithKeys(config["preview"], config["quit"]),
+			key.WithHelp(previewChar, "back"),
 		),
 	}
 }
