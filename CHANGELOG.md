@@ -42,3 +42,9 @@
 - bug fix: image binary data sometimes parsing as a string on Wayland
 - bug fix: inconsistent viewport start position
 - bug fix: inconsistent confirmation list start position
+
+## v1.0.9 -> v1.1.0
+
+- bug fix: EDT timezone bug when saving images
+- feat: custom keybinding
+- feat: custom image preview rendering with `kitty` shell

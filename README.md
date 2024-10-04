@@ -1,8 +1,11 @@
-<a href="https://github.com/savedra1/clipse/actions"><img src="https://github.com/charmbracelet/bubbletea/workflows/build/badge.svg" alt="Build Status"></a> [![Last Commit](https://img.shields.io/github/last-commit/savedra1/clipse)](https://github.com/savedra1/clipse) [![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/savedra1/clipse.svg?color=green)](https://github.com/savedra1/clipse/issues) <br>
+[![Build](https://img.shields.io/github/actions/workflow/status/savedra1/clipse/go-test.yml)](https://github.com/savedra1/clipse/actions)
+[![Last Commit](https://img.shields.io/github/last-commit/savedra1/clipse)](https://github.com/savedra1/clipse)
+[![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/savedra1/clipse.svg?color=green)](https://github.com/savedra1/clipse/issues) 
+<br>
 
 <https://github.com/savedra1/clipse/assets/99875823/40af797c-2297-49b5-88ec-b8c04e8c829b>
 
-[![nix](https://img.shields.io/static/v1?label=Nix&message=1.0.9&color=blue)](https://search.nixos.org/packages?channel=unstable&show=clipse&from=0&size=50&sort=relevance&type=packages&query=clipse)
+[![nix](https://img.shields.io/static/v1?label=Nix&message=1.1.0&color=blue)](https://search.nixos.org/packages?channel=unstable&show=clipse&from=0&size=50&sort=relevance&type=packages&query=clipse)
 [![AUR](https://img.shields.io/aur/version/clipse.svg)](https://aur.archlinux.org/packages/clipse/)
 <br>
 
@@ -141,7 +144,7 @@ If building `clipse` from the unstable branch as a system package, I would sugge
 
 buildGoModule rec {
   pname = "clipse";
-  version = "1.0.9";
+  version = "1.1.0";
 
   src = fetchFromGitHub {
     owner = "savedra1";
@@ -192,7 +195,7 @@ dnf copr enable azandure/clipse
   <summary><b>Linux arm64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.9/clipse_1.0.9_linux_arm64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.1.0/clipse_1.1.0_linux_arm64.tar.gz -O - | tar -xz
   ```
 
 </details>
@@ -201,7 +204,7 @@ dnf copr enable azandure/clipse
   <summary><b>Linux amd64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.9/clipse_1.0.9_linux_amd64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.1.0/clipse_1.1.0_linux_amd64.tar.gz -O - | tar -xz
   ```
 
 </details>
@@ -210,7 +213,7 @@ dnf copr enable azandure/clipse
   <summary><b>Linux 836</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.9/clipse_1.0.9_linux_836.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.1.0/clipse_1.1.0_linux_836.tar.gz -O - | tar -xz
   ```
 
 </details>
@@ -219,7 +222,7 @@ dnf copr enable azandure/clipse
   <summary><b>Darwin arm64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.9/clipse_1.0.9_darwin_arm64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.1.0/clipse_1.1.0_darwin_arm64.tar.gz -O - | tar -xz
   ```
 
 </details>
@@ -228,7 +231,7 @@ dnf copr enable azandure/clipse
   <summary><b>Darwin amd64</b></summary>
 
   ```shell
-  wget -c https://github.com/savedra1/clipse/releases/download/v1.0.9/clipse_1.0.9_darwin_amd64.tar.gz -O - | tar -xz
+  wget -c https://github.com/savedra1/clipse/releases/download/v1.1.0/clipse_1.1.0_darwin_amd64.tar.gz -O - | tar -xz
   ```
 
 </details>
@@ -236,7 +239,7 @@ dnf copr enable azandure/clipse
 ### Installing with Go
 
 ```shell
-go install github.com/savedra1/clipse@v1.0.9
+go install github.com/savedra1/clipse@v1.1.0
 ```
 
 ### Building from source
@@ -378,7 +381,12 @@ Note that all the paths provided (the theme, `historyFile`, and `tempDir`) are a
 
 Absolute paths starting with `/`, paths relative to the user home dir using `~`, or any environment variables like `$HOME` and `$XDG_CONFIG_HOME` are also valid paths that can be used in this file instead.
 
-There are three ways to display images: basic, kitty, sixel. The scaleX and scaleY are the scaling factors for the images. Depending on the situation, you need to find suitable numbers to ensure the images are displayed correctly and completely. You can make adjustments based on this: [https://github.com/savedra1/clipse/pull/138#issue-2530565414](https://github.com/savedra1/clipse/pull/138#issue-2530565414).
+Currently these are the supported options for `imageDisplay.type`:
+ - `basic` 
+ - `kitty` 
+ - `sixel` 
+ 
+ The `scaleX` and `scaleY` options are the scaling factors for the images. Depending on the situation, you need to find suitable numbers to ensure the images are displayed correctly and completely. You can make adjustments based on [this implementation](https://github.com/savedra1/clipse/pull/138#issue-2530565414).
 
 ## All commands 💻
 
@@ -448,17 +456,18 @@ I would love to receive contributions to this project and welcome PRs from every
 - [x] ~~Pinned items~~
 - [x] ~~Warn on deleting pinned items~~
 - [x] ~~Color theme customizations for all UI elements~~
-- [ ] Customizations for:
+- Customizations for:
   - [x] ~~max history limit~~
   - [x] ~~config file paths~~
   - [x] ~~Duplicates allowed~~
   - [x] ~~key bindings~~
+  - [x] ~~image preview display render type~~
 - [x] ~~Option to disable duplicate items~~
 - [ ] Auto-forget based on where the text was copied
 - [x] ~~Multi-select feature for copying multiple items at once~~
 - [ ] Categorized pinned items with _potentially_ different tabs/views  
 - [ ] System paste option _(building functionality to paste the chosen item directly into the next place of focus after the TUI closes)_
-- [ ] Packages for:
+- Packages for:
   - [ ] apt
   - [x] ~~dnf~~
   - [ ] brew
@@ -498,7 +507,7 @@ There may be a few ways around this but the workaround discovered in issue #41 w
   [Desktop Entry]
   Name=clipse
   Comment=Clipse event listener autostart.
-  Exec=/home/usrname/Applications/bin/clipse/clipse_1.0.9_linux_amd64/clipse --listen %f
+  Exec=/home/usrname/Applications/bin/clipse/clipse_1.1.0_linux_amd64/clipse --listen %f
   Terminal=false
   Type=Application
   ```
