@@ -40,7 +40,7 @@ func GetStdin() string {
 }
 
 func GetTime() string {
-	return strings.TrimSpace(strings.Split(time.Now().String(), "+")[0])
+	return time.Now().Format(("2006-01-02 15:04:05.000000000"))
 }
 
 func GetTimeStamp() string {
