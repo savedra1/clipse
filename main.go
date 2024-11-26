@@ -31,7 +31,7 @@ var (
 	clearText   = flag.Bool("clear-text", false, "Removes all text from the clipboard history including pinned text entries.")
 	forceClose  = flag.Bool("fc", false, "Forces the terminal session to quick by taking the $PPID var as an arg. EG `clipse -fc $PPID`")
 	wlStore     = flag.Bool("wl-store", false, "Store data from the stdin directly using the wl-clipboard API.")
-  outputAll   = flag.String("output-all","","Print clipboard text content to stdout, each entry seperated by a newline, possible values: (raw, unescaped)")
+	outputAll   = flag.String("output-all", "", "Print clipboard text content to stdout, each entry separated by a newline, possible values: (raw, unescaped)")
 )
 
 func main() {
@@ -86,8 +86,8 @@ func main() {
 	case *wlStore:
 		handlers.StoreWLData()
 
-  case *outputAll != "":
-    handleOutputAll(*outputAll)
+	case *outputAll != "":
+		handleOutputAll(*outputAll)
 
 	default:
 		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])
@@ -189,18 +189,18 @@ func handleForceClose() {
 	launchTUI()
 }
 
-func handleOutputAll(format string){
-  items := config.TextItems()
+func handleOutputAll(format string) {
+	items := config.TextItems()
 
-  if format == "raw" {
-    for _, v := range items {
-      fmt.Printf("%q\n", v.Value)
-    }
-  } else if format == "unescaped" {
-    for _, v := range items {
-      fmt.Println(v.Value)
-    }
-  } else {
-    fmt.Printf("Invalid argument to -output-all\nSee %s --help for usage", os.Args[0])
-  }
+	if format == "raw" {
+		for _, v := range items {
+			fmt.Printf("%q\n", v.Value)
+		}
+	} else if format == "unescaped" {
+		for _, v := range items {
+			fmt.Println(v.Value)
+		}
+	} else {
+		fmt.Printf("Invalid argument to -output-all\nSee %s --help for usage", os.Args[0])
+	}
 }
