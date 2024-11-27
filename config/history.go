@@ -130,7 +130,7 @@ func ClearHistory(clearType string) error {
 		}
 	case "images":
 		data = ClipboardHistory{
-			ClipboardHistory: textItems(),
+			ClipboardHistory: TextItems(),
 		}
 		if err := shell.DeleteAllImages(ClipseConfig.TempDirPath); err != nil {
 			utils.LogERROR(fmt.Sprintf("could not read file dir: %s", err))
@@ -170,7 +170,7 @@ func imageItems() []ClipboardItem {
 	return images
 }
 
-func textItems() []ClipboardItem {
+func TextItems() []ClipboardItem {
 	textItems := []ClipboardItem{}
 	history := GetHistory()
 	for _, item := range history {
