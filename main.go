@@ -31,6 +31,7 @@ var (
 	clearText   = flag.Bool("clear-text", false, "Removes all text from the clipboard history including pinned text entries.")
 	forceClose  = flag.Bool("fc", false, "Forces the terminal session to quick by taking the $PPID var as an arg. EG `clipse -fc $PPID`")
 	wlStore     = flag.Bool("wl-store", false, "Store data from the stdin directly using the wl-clipboard API.")
+	realTime    = flag.Bool("enable-real-time", false, "Enable real time updates to the TUI")
 )
 
 func main() {
@@ -85,6 +86,9 @@ func main() {
 	case *wlStore:
 		handlers.StoreWLData()
 
+	case *realTime:
+		launchTUI()
+
 	default:
 		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])
 	}
@@ -92,7 +96,12 @@ func main() {
 
 func launchTUI() {
 	shell.KillExistingFG()
-	_, err := tea.NewProgram(app.NewModel()).Run()
+	newModel := app.NewModel()
+	p := tea.NewProgram(newModel)
+	if *realTime {
+		go newModel.ListenRealTime(p)
+	}
+	_, err := p.Run()
 	utils.HandleError(err)
 }
 
