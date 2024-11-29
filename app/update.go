@@ -25,6 +25,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case ReRender:
+		clipboardItems := config.GetHistory()
+		entryItems := filterItems(clipboardItems, false, m.theme)
+		cmds = append(cmds, m.list.SetItems(entryItems))
+		return m, tea.Batch(cmds...)
 	case tea.WindowSizeMsg:
 		h, v := appStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
