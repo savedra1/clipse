@@ -89,7 +89,7 @@ func main() {
 
 	case *realTime:
 		launchTUI()
-    
+
 	case *outputAll != "":
 		handleOutputAll(*outputAll)
 
