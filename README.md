@@ -484,6 +484,11 @@ I would love to receive contributions to this project and welcome PRs from every
 
 ## FAQ
 
+__Clipse crashes when I enter certain characters into the search bar__
+
+See issue #148. This is caused by the fuzzy find algo _(within the BubbleTea TUI framework code)_ crashing when it encounters non-compatible characters in the history file, such as an irregular image binary pattern or a rare non-ascii text character. The fix is to to remove the clipboard entry that contains the problematic character. I would recommend pinning any items you do not want to lose and running `clipse -clear`.  
+
+
 __My terminal window does not close on selection, even when using `clipse -fc $PPID`__
 
 Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. To get the "close on selection" effect for macOs, you will need to install a different terminal environment like `Alacritty`._
