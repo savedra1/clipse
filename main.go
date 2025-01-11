@@ -7,14 +7,14 @@ import (
 
 	"github.com/atotto/clipboard"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/posener/complete/v2"
+	"github.com/posener/complete/v2/predict"
 
 	"github.com/savedra1/clipse/app"
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/handlers"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
- 	"github.com/posener/complete/v2"
- 	"github.com/posener/complete/v2/predict"
 )
 
 var (
@@ -37,26 +37,26 @@ var (
 )
 
 func main() {
- 	cmd := &complete.Command{
+	cmd := &complete.Command{
 		Flags: map[string]complete.Predictor{
-			"help":        predict.Nothing,  
-			"v":           predict.Nothing,  
-			"a":           predict.Nothing,  
-			"c":           predict.Nothing,  
-			"p":           predict.Nothing,  
-			"listen":      predict.Nothing,  
-			"listen-shell":predict.Nothing, 
-			"kill":        predict.Nothing,  
-			"clear":       predict.Set{"all", "text", "images"}, 
-			"clear-all":   predict.Nothing,  
-			"clear-images":predict.Nothing,  
-			"clear-text":  predict.Nothing,  
-			"fc":          predict.Nothing,  
-			"wl-store":    predict.Nothing,  
-			"output-all":  predict.Set{"raw", "unescaped"}, 
+			"help":         predict.Nothing,
+			"v":            predict.Nothing,
+			"a":            predict.Nothing,
+			"c":            predict.Nothing,
+			"p":            predict.Nothing,
+			"listen":       predict.Nothing,
+			"listen-shell": predict.Nothing,
+			"kill":         predict.Nothing,
+			"clear":        predict.Set{"all", "text", "images"},
+			"clear-all":    predict.Nothing,
+			"clear-images": predict.Nothing,
+			"clear-text":   predict.Nothing,
+			"fc":           predict.Nothing,
+			"wl-store":     predict.Nothing,
+			"output-all":   predict.Set{"raw", "unescaped"},
 		},
- 	}
- 	cmd.Complete(os.Args[0])
+	}
+	cmd.Complete(os.Args[0])
 	flag.Parse()
 	logPath, displayServer, imgEnabled, err := config.Init()
 	utils.HandleError(err)
