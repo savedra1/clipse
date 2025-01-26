@@ -11,7 +11,14 @@ require (
 	github.com/mitchellh/go-ps v1.0.0
 )
 
-require golang.org/x/term v0.18.0 // indirect
+require (
+	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/go-multierror v1.0.0 // indirect
+	github.com/posener/complete v1.2.3 // indirect
+	github.com/posener/complete/v2 v2.1.0 // indirect
+	github.com/posener/script v1.2.0 // indirect
+	golang.org/x/term v0.18.0 // indirect
+)
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
