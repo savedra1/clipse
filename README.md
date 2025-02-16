@@ -279,6 +279,7 @@ exec-once = clipse -listen # run listener on startup
 
 windowrulev2 = float,class:(clipse) # ensure you have a floating window class set if you want this behavior
 windowrulev2 = size 622 652,class:(clipse) # set the size of the window as necessary
+windowrulev2 = stayfocused, class:(clipse) # keep the window focused
 
 bind = SUPER, V, exec,  <terminal name> --class clipse -e 'clipse' 
 
