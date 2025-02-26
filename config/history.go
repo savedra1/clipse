@@ -8,7 +8,6 @@ import (
 
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
-	"slices"
 )
 
 /* File contains logic for parsing the clipboard history.
