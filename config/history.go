@@ -65,17 +65,15 @@ func GetHistory() []ClipboardItem {
 
 	utils.HandleError(json.NewDecoder(file).Decode(&data))
 
-	dateLayout := "2006-01-02 15:04:05.999999999"
-
 	if ClipseConfig.DeleteAfter > 0 {
 		for i, item := range data.ClipboardHistory {
-			recorded, err := time.Parse(dateLayout, item.Recorded)
+			recorded, err := time.Parse(utils.DateLayout, item.Recorded)
 			if err != nil {
 				utils.LogERROR(fmt.Sprintf("Could not parse the date string: %s", item.Recorded))
 				continue
 			}
 
-			currentTime, err := time.Parse(dateLayout, utils.GetTime())
+			currentTime, err := time.Parse(utils.DateLayout, utils.GetTime())
 
 			if err != nil {
 				utils.LogERROR("Could not convert the current time string to a time object")
