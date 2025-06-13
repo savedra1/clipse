@@ -47,11 +47,11 @@ Does not require any additional dependency, but may require you to use a termina
 - [Customizable maximum history limit](#configuration)
 - Filter items using a fuzzy find
 - Image and text previews
-- Mult-selection of items for copy and delete operations
+- Multi-selection of items for copy and delete operations
 - Bulk copy all active filter matches
 - Pin items/pinned items view
 - Vim-like keybindings for navigation available
-- [Run on any Unix machine](#Versatility) with single binary for the clipbboard monitor and TUI
+- [Run on any Unix machine](#Versatility) with single binary for the clipboard monitor and TUI
 - Optional duplicates
 - Ability to set custom key bindings
 
@@ -486,7 +486,7 @@ I would love to receive contributions to this project and welcome PRs from every
   - [x] ~~Menu theme~~
   - [x] ~~Filter theme~~
   - [x] ~~Clear TUI view on select and close _(mirror close effect from `q` or `esc`)_~~
-- [ ] Private mode _(eg `clipse --pause 1` )_
+- [x] ~~Private mode _(eg `clipse --pause 1` )_~~
 
 ## FAQ
 
