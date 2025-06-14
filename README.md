@@ -303,11 +303,16 @@ bindsym $mod+V exec --no-startup-id urxvt -e "$SHELL" -c "i3-msg 'floating enabl
 Add the following config to your `~/.config/sway/config` file:
 
 ```shell
-exec clipse -listen                                                                                                                     # run the background listener on startup
-bindsym $mod+V exec <terminal name> -e sh -c "swaymsg floating enable, move position center; swaymsg resize set 80ppt 80ppt && clipse"  # Bind floating shell with TUI selection to something nice
+exec clipse -listen                                                                        # run the background listener on startup
+
+for_window [app_id="clipse"] floating enable, move position center, resize set 80ppt 80ppt # style window to look nice
+
+bindsym $mod+V exec <terminal name> --class clipse -e clipse                               # bind floating shell with clipse TUI
+
+# Example: bindsym $mod+V exec alacritty --class clipse -e clipse
 ```
 
-[Sway reference](https://wiki.archlinux.org/title/sway#:~:text=To%20enable%20floating%20windows%20or,enable%20floating%20windows%2Fwindow%20assignments.)
+[Sway reference](https://wiki.archlinux.org/title/Sway#Floating_windows)
 
 ### MacOs
 
