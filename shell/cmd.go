@@ -125,7 +125,8 @@ func RunNohupListener(displayServer string) {
 }
 
 func nohupCmdWL(dataType string) *exec.Cmd {
-	return exec.Command(
+	cmd := exec.Command(
+		"nohup",
 		wlPasteHandler,
 		wlTypeSpec,
 		dataType,
@@ -136,6 +137,7 @@ func nohupCmdWL(dataType string) *exec.Cmd {
 		"2>&1",
 		"&",
 	)
+	return cmd
 }
 
 func KillProcess(ppid string) {

@@ -161,6 +161,9 @@ func handleListen(displayServer string) {
 		fmt.Printf("ERROR: failed to kill existing listener process: %s", err)
 		utils.LogERROR(fmt.Sprintf("failed to kill existing listener process: %s", err))
 	}
+	// Clear the clipboard first to avoid capturing clipboard data before the user
+	// expresses their intent to start monitoring.
+	clipboard.WriteAll("")
 	shell.RunNohupListener(displayServer)
 }
 
