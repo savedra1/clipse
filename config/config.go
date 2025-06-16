@@ -15,6 +15,7 @@ type Config struct {
 	AllowDuplicates bool              `json:"allowDuplicates"`
 	HistoryFilePath string            `json:"historyFile"`
 	MaxHistory      int               `json:"maxHistory"`
+	DeleteAfter     int               `json:"deleteAfter"`
 	LogFilePath     string            `json:"logFile"`
 	ThemeFilePath   string            `json:"themeFile"`
 	TempDirPath     string            `json:"tempDir"`
