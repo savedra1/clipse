@@ -92,51 +92,39 @@ func KillAll(bin string) {
 	}
 }
 
-func RunNohupListener(displayServer string, delay *time.Duration) {
+func RunListenerAfterDelay(delay *time.Duration) {
+	if delay == nil {
+		utils.LogERROR("Delay cannot be nil")
+		return
+	}
+
+	cmd := exec.Command(
+		"sh",
+		"-c",
+		fmt.Sprintf(
+			"sleep %d && nohup %s %s >/dev/null 2>&1 &",
+			int(delay.Seconds()),
+			os.Args[0],
+			listenCmd,
+		),
+	)
+	utils.HandleError(cmd.Start())
+}
+
+func RunNohupListener(displayServer string) {
 	switch displayServer {
 	case "wayland":
 		// run optimized wl-clipboard listener
-		utils.HandleError(nohupCmdWL("image/png", delay).Start())
-		utils.HandleError(nohupCmdWL("text", delay).Start())
-
+		utils.HandleError(nohupCmdWL("image/png").Start())
+		utils.HandleError(nohupCmdWL("text").Start())
 	default:
 		// run default poll listener
-		var cmd *exec.Cmd
-		if delay != nil {
-			cmd = exec.Command(
-				"sh",
-				"-c",
-				fmt.Sprintf(
-					"sleep %d && nohup %s %s >/dev/null 2>&1 &",
-					int(delay.Seconds()),
-					os.Args[0],
-					listenCmd,
-				),
-			)
-		} else {
-			cmd = exec.Command("nohup", os.Args[0], listenCmd, ">/dev/null", "2>&1", "&")
-		}
+		cmd := exec.Command("nohup", os.Args[0], listenCmd, ">/dev/null", "2>&1", "&")
 		utils.HandleError(cmd.Start())
 	}
 }
 
-func nohupCmdWL(dataType string, delay *time.Duration) *exec.Cmd {
-	if delay != nil {
-		return exec.Command(
-			"sh",
-			"-c",
-			fmt.Sprintf(
-				"sleep %d && nohup %s %s %s %s %s %s >/dev/null 2>&1 &",
-				int(delay.Seconds()),
-				wlPasteHandler,
-				wlTypeSpec,
-				dataType,
-				wlPasteWatcher,
-				os.Args[0],
-				wlStoreCmd,
-			),
-		)
-	}
+func nohupCmdWL(dataType string) *exec.Cmd {
 	return exec.Command(
 		wlPasteHandler,
 		wlTypeSpec,

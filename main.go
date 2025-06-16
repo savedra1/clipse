@@ -131,7 +131,7 @@ func handlePause(s string, displayServer string) {
 		return
 	}
 	fmt.Printf("Pausing clipboard monitoring for %s...\n", duration)
-	shell.RunNohupListener(displayServer, &duration)
+	shell.RunListenerAfterDelay(&duration)
 }
 
 func launchTUI() {
@@ -161,7 +161,7 @@ func handleListen(displayServer string) {
 		fmt.Printf("ERROR: failed to kill existing listener process: %s", err)
 		utils.LogERROR(fmt.Sprintf("failed to kill existing listener process: %s", err))
 	}
-	shell.RunNohupListener(displayServer, nil)
+	shell.RunNohupListener(displayServer)
 }
 
 func handleListenShell(displayServer string, imgEnabled bool) {
