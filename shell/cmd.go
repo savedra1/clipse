@@ -74,7 +74,7 @@ func KillExistingFG() {
 
 	psList := strings.Split(string(output), "\n")
 	for _, ps := range psList {
-		if strings.Contains(ps, currentPS) || strings.Contains(ps, listenCmd) || strings.Contains(ps, wlStoreCmd) {
+		if strings.Contains(ps, currentPS) || strings.Contains(ps, listenShellCmd) || strings.Contains(ps, wlStoreCmd) {
 			continue
 		}
 		if ps != "" {
@@ -119,7 +119,7 @@ func RunNohupListener(displayServer string) {
 		utils.HandleError(nohupCmdWL("text").Start())
 	default:
 		// run default poll listener
-		cmd := exec.Command("nohup", os.Args[0], listenCmd, ">/dev/null", "2>&1", "&")
+		cmd := exec.Command("nohup", os.Args[0], listenShellCmd, ">/dev/null", "2>&1", "&")
 		utils.HandleError(cmd.Start())
 	}
 }

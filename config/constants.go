@@ -10,7 +10,8 @@ const (
 	defaultLogFile         = "clipse.log"
 	defaultTempDir         = "tmp_files"
 	defaultThemeFile       = "custom_theme.json"
-	listenCmd              = "--listen-shell"
+	listenShellCmd         = "--listen-shell"
+	listenCmd              = "-listen"
 	maxChar                = 65
 )
 
