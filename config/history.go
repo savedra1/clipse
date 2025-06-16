@@ -67,6 +67,10 @@ func GetHistory() []ClipboardItem {
 
 	if ClipseConfig.DeleteAfter > 0 {
 		for i, item := range data.ClipboardHistory {
+			if item.Pinned {
+				continue
+			}
+
 			recorded, err := time.Parse(utils.DateLayout, item.Recorded)
 			if err != nil {
 				utils.LogERROR(fmt.Sprintf("Could not parse the date string: %s", item.Recorded))
