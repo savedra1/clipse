@@ -332,6 +332,7 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
   - The debug log file
   - The clipboard UI theme file
 - Setting a custom max history limit
+- Automatically deleting non-pinned entries older than specified
 - Custom themes
 - If duplicates are allowed
 - Setting custom key bindings
