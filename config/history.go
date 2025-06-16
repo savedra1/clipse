@@ -86,7 +86,7 @@ func GetHistory() []ClipboardItem {
 
 			deletionTime := recorded.Add(time.Duration(ClipseConfig.DeleteAfter * int(time.Second)))
 			if deletionTime.Before(currentTime) {
-				RemoveClipboardItem(i)
+				utils.HandleError(RemoveClipboardItem(i))
 				continue
 			}
 		}
@@ -241,15 +241,15 @@ func AddClipboardItem(text, fp string) error {
 
 func RemoveClipboardItem(index int) error {
 	data := fileContents()
-	new_data := ClipboardHistory{}
+	newData := ClipboardHistory{}
 
 	for i, item := range data.ClipboardHistory {
 		if i != index {
-			new_data.ClipboardHistory = append(new_data.ClipboardHistory, item)
+			newData.ClipboardHistory = append(newData.ClipboardHistory, item)
 		}
 	}
 
-	return WriteUpdate(new_data)
+	return WriteUpdate(newData)
 }
 
 func duplicateItems(currentHistory []ClipboardItem, newItem ClipboardItem) ([]string, bool) {
