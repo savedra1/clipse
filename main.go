@@ -34,7 +34,7 @@ var (
 	wlStore     = flag.Bool("wl-store", false, "Store data from the stdin directly using the wl-clipboard API.")
 	realTime    = flag.Bool("enable-real-time", false, "Enable real time updates to the TUI")
 	outputAll   = flag.String("output-all", "", "Print clipboard text content to stdout, each entry separated by a newline, possible values: (raw, unescaped)")
-	pause		= flag.String("pause", "0", "Pause clipboard monitoring for a specified duration. Example: `clipse -pause 5m` pauses for 5 minutes.")
+	pause       = flag.String("pause", "0", "Pause clipboard monitoring for a specified duration. Example: `clipse -pause 5m` pauses for 5 minutes.")
 )
 
 func main() {
@@ -94,16 +94,16 @@ func main() {
 
 	case *outputAll != "":
 		handleOutputAll(*outputAll)
-	
+
 	case *pause != "":
-		handlePause(*pause, displayServer)
+		handlePause(*pause)
 
 	default:
 		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])
 	}
 }
 
-func handlePause(s string, displayServer string) {
+func handlePause(s string) {
 	ok, err := shell.IsListenerRunning()
 	if err != nil {
 		fmt.Printf("Error checking for active clipboard monitoring process: %s\n", err)
@@ -116,13 +116,13 @@ func handlePause(s string, displayServer string) {
 	usageMsg := fmt.Sprintf("Usage: %s -pause <duration>\nWhere duration is in seconds, minutes, or hours. Example: %s -pause 5m pauses for 5 minutes.", os.Args[0], os.Args[0])
 	if s == "0" {
 		fmt.Println("Invalid duration. Use a positive duration to pause clipboard monitoring.")
-		fmt.Printf(usageMsg)
+		fmt.Println(usageMsg)
 		return
 	}
 	duration, err := time.ParseDuration(s)
 	if err != nil {
 		fmt.Printf("Invalid duration format: %s\n", err)
-		fmt.Printf(usageMsg)
+		fmt.Println(usageMsg)
 		return
 	}
 	if err := shell.KillExisting(); err != nil {
@@ -163,7 +163,9 @@ func handleListen(displayServer string) {
 	}
 	// Clear the clipboard first to avoid capturing clipboard data before the user
 	// expresses their intent to start monitoring.
-	clipboard.WriteAll("")
+	if err := clipboard.WriteAll(""); err != nil {
+		utils.LogERROR(fmt.Sprintf("failed to reset clipboard buffer value: %s", err))
+	}
 	shell.RunNohupListener(displayServer)
 }
 
