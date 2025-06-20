@@ -1,7 +1,8 @@
 package shell
 
 const (
-	listenCmd      = "--listen-shell" // internal
+	listenCmd      = "-listen"
+	listenShellCmd = "--listen-shell" // internal
 	pgrepCmd       = "ps -eo pid,command | grep '[c]lipse'"
 	wlVersionCmd   = "wl-copy -v"
 	wlPasteHandler = "wl-paste"

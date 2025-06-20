@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/atotto/clipboard"
 	tea "github.com/charmbracelet/bubbletea"
@@ -16,23 +17,24 @@ import (
 )
 
 var (
-	version     = "v1.1.0"
-	help        = flag.Bool("help", false, "Show help message.")
-	v           = flag.Bool("v", false, "Show app version.")
-	add         = flag.Bool("a", false, "Add the following arg to the clipboard history.")
-	copyInput   = flag.Bool("c", false, "Copy the input to your systems clipboard.")
-	paste       = flag.Bool("p", false, "Prints the current clipboard content.")
-	listen      = flag.Bool("listen", false, "Start background process for monitoring clipboard activity on wayland/x11/macOS.")
-	listenShell = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
-	kill        = flag.Bool("kill", false, "Kill any existing background processes.")
-	clear       = flag.Bool("clear", false, "Remove all contents from the clipboard history except for pinned items.")
-	clearAll    = flag.Bool("clear-all", false, "Remove all contents the clipboard history including pinned items.")
-	clearImages = flag.Bool("clear-images", false, "Removes all images from the clipboard history including pinned images.")
-	clearText   = flag.Bool("clear-text", false, "Removes all text from the clipboard history including pinned text entries.")
-	forceClose  = flag.Bool("fc", false, "Forces the terminal session to quick by taking the $PPID var as an arg. EG `clipse -fc $PPID`")
-	wlStore     = flag.Bool("wl-store", false, "Store data from the stdin directly using the wl-clipboard API.")
-	realTime    = flag.Bool("enable-real-time", false, "Enable real time updates to the TUI")
-	outputAll   = flag.String("output-all", "", "Print clipboard text content to stdout, each entry separated by a newline, possible values: (raw, unescaped)")
+	version       = "v1.1.0"
+	help          = flag.Bool("help", false, "Show help message.")
+	v             = flag.Bool("v", false, "Show app version.")
+	add           = flag.Bool("a", false, "Add the following arg to the clipboard history.")
+	copyInput     = flag.Bool("c", false, "Copy the input to your systems clipboard.")
+	paste         = flag.Bool("p", false, "Prints the current clipboard content.")
+	listen        = flag.Bool("listen", false, "Start background process for monitoring clipboard activity on wayland/x11/macOS.")
+	listenShell   = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
+	kill          = flag.Bool("kill", false, "Kill any existing background processes.")
+	clearUnpinned = flag.Bool("clear", false, "Remove all contents from the clipboard history except for pinned items.")
+	clearAll      = flag.Bool("clear-all", false, "Remove all contents the clipboard history including pinned items.")
+	clearImages   = flag.Bool("clear-images", false, "Removes all images from the clipboard history including pinned images.")
+	clearText     = flag.Bool("clear-text", false, "Removes all text from the clipboard history including pinned text entries.")
+	forceClose    = flag.Bool("fc", false, "Forces the terminal session to quick by taking the $PPID var as an arg. EG `clipse -fc $PPID`")
+	wlStore       = flag.Bool("wl-store", false, "Store data from the stdin directly using the wl-clipboard API.")
+	realTime      = flag.Bool("enable-real-time", false, "Enable real time updates to the TUI")
+	outputAll     = flag.String("output-all", "", "Print clipboard text content to stdout, each entry separated by a newline, possible values: (raw, unescaped)")
+	pause         = flag.String("pause", "0", "Pause clipboard monitoring for a specified duration. Example: `clipse -pause 5m` pauses for 5 minutes.")
 )
 
 func main() {
@@ -78,7 +80,7 @@ func main() {
 	case *kill:
 		handleKill()
 
-	case *clear, *clearAll, *clearImages, *clearText:
+	case *clearUnpinned, *clearAll, *clearImages, *clearText:
 		handleClear()
 
 	case *forceClose:
@@ -93,9 +95,43 @@ func main() {
 	case *outputAll != "":
 		handleOutputAll(*outputAll)
 
+	case *pause != "":
+		handlePause(*pause)
+
 	default:
 		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])
 	}
+}
+
+func handlePause(s string) {
+	ok, err := shell.IsListenerRunning()
+	if err != nil {
+		fmt.Printf("Error checking for active clipboard monitoring process: %s\n", err)
+		return
+	}
+	if !ok {
+		fmt.Println("No active clipboard monitoring process found. Cannot pause.")
+		return
+	}
+	usageMsg := fmt.Sprintf("Usage: %s -pause <duration>\nWhere duration is in seconds, minutes, or hours. Example: %s -pause 5m pauses for 5 minutes.", os.Args[0], os.Args[0])
+	if s == "0" {
+		fmt.Println("Invalid duration. Use a positive duration to pause clipboard monitoring.")
+		fmt.Println(usageMsg)
+		return
+	}
+	duration, err := time.ParseDuration(s)
+	if err != nil {
+		fmt.Printf("Invalid duration format: %s\n", err)
+		fmt.Println(usageMsg)
+		return
+	}
+	if err := shell.KillExisting(); err != nil {
+		fmt.Printf("ERROR: failed to kill existing listener process: %s", err)
+		utils.LogERROR(fmt.Sprintf("failed to kill existing listener process: %s", err))
+		return
+	}
+	fmt.Printf("Pausing clipboard monitoring for %s...\n", duration)
+	shell.RunListenerAfterDelay(&duration)
 }
 
 func launchTUI() {
@@ -124,6 +160,11 @@ func handleListen(displayServer string) {
 	if err := shell.KillExisting(); err != nil {
 		fmt.Printf("ERROR: failed to kill existing listener process: %s", err)
 		utils.LogERROR(fmt.Sprintf("failed to kill existing listener process: %s", err))
+	}
+	// Clear the clipboard first to avoid capturing clipboard data before the user
+	// expresses their intent to start monitoring.
+	if err := clipboard.WriteAll(""); err != nil {
+		utils.LogERROR(fmt.Sprintf("failed to reset clipboard buffer value: %s", err))
 	}
 	shell.RunNohupListener(displayServer)
 }
