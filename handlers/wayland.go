@@ -18,6 +18,11 @@ import (
 )
 
 func StoreWLData() {
+	/* See `man wl-clipboard` for more information */
+	if os.Getenv("CLIPBOARD_STATE") == "sensitive" {
+		return
+	}
+
 	input, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		utils.LogERROR(fmt.Sprintf("failed to read stdin: %s", err))
