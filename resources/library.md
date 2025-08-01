@@ -39,6 +39,14 @@
 
 </p>
 
+## Kanagawa Dragon
+
+<p align="left">
+
+  <img src="./examples/kanagawa_dragon.png?raw=true" alt="Kanagawa Dragon" />
+
+</p>
+
 ## Light
 
 <p align="left">
