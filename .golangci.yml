@@ -132,10 +132,10 @@ linters-settings:
       # warns when initialism, variable or package naming conventions are not followed.
       - name: var-naming
 
-  dupword:
+  # dupword:
     # Keywords used to ignore detection.
     # Default: []
-    ignore:
+    # ignore:
     #  - "blah" # this will accept "blah blah …" as a valid duplicate word
 
   misspell:
@@ -146,11 +146,11 @@ linters-settings:
 
     # List of words to ignore
     # among the one defined in https://github.com/golangci/misspell/blob/master/words.go
-    ignore-words:
+    # ignore-words:
     #  - valor
     #  - and
 
     # Extra word corrections.
-    extra-words:
+    # extra-words:
     #  - typo: "whattever"
     #    correction: "whatever"

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
@@ -63,6 +64,33 @@ func GetHistory() []ClipboardItem {
 	var data ClipboardHistory
 
 	utils.HandleError(json.NewDecoder(file).Decode(&data))
+
+	if ClipseConfig.DeleteAfter > 0 {
+		for i, item := range data.ClipboardHistory {
+			if item.Pinned {
+				continue
+			}
+
+			recorded, err := time.Parse(utils.DateLayout, item.Recorded)
+			if err != nil {
+				utils.LogERROR(fmt.Sprintf("Could not parse the date string: %s", item.Recorded))
+				continue
+			}
+
+			currentTime, err := time.Parse(utils.DateLayout, utils.GetTime())
+
+			if err != nil {
+				utils.LogERROR("Could not convert the current time string to a time object")
+				continue
+			}
+
+			deletionTime := recorded.Add(time.Duration(ClipseConfig.DeleteAfter * int(time.Second)))
+			if deletionTime.Before(currentTime) {
+				utils.HandleError(RemoveClipboardItem(i))
+				continue
+			}
+		}
+	}
 
 	return data.ClipboardHistory
 }
@@ -209,6 +237,19 @@ func AddClipboardItem(text, fp string) error {
 		}
 	}
 	return WriteUpdate(data)
+}
+
+func RemoveClipboardItem(index int) error {
+	data := fileContents()
+	newData := ClipboardHistory{}
+
+	for i, item := range data.ClipboardHistory {
+		if i != index {
+			newData.ClipboardHistory = append(newData.ClipboardHistory, item)
+		}
+	}
+
+	return WriteUpdate(newData)
 }
 
 func duplicateItems(currentHistory []ClipboardItem, newItem ClipboardItem) ([]string, bool) {

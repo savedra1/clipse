@@ -6,10 +6,12 @@ const (
 	defaultAllowDuplicates = false
 	defaultHistoryFile     = "clipboard_history.json"
 	defaultMaxHist         = 100
+	defaultDeleteAfter     = 0
 	defaultLogFile         = "clipse.log"
 	defaultTempDir         = "tmp_files"
 	defaultThemeFile       = "custom_theme.json"
-	listenCmd              = "--listen-shell"
+	listenShellCmd         = "--listen-shell"
+	listenCmd              = "-listen"
 	maxChar                = 65
 )
 
@@ -43,6 +45,7 @@ func defaultConfig() Config {
 	return Config{
 		HistoryFilePath: defaultHistoryFile,
 		MaxHistory:      defaultMaxHist,
+		DeleteAfter:     defaultDeleteAfter,
 		AllowDuplicates: defaultAllowDuplicates,
 		TempDirPath:     defaultTempDir,
 		LogFilePath:     defaultLogFile,

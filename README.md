@@ -47,11 +47,11 @@ Does not require any additional dependency, but may require you to use a termina
 - [Customizable maximum history limit](#configuration)
 - Filter items using a fuzzy find
 - Image and text previews
-- Mult-selection of items for copy and delete operations
+- Multi-selection of items for copy and delete operations
 - Bulk copy all active filter matches
 - Pin items/pinned items view
 - Vim-like keybindings for navigation available
-- [Run on any Unix machine](#Versatility) with single binary for the clipbboard monitor and TUI
+- [Run on any Unix machine](#Versatility) with single binary for the clipboard monitor and TUI
 - Optional duplicates
 - Ability to set custom key bindings
 
@@ -303,11 +303,16 @@ bindsym $mod+V exec --no-startup-id urxvt -e "$SHELL" -c "i3-msg 'floating enabl
 Add the following config to your `~/.config/sway/config` file:
 
 ```shell
-exec clipse -listen                                                                                                                     # run the background listener on startup
-bindsym $mod+V exec <terminal name> -e sh -c "swaymsg floating enable, move position center; swaymsg resize set 80ppt 80ppt && clipse"  # Bind floating shell with TUI selection to something nice
+exec clipse -listen                                                                        # run the background listener on startup
+
+for_window [app_id="clipse"] floating enable, move position center, resize set 80ppt 80ppt # style window to look nice
+
+bindsym $mod+V exec <terminal name> --class clipse -e clipse                               # bind floating shell with clipse TUI
+
+# Example: bindsym $mod+V exec alacritty --class clipse -e clipse
 ```
 
-[Sway reference](https://wiki.archlinux.org/title/sway#:~:text=To%20enable%20floating%20windows%20or,enable%20floating%20windows%2Fwindow%20assignments.)
+[Sway reference](https://wiki.archlinux.org/title/Sway#Floating_windows)
 
 ### MacOs
 
@@ -332,6 +337,7 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
   - The debug log file
   - The clipboard UI theme file
 - Setting a custom max history limit
+- Automatically deleting non-pinned entries older than specified
 - Custom themes
 - If duplicates are allowed
 - Setting custom key bindings
@@ -480,7 +486,7 @@ I would love to receive contributions to this project and welcome PRs from every
   - [x] ~~Menu theme~~
   - [x] ~~Filter theme~~
   - [x] ~~Clear TUI view on select and close _(mirror close effect from `q` or `esc`)_~~
-- [ ] Private mode _(eg `clipse --pause 1` )_
+- [x] ~~Private mode _(eg `clipse --pause 1` )_~~
 
 ## FAQ
 

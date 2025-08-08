@@ -400,10 +400,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.setPreviewKeys(true)
 
 				return m, tea.Batch(cmds...)
-			} else {
-				if i.filePath != "null" && config.ClipseConfig.ImageDisplay.Type != "basic" {
-					m.preview.Height = m.originalHeight
-				}
+			}
+			if i.filePath != "null" && config.ClipseConfig.ImageDisplay.Type != "basic" {
+				m.preview.Height = m.originalHeight
 			}
 			m.setPreviewKeys(false)
 		}
