@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/list"
 
 	"github.com/savedra1/clipse/config"
 )
@@ -29,9 +30,7 @@ type keyMap struct {
 	end           key.Binding
 }
 
-func newKeyMap() *keyMap {
-	config := config.ClipseConfig.KeyBindings
-
+func newKeyMap(config map[string]string) *keyMap {
 	previewChar := config["preview"]
 	if previewChar == " " {
 		previewChar = spaceChar
@@ -136,9 +135,7 @@ type filterKeyMap struct {
 	yankMatches key.Binding
 }
 
-func newFilterKeymap() *filterKeyMap {
-	config := config.ClipseConfig.KeyBindings
-
+func newFilterKeymap(config map[string]string) *filterKeyMap {
 	return &filterKeyMap{
 		apply: key.NewBinding(
 			key.WithKeys(config["choose"]),
@@ -167,9 +164,7 @@ type confirmationKeyMap struct {
 	choose key.Binding
 }
 
-func newConfirmationKeymap() *confirmationKeyMap {
-	config := config.ClipseConfig.KeyBindings
-
+func newConfirmationKeymap(config map[string]string) *confirmationKeyMap {
 	return &confirmationKeyMap{
 		up: key.NewBinding(
 			key.WithKeys(config["up"]),
@@ -235,5 +230,63 @@ func newPreviewKeyMap() *previewKeymap {
 func (pk previewKeymap) PreviewHelp() []key.Binding {
 	return []key.Binding{
 		pk.up, pk.down, pk.pageDown, pk.pageUp, pk.back,
+	}
+}
+
+func defaultOverrides(config map[string]string) list.KeyMap {
+	return list.KeyMap{
+		CursorUp: key.NewBinding(
+			key.WithKeys(config["up"]),
+			key.WithHelp(config["up"], "up"),
+		),
+		CursorDown: key.NewBinding(
+			key.WithKeys(config["down"]),
+			key.WithHelp(config["down"], "down"),
+		),
+		NextPage: key.NewBinding(
+			key.WithKeys(config["nextPage"]),
+			key.WithHelp(config["nextPage"], "page down"),
+		),
+		PrevPage: key.NewBinding(
+			key.WithKeys(config["prevPage"]),
+			key.WithHelp(config["prevPage"], "page up"),
+		),
+		GoToStart: key.NewBinding(
+			key.WithKeys(config["home"]),
+			key.WithHelp(config["home"], "start"),
+		),
+		GoToEnd: key.NewBinding(
+			key.WithKeys(config["end"]),
+			key.WithHelp(config["end"], "end"),
+		),
+		Filter: key.NewBinding(
+			key.WithKeys(config["filter"]),
+			key.WithHelp(config["filter"], "filter"),
+		),
+		Quit: key.NewBinding(
+			key.WithKeys(config["quit"]),
+			key.WithHelp(config["quit"], "quit"),
+		),
+		ShowFullHelp: key.NewBinding(
+			key.WithKeys("?"),
+			key.WithHelp("?", "more"),
+		),
+		CloseFullHelp: key.NewBinding(
+			key.WithKeys("?"),
+			key.WithHelp("?", "less"),
+		),
+		AcceptWhileFiltering: key.NewBinding(
+			key.WithKeys(config["choose"]),
+			key.WithDisabled(),
+		),
+		CancelWhileFiltering: key.NewBinding(
+			key.WithKeys(config["quit"]),
+			key.WithDisabled(),
+		),
+		ClearFilter: key.NewBinding(
+			key.WithKeys(config["quit"]),
+			key.WithDisabled(),
+		),
+		ForceQuit: key.NewBinding(key.WithDisabled()),
 	}
 }

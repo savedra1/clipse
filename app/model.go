@@ -66,9 +66,10 @@ func (m Model) Init() tea.Cmd {
 
 func NewModel() Model {
 	var (
-		listKeys         = newKeyMap()
-		filterKeys       = newFilterKeymap()
-		confirmationKeys = newConfirmationKeymap()
+		keyConfig        = config.ClipseConfig.KeyBindings
+		listKeys         = newKeyMap(keyConfig)
+		filterKeys       = newFilterKeymap(keyConfig)
+		confirmationKeys = newConfirmationKeymap(keyConfig)
 	)
 
 	clipboardItems := config.GetHistory()
@@ -94,7 +95,7 @@ func NewModel() Model {
 	del := m.newItemDelegate()
 
 	clipboardList := list.New(entryItems, del, 0, 0)
-
+	clipboardList.KeyMap = defaultOverrides(config.ClipseConfig.KeyBindings)   // override default list keys with custom values
 	clipboardList.Title = clipboardTitle                                       // set hardcoded title
 	clipboardList.SetShowHelp(false)                                           // override with custom
 	clipboardList.Styles.PaginationStyle = style.MarginBottom(1).MarginLeft(2) // set custom pagination spacing
