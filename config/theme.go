@@ -9,7 +9,7 @@ import (
 )
 
 type CustomTheme struct {
-	UseCustom          bool   `json:"useCustomTheme"`
+	UseCustom          bool   `json:"useCustom"`
 	TitleFore          string `json:"TitleFore"`
 	TitleBack          string `json:"TitleBack"`
 	TitleInfo          string `json:"TitleInfo"`
