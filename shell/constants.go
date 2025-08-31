@@ -3,7 +3,7 @@ package shell
 const (
 	listenCmd      = "-listen"
 	listenShellCmd = "--listen-shell" // internal
-	pgrepCmd       = "ps -eo pid,command | grep '[c]lipse'"
+	pgrepCmd       = "ps -C clipse -o pid,command --no-header"
 	wlVersionCmd   = "wl-copy -v"
 	wlPasteHandler = "wl-paste"
 	wlPasteWatcher = "--watch"

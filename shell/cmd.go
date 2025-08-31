@@ -74,11 +74,16 @@ func KillExistingFG() {
 
 	psList := strings.Split(string(output), "\n")
 	for _, ps := range psList {
-		if strings.Contains(ps, currentPS) || strings.Contains(ps, listenShellCmd) || strings.Contains(ps, wlStoreCmd) {
+		fields := strings.Fields(ps)
+		if len(fields) == 0 {
+			continue
+		}
+		pid := fields[0]
+		if pid == currentPS || strings.Contains(ps, listenShellCmd) || strings.Contains(ps, wlStoreCmd) {
 			continue
 		}
 		if ps != "" {
-			KillProcess(strings.Split(ps, " ")[0])
+			KillProcess(pid)
 		}
 	}
 }
