@@ -231,6 +231,10 @@ func AddClipboardItem(text, fp string) error {
 		for i := len(data.ClipboardHistory) - 1; i >= 0; i-- {
 			// remove the first unpinned entry starting with the oldest
 			if !data.ClipboardHistory[i].Pinned {
+				// If this is an image, we need to clean it
+				if data.ClipboardHistory[i].FilePath != "null" {
+					shell.DeleteImage(data.ClipboardHistory[i].FilePath)
+				}
 				data.ClipboardHistory = append(data.ClipboardHistory[:i], data.ClipboardHistory[i+1:]...)
 				break
 			}
