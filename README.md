@@ -32,7 +32,7 @@ If moving to a new release of `clipse` please review the [changelog](https://git
 
 __[atotto/clipboard](https://github.com/atotto/clipboard)__
 
-This requires a system clipboard. I would recommend using `wl-clipboard` (Wayland) or `xclip` (X11/macOs) to get the best results. You can also use `xsel` and `termux-clipboard`, but these will not allow you to copy images.
+This requires a system clipboard. I would recommend using `wl-clipboard` (Wayland) or `xclip` (X11/macOS) to get the best results. You can also use `xsel` and `termux-clipboard`, but these will not allow you to copy images.
 
 __[BubbleTea](https://pkg.go.dev/github.com/charmbracelet/bubbletea)__
 
@@ -314,9 +314,9 @@ bindsym $mod+V exec <terminal name> --class clipse -e clipse                    
 
 [Sway reference](https://wiki.archlinux.org/title/Sway#Floating_windows)
 
-### MacOs
+### macOS
 
-The native terminal on MacOs will not close once the `clipse` program completes, even when using the `-fc` argument. You will therefore need to use a different terminal environment like [Alacritty](https://alacritty.org/) to achieve the "close on selection" effect. The bindings used to open the TUI will then need to be defined in your settings/window manager.
+The native terminal on macOS will not close once the `clipse` program completes, even when using the `-fc` argument. You will therefore need to use a different terminal environment like [Alacritty](https://alacritty.org/) or [Ghostty](https://ghostty.org/) to achieve the "close on selection" effect. The bindings used to open the TUI, for example the command `open -na Alacritty --args -e /path/to/clipse`, will then need to be defined in your settings/window manager.
 
 ### Other
 
@@ -497,7 +497,7 @@ See issue #148. This is caused by the fuzzy find algo _(within the BubbleTea TUI
 
 __My terminal window does not close on selection, even when using `clipse -fc $PPID`__
 
-Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. To get the "close on selection" effect for macOs, you will need to install a different terminal environment like `Alacritty`._
+Some terminal environments reference system variables differently. For example, the fish terminal will need to use `$fish_pid` instead. To debug this error you can run `echo $PPID` to see what gets returned. For macOS, see [macOS](#macOS).
 <br>
 
 __Is there risk of multiple parallel processes running?__
@@ -531,6 +531,6 @@ Depending on the clipboard utility you are using (`wl-clipboard`/`xclip` etc) th
 <br>
 If using `wayland`, copying images from your browser should now work from most sites if using `v1.0.4` or later. This may copy the binary data as well as the metadata sting as a separate entry. Some sites/browsers may add the browser image data to the stdin in a way that `wl-clipboard` does not recognize.
 <br>
-If using `x11`, `MacOs` or other and copying browser images does not work, feel free to raise and issue (or a PR) detailing which sites/browser engines this does not work with for you.
+If using `x11`, `macOS` or other and copying browser images does not work, feel free to raise and issue (or a PR) detailing which sites/browser engines this does not work with for you.
   
 <br>
