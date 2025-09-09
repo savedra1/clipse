@@ -21,6 +21,7 @@ type Config struct {
 	TempDirPath     string            `json:"tempDir"`
 	KeyBindings     map[string]string `json:"keyBindings"`
 	ImageDisplay    ImageDisplay      `json:"imageDisplay"`
+	ExcludedApps    []string          `json:"excludedApps"`
 }
 type ImageDisplay struct {
 	Type      string `json:"type"`

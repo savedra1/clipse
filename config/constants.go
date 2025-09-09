@@ -40,6 +40,19 @@ func defaultKeyBindings() map[string]string {
 	}
 }
 
+// Default list of applications to exclude from clipboard history
+func defaultExcludedApps() []string {
+	return []string{
+		"1Password",
+		"Bitwarden",
+		"KeePassXC",
+		"LastPass",
+		"Dashlane",
+		"Password Safe",
+		"Keychain Access",
+	}
+}
+
 // Because Go does not support constant Structs :(
 func defaultConfig() Config {
 	return Config{
@@ -51,6 +64,7 @@ func defaultConfig() Config {
 		LogFilePath:     defaultLogFile,
 		ThemeFilePath:   defaultThemeFile,
 		KeyBindings:     defaultKeyBindings(),
+		ExcludedApps:    defaultExcludedApps(),
 		ImageDisplay: ImageDisplay{
 			Type:      "basic",
 			ScaleX:    9,
