@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
@@ -67,7 +66,7 @@ func Init() (string, string, bool, error) {
 		utils.HandleError(os.MkdirAll(ClipseConfig.TempDirPath, 0755))
 	}
 
-	ds := DisplayServer()
+	ds := utils.DisplayServer()
 	ie := shell.ImagesEnabled(ds) // images enabled?
 
 	return ClipseConfig.LogFilePath, ds, ie, nil
@@ -99,22 +98,3 @@ func loadConfig(configPath string) {
 	ClipseConfig.LogFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.LogFilePath), configDir)
 }
 
-func DisplayServer() string {
-	/* Determine runtime and return appropriate window server.
-	used to determine which dependency is required for handling
-	image files.
-	*/
-	osName := runtime.GOOS
-	switch osName {
-	case "linux":
-		waylandDisplay := os.Getenv("WAYLAND_DISPLAY")
-		if waylandDisplay != "" {
-			return "wayland"
-		}
-		return "x11"
-	case "darwin":
-		return "darwin"
-	default:
-		return "unknown"
-	}
-}

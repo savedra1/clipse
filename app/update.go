@@ -146,7 +146,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(selectedItems) < 1 {
 				switch {
 				case fp != "null":
-					ds := config.DisplayServer() // eg "wayland"
+					ds := utils.DisplayServer() // eg "wayland"
 					utils.HandleError(shell.CopyImage(fp, ds))
 					return m, tea.Quit
 
