@@ -29,13 +29,16 @@ func DisplayServer() string {
 }
 
 func GetActiveWindowTitle() string {
-	switch runtime.GOOS {
+	displayServer := DisplayServer()
+	switch displayServer {
 	case "darwin":
 		return getActiveWindowTitleMacOS()
-	case "linux":
-		return getActiveWindowTitleLinux()
+	case "wayland":
+		return getActiveWindowTitleWayland()
+	case "x11":
+		return getActiveWindowTitleX11()
 	default:
-		LogWARN("Unsupported platform for active window detection: " + runtime.GOOS)
+		LogWARN("Unsupported display server for active window detection: " + displayServer)
 		return ""
 	}
 }
@@ -48,23 +51,20 @@ func getActiveWindowTitleMacOS() string {
 	return output
 }
 
-func getActiveWindowTitleLinux() string {
-	if isWaylandSession() {
-		if title := tryHyprctl(); title != "" {
-			return title
-		}
-		LogWARN("Failed to get active window on Wayland: no suitable tool found (hyprctl)")
-	} else {
-		if title := tryXdotool(); title != "" {
-			return title
-		}
-		LogWARN("Failed to get active window on X11: no suitable tool found (xdotool)")
+func getActiveWindowTitleWayland() string {
+	if title := tryHyprctl(); title != "" {
+		return title
 	}
+	LogWARN("Failed to get active window on Wayland: no suitable tool found")
 	return ""
 }
 
-func isWaylandSession() bool {
-	return os.Getenv("XDG_SESSION_TYPE") == "wayland" || os.Getenv("WAYLAND_DISPLAY") != ""
+func getActiveWindowTitleX11() string {
+	if title := tryXdotool(); title != "" {
+		return title
+	}
+	LogWARN("Failed to get active window on X11: no suitable tool found")
+	return ""
 }
 
 func tryHyprctl() string {
