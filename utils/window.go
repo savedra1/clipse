@@ -8,6 +8,26 @@ import (
 	"strings"
 )
 
+func DisplayServer() string {
+	/* Determine runtime and return appropriate window server.
+	used to determine which dependency is required for handling
+	image files.
+	*/
+	osName := runtime.GOOS
+	switch osName {
+	case "linux":
+		waylandDisplay := os.Getenv("WAYLAND_DISPLAY")
+		if waylandDisplay != "" {
+			return "wayland"
+		}
+		return "x11"
+	case "darwin":
+		return "darwin"
+	default:
+		return "unknown"
+	}
+}
+
 func GetActiveWindowTitle() string {
 	switch runtime.GOOS {
 	case "darwin":
