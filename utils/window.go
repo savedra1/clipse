@@ -8,11 +8,9 @@ import (
 	"strings"
 )
 
+// DisplayServer determines runtime and returns appropriate window server.
+// Used to determine the active window and which dependency is required for handling image files.
 func DisplayServer() string {
-	/* Determine runtime and return appropriate window server.
-	used to determine which dependency is required for handling
-	image files.
-	*/
 	osName := runtime.GOOS
 	switch osName {
 	case "linux":
@@ -28,6 +26,7 @@ func DisplayServer() string {
 	}
 }
 
+// GetActiveWindowTitle returns the title of the currently active window.
 func GetActiveWindowTitle() string {
 	displayServer := DisplayServer()
 	switch displayServer {
@@ -43,6 +42,26 @@ func GetActiveWindowTitle() string {
 	}
 }
 
+// IsAppExcluded checks if an application name matches any in the excluded list.
+func IsAppExcluded(appName string, excludedList []string) bool {
+	if appName == "" {
+		return false
+	}
+
+	appNameLower := strings.ToLower(appName)
+
+	for _, excluded := range excludedList {
+		excludedLower := strings.ToLower(excluded)
+
+		if excludedLower != "" && strings.Contains(appNameLower, excludedLower) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// getActiveWindowTitleMacOS returns the window title on macOS. Should work on any recent system
 func getActiveWindowTitleMacOS() string {
 	output := execOutput("osascript", "-e", `tell application "System Events" to get name of first application process whose frontmost is true`)
 	if output == "" {
@@ -51,6 +70,7 @@ func getActiveWindowTitleMacOS() string {
 	return output
 }
 
+// getActiveWindowTitleWayland tries getting the window title using various Wayland tools
 func getActiveWindowTitleWayland() string {
 	if title := tryHyprctl(); title != "" {
 		return title
@@ -59,6 +79,7 @@ func getActiveWindowTitleWayland() string {
 	return ""
 }
 
+// getActiveWindowTitleX11 tries getting the window title using various X11 tools
 func getActiveWindowTitleX11() string {
 	if title := tryXdotool(); title != "" {
 		return title
@@ -67,6 +88,7 @@ func getActiveWindowTitleX11() string {
 	return ""
 }
 
+// tryHyprctl tries getting the window title using hyprctl - Utility for controlling parts of Hyprland from a CLI or a script
 func tryHyprctl() string {
 	output := execOutput("hyprctl", "activewindow", "-j")
 	if output == "" {
@@ -87,26 +109,9 @@ func tryHyprctl() string {
 	return windowInfo.Title
 }
 
+// tryXdotool tries getting the window title using xdotool - Command-line X11 automation tool
 func tryXdotool() string {
 	return execOutput("xdotool", "getactivewindow", "getwindowname")
-}
-
-func IsAppExcluded(appName string, excludeList []string) bool {
-	if appName == "" {
-		return false
-	}
-
-	appNameLower := strings.ToLower(appName)
-
-	for _, excluded := range excludeList {
-		excludedLower := strings.ToLower(excluded)
-
-		if excludedLower != "" && strings.Contains(appNameLower, excludedLower) {
-			return true
-		}
-	}
-
-	return false
 }
 
 func execOutput(name string, args ...string) string {
