@@ -316,7 +316,38 @@ bindsym $mod+V exec <terminal name> --class clipse -e clipse                    
 
 ### macOS
 
-The native terminal on macOS will not close once the `clipse` program completes, even when using the `-fc` argument. You will therefore need to use a different terminal environment like [Alacritty](https://alacritty.org/) or [Ghostty](https://ghostty.org/) to achieve the "close on selection" effect. The bindings used to open the TUI, for example the command `open -na Alacritty --args -e /path/to/clipse`, will then need to be defined in your settings/window manager.
+#### Run the clipse listener on startup
+
+One method is to create a launch agent for `clipse`.
+
+Create the file `~/Library/LaunchAgents/clipse.plist` with the following content:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"\>
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.savedra1.clipse</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/path/to/clipse</string>
+        <string>--listen-shell</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
+```
+
+Then in a terminal, activate the agent with: `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/clipse.plist`. Right away and after your next login, you can check that `clipse` is running by executing `ps -e | grep '[c]lipse'`.
+
+#### Open clipse's TUI (with a system-wide shortcut)
+
+The native terminal on macOS will not close once the `clipse` program completes, even when using the `-fc` argument. You will therefore need to use a different terminal environment like [Alacritty](https://alacritty.org/) or [Ghostty](https://ghostty.org/) to achieve the "close on selection" effect. 
+
+One way to open the TUI on macOS is thus by running the command `open -na Alacritty --args -e /path/to/clipse`. 
+
+To bind the command to a system-wide shortcut, you can use specialized tools such as [Raycast](https://www.raycast.com/) or [BetterTouchTool](https://folivora.ai/). You can also use a native keyboard shortcut to trigger an Automator App or Service running that command (but opening the TUI may be slower this way).
 
 ### Other
 
