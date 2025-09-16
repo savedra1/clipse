@@ -316,6 +316,8 @@ bindsym $mod+V exec <terminal name> --class clipse -e clipse                    
 
 ### macOS
 
+When `clipse` is started for the first time, configuration and other files will be created in `~/Library/Application\ Support/clipse`.
+
 #### Run the clipse listener on startup
 
 One method is to create a launch agent for `clipse`.
