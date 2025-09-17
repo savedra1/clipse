@@ -28,6 +28,7 @@ type keyMap struct {
 	prevPage      key.Binding
 	home          key.Binding
 	end           key.Binding
+	previewBack   key.Binding
 }
 
 func newKeyMap(config map[string]string) *keyMap {
@@ -106,6 +107,9 @@ func newKeyMap(config map[string]string) *keyMap {
 		),
 		end: key.NewBinding(
 			key.WithKeys(config["end"]),
+		),
+		previewBack: key.NewBinding(
+			key.WithKeys(config["previewBack"]),
 		),
 	}
 }
@@ -193,6 +197,7 @@ type previewKeymap struct {
 	back     key.Binding
 	pageDown key.Binding
 	pageUp   key.Binding
+	choose   key.Binding
 }
 
 func newPreviewKeyMap() *previewKeymap {
@@ -220,16 +225,20 @@ func newPreviewKeyMap() *previewKeymap {
 			key.WithKeys("PgUp"),
 			key.WithHelp("PgUp", "page up"),
 		),
+		choose: key.NewBinding(
+			key.WithKeys(config["choose"]),
+			key.WithHelp("↵", "copy"),
+		),
 		back: key.NewBinding(
-			key.WithKeys(config["preview"], config["quit"]),
-			key.WithHelp(previewChar, "back"),
+			key.WithKeys(config["preview"], config["previewBack"]),
+			key.WithHelp(previewChar+" / "+config["previewBack"], "back"),
 		),
 	}
 }
 
 func (pk previewKeymap) PreviewHelp() []key.Binding {
 	return []key.Binding{
-		pk.up, pk.down, pk.pageDown, pk.pageUp, pk.back,
+		pk.up, pk.down, pk.pageDown, pk.pageUp, pk.back, pk.choose,
 	}
 }
 

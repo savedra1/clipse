@@ -405,6 +405,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.preview.Height = m.originalHeight
 			}
 			m.setPreviewKeys(false)
+
+		case key.Matches(msg, m.keys.previewBack):
+			if m.showPreview {
+				m.showPreview = !m.showPreview
+				m.setPreviewKeys(false)
+			}
 		}
 	}
 
@@ -575,7 +581,6 @@ func (m *Model) setPreviewKeys(v bool) {
 	m.list.KeyMap.ShowFullHelp.SetEnabled(!v)
 
 	m.keys.remove.SetEnabled(!v)
-	m.keys.choose.SetEnabled(!v)
 	m.keys.togglePin.SetEnabled(!v)
 	m.keys.togglePinned.SetEnabled(!v)
 	m.keys.selectDown.SetEnabled(!v)
