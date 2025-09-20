@@ -56,30 +56,36 @@ func KillExistingFG() {
 		Only kill other clipboard TUI windows to prevent
 		file conflicts.
 	*/
-	currentPS := strconv.Itoa(syscall.Getpid())
+	currentPid := strconv.Itoa(syscall.Getpid())
+
+	// Get PIDs of process names (as opposed to full commands) containing "clipse"
 	cmd := exec.Command("sh", "-c", pgrepCmd)
-	output, err := cmd.Output()
-	/*
-		EG Output returns as:
-		156842 clipse --listen-shell >/dev/null 2>&1 &
-		310228 clipse
-	*/
+	pgrepOutput, err := cmd.Output() // returns something like "1234\n5678\n\n"
 	if err != nil {
-		utils.LogWARN(fmt.Sprintf("failed to get processes | err msg: %s | output: %s", err, output))
+		utils.LogWARN(fmt.Sprintf("failed to get processes | err msg: %s | output: %s", err, pgrepOutput))
 		return
 	}
-	if output == nil {
-		return // no clipse processes running
-	}
+	pidList := strings.Fields(string(pgrepOutput))
 
-	psList := strings.Split(string(output), "\n")
-	for _, ps := range psList {
-		if strings.Contains(ps, currentPS) || strings.Contains(ps, listenShellCmd) || strings.Contains(ps, wlStoreCmd) {
+	for _, pid := range pidList {
+		if pid == currentPid {
 			continue
 		}
-		if ps != "" {
-			KillProcess(strings.Split(ps, " ")[0])
+
+		// Get full command for given PID, eg. "./clipse --listen-shell >/dev/null 2>&1 &"
+		cmd := exec.Command("sh", "-c", fmt.Sprintf("%s %s", psCmd, pid))
+		psOutput, err := cmd.Output()
+		if err != nil {
+			utils.LogWARN(fmt.Sprintf("failed to get pid's command | pid: %s | err msg: %s | output: %s", pid, err, psOutput))
+			continue
 		}
+		pidCmd := strings.Split(string(psOutput), "\n")[1] // skip headers (macOS's ps doesn't support --no-headers)
+		if strings.Contains(pidCmd, listenShellCmd) || strings.Contains(pidCmd, wlStoreCmd) {
+			continue
+		}
+
+		utils.LogINFO(fmt.Sprintf("Killing pid %s, cmd %s", pid, pidCmd))
+		KillProcess(pid)
 	}
 }
 
