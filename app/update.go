@@ -405,6 +405,31 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.preview.Height = m.originalHeight
 			}
 			m.setPreviewKeys(false)
+
+		case key.Matches(msg, m.keys.quit):
+			switch {
+			case m.showPreview:
+				m.showPreview = !m.showPreview
+				var cmd tea.Cmd
+				m.preview, cmd = m.preview.Update(msg)
+				cmds = append(cmds, cmd)
+				m.preview.GotoTop()
+				m.setPreviewKeys(false)
+				return m, tea.Batch(cmds...)
+
+			case m.list.IsFiltered():
+				m.list.ResetFilter()
+
+			case m.showConfirmation:
+				m.confirmationList.Select(0)
+				m.setConfirmationKeys(false)
+				m.enableConfirmationKeys(false)
+				m.showConfirmation = false
+				return m, tea.Batch(cmds...)
+
+			default:
+				return m, tea.Quit
+			}
 		}
 	}
 
@@ -575,7 +600,6 @@ func (m *Model) setPreviewKeys(v bool) {
 	m.list.KeyMap.ShowFullHelp.SetEnabled(!v)
 
 	m.keys.remove.SetEnabled(!v)
-	m.keys.choose.SetEnabled(!v)
 	m.keys.togglePin.SetEnabled(!v)
 	m.keys.togglePinned.SetEnabled(!v)
 	m.keys.selectDown.SetEnabled(!v)

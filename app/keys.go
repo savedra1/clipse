@@ -162,6 +162,7 @@ type confirmationKeyMap struct {
 	up     key.Binding
 	down   key.Binding
 	choose key.Binding
+	back   key.Binding
 }
 
 func newConfirmationKeymap(config map[string]string) *confirmationKeyMap {
@@ -178,21 +179,25 @@ func newConfirmationKeymap(config map[string]string) *confirmationKeyMap {
 			key.WithKeys(config["choose"]),
 			key.WithHelp(config["choose"], "choose"),
 		),
+		back: key.NewBinding(
+			key.WithKeys(config["quit"]),
+			key.WithHelp(config["quit"], "back"),
+		),
 	}
 }
 
 func (ck confirmationKeyMap) ConfirmationHelp() []key.Binding {
 	return []key.Binding{
-		ck.up, ck.down, ck.choose,
+		ck.up, ck.down, ck.choose, ck.back,
 	}
 }
 
 type previewKeymap struct {
 	up       key.Binding
 	down     key.Binding
-	back     key.Binding
 	pageDown key.Binding
 	pageUp   key.Binding
+	back     key.Binding
 }
 
 func newPreviewKeyMap() *previewKeymap {
@@ -222,7 +227,7 @@ func newPreviewKeyMap() *previewKeymap {
 		),
 		back: key.NewBinding(
 			key.WithKeys(config["preview"], config["quit"]),
-			key.WithHelp(previewChar, "back"),
+			key.WithHelp(previewChar+" / "+config["quit"], "back"),
 		),
 	}
 }
