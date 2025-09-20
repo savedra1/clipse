@@ -364,7 +364,6 @@ The configuration capabilities of `clipse` will change as `clipse` evolves and g
         "nextPage": "right",
         "prevPage": "left",
         "preview": "t",
-        "previewBack": "esc",
         "quit": "q",
         "remove": "x",
         "selectDown": "ctrl+down",

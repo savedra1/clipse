@@ -28,7 +28,6 @@ type keyMap struct {
 	prevPage      key.Binding
 	home          key.Binding
 	end           key.Binding
-	previewBack   key.Binding
 }
 
 func newKeyMap(config map[string]string) *keyMap {
@@ -108,9 +107,6 @@ func newKeyMap(config map[string]string) *keyMap {
 		end: key.NewBinding(
 			key.WithKeys(config["end"]),
 		),
-		previewBack: key.NewBinding(
-			key.WithKeys(config["previewBack"]),
-		),
 	}
 }
 
@@ -166,6 +162,7 @@ type confirmationKeyMap struct {
 	up     key.Binding
 	down   key.Binding
 	choose key.Binding
+	back   key.Binding
 }
 
 func newConfirmationKeymap(config map[string]string) *confirmationKeyMap {
@@ -182,22 +179,25 @@ func newConfirmationKeymap(config map[string]string) *confirmationKeyMap {
 			key.WithKeys(config["choose"]),
 			key.WithHelp(config["choose"], "choose"),
 		),
+		back: key.NewBinding(
+			key.WithKeys(config["quit"]),
+			key.WithHelp(config["quit"], "back"),
+		),
 	}
 }
 
 func (ck confirmationKeyMap) ConfirmationHelp() []key.Binding {
 	return []key.Binding{
-		ck.up, ck.down, ck.choose,
+		ck.up, ck.down, ck.choose, ck.back,
 	}
 }
 
 type previewKeymap struct {
 	up       key.Binding
 	down     key.Binding
-	back     key.Binding
 	pageDown key.Binding
 	pageUp   key.Binding
-	choose   key.Binding
+	back     key.Binding
 }
 
 func newPreviewKeyMap() *previewKeymap {
@@ -225,20 +225,16 @@ func newPreviewKeyMap() *previewKeymap {
 			key.WithKeys("PgUp"),
 			key.WithHelp("PgUp", "page up"),
 		),
-		choose: key.NewBinding(
-			key.WithKeys(config["choose"]),
-			key.WithHelp("↵", "copy"),
-		),
 		back: key.NewBinding(
-			key.WithKeys(config["preview"], config["previewBack"]),
-			key.WithHelp(previewChar+" / "+config["previewBack"], "back"),
+			key.WithKeys(config["preview"], config["quit"]),
+			key.WithHelp(previewChar+" / "+config["quit"], "back"),
 		),
 	}
 }
 
 func (pk previewKeymap) PreviewHelp() []key.Binding {
 	return []key.Binding{
-		pk.up, pk.down, pk.pageDown, pk.pageUp, pk.back, pk.choose,
+		pk.up, pk.down, pk.pageDown, pk.pageUp, pk.back,
 	}
 }
 
