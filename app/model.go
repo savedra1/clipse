@@ -87,7 +87,7 @@ func NewModel() Model {
 		showConfirmation: false,
 		preview:          NewPreview(),
 		showPreview:      false,
-		previewKeys:      newPreviewKeyMap(),
+		previewKeys:      newPreviewKeyMap(keyConfig),
 	}
 
 	entryItems := filterItems(clipboardItems, false, m.theme)
@@ -104,8 +104,10 @@ func NewModel() Model {
 		return []key.Binding{
 			listKeys.preview,
 			listKeys.selectDown,
+			listKeys.selectUp,
 			listKeys.selectSingle,
 			listKeys.clearSelected,
+			listKeys.quit,
 		}
 	}
 

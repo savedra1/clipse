@@ -11,4 +11,10 @@ const (
 	borderMiddleChar  = "─"
 	defaultMsgColor   = "#04B575"
 	spaceChar         = "␣"
+	enterChar         = "↵"
+	upChar            = "↑"
+	downChar          = "↓"
+	rightChar         = "→"
+	leftChar          = "←"
+	backspaceChar     = "⌫"
 )
