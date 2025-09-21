@@ -9,43 +9,63 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
+var imgIsEnabledCmd = map[string]string{
+	"darwin":  darwinVersionCmd,
+	"wayland": wlVersionCmd,
+	"x11":     xVersionCmd,
+}
+
+var copyImgCmds = map[string]string{
+	"darwin":  darwinCopyImgCmd,
+	"wayland": wlCopyImgCmd,
+	"x11":     xCopyImgCmd,
+}
+
+var pasteImgCmds = map[string]string{
+	"darwin":  darwinPasteImgCmd,
+	"wayland": wlPasteImgCmd,
+	"x11":     xPasteImgCmd,
+}
+
 func ImagesEnabled(displayServer string) bool {
-	var cmd *exec.Cmd
-	switch displayServer {
-	case "wayland":
-		cmd = exec.Command("sh", "-c", wlVersionCmd)
-	case "x11", "darwin":
-		cmd = exec.Command("sh", "-c", xVersionCmd)
-	default:
+	cmd, ok := imgIsEnabledCmd[displayServer]
+	if !ok {
+		utils.LogWARN("unknown display server!")
 		return false
 	}
-	if err := cmd.Run(); err != nil {
+	execCmd := exec.Command("sh", "-c", cmd)
+	if err := execCmd.Run(); err != nil {
+		utils.LogERROR("!! system is missing image dependency")
 		return false
 	}
 	return true
 }
 
 func CopyImage(imagePath, displayServer string) error {
-	cmd := fmt.Sprintf("%s %s", xCopyImgCmd, imagePath)
-	if displayServer == "wayland" {
-		cmd = fmt.Sprintf("%s %s", wlCopyImgCmd, imagePath)
+	cmd, ok := copyImgCmds[displayServer]
+	if !ok {
+		return fmt.Errorf("!! unknown display server; could not copy image")
 	}
-	if err := exec.Command("sh", "-c", cmd).Run(); err != nil {
+	cmdFull := fmt.Sprintf(cmd, imagePath)
+	if err := exec.Command("sh", "-c", cmdFull).Run(); err != nil {
 		return err
 	}
 	return nil
 }
 
 func SaveImage(imagePath, displayServer string) error {
-	cmd := fmt.Sprintf("%s %s", xPasteImgCmd, imagePath)
-	if displayServer == "wayland" {
-		cmd = fmt.Sprintf("%s %s", wlPasteImgCmd, imagePath)
+	// imagePath string cannot contain space chars unless wrapped
+	cmd, ok := pasteImgCmds[displayServer]
+	if !ok {
+		return fmt.Errorf("!! unknown display server; could not save image")
 	}
-	if err := exec.Command("sh", "-c", cmd).Run(); err != nil {
+	cmdFull := fmt.Sprintf(cmd, imagePath)
+	if err := exec.Command("sh", "-c", cmdFull).Run(); err != nil {
 		return err
 	}
 	return nil
 }
+
 func DeleteImage(imagePath string) error {
 	if err := os.Remove(imagePath); err != nil {
 		return err
@@ -60,8 +80,16 @@ func DeleteAllImages(imgDir string) error {
 	}
 	for _, file := range files {
 		if err := os.Remove(filepath.Join(imgDir, file.Name())); err != nil {
-			utils.LogERROR(fmt.Sprintf("failed to delete file %s | %s", file.Name(), err))
+			utils.LogERROR(fmt.Sprintf("!! failed to delete file %s | %s", file.Name(), err))
 		}
 	}
 	return nil
+}
+
+func DarwinImageDataPresent() (bool, []byte) {
+	output, err := exec.Command("sh", "-c", darwinImgCheckCmd).Output()
+	if err != nil {
+		return false, nil
+	}
+	return true, output
 }

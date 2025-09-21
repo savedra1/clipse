@@ -104,6 +104,13 @@ func ExpandRel(relPath, absPath string) string {
 	return absRelPath
 }
 
+func CleanPath(fp string) string {
+	if strings.Contains(fp, " ") {
+		return fmt.Sprintf("'%s'", fp)
+	}
+	return fp
+}
+
 /* NOT IN USE - Remove bad chars - can cause issues with fuzzy finder
 func cleanString(s string) string {
 	regex := regexp.MustCompile("[^a-zA-Z0-9 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~]+")
