@@ -8,7 +8,7 @@ require (
 	github.com/BourgeoisBear/rasterm v1.1.1
 	github.com/atotto/clipboard v0.1.4
 	github.com/charmbracelet/bubbles v0.20.0
-	github.com/charmbracelet/bubbletea v1.3.9
+	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/mitchellh/go-ps v1.0.0
 )
