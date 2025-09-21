@@ -396,6 +396,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				var cmd tea.Cmd
 				m.preview, cmd = m.preview.Update(msg)
 				cmds = append(cmds, cmd)
+				cmds = append(cmds, tea.ClearScreen)
 				m.preview.GotoTop()
 				m.setPreviewKeys(true)
 
