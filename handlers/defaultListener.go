@@ -38,7 +38,7 @@ func RunListener(displayServer string, imgEnabled bool) error {
 	// Goroutine to monitor clipboard
 	go func() {
 		for {
-			input, err := clipboard.ReadAll()
+			input, err := getClipboardData(displayServer)
 			if err != nil {
 				time.Sleep(1 * time.Second) // wait for boot
 			}
@@ -62,6 +62,7 @@ MainLoop:
 				continue
 			}
 			dataType = utils.DataType(input)
+
 			switch dataType {
 			case Text:
 				if err := config.AddClipboardItem(input, "null"); err != nil {
@@ -73,7 +74,7 @@ MainLoop:
 					itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
 					filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
 
-					if err := shell.SaveImage(filePath, displayServer); err != nil {
+					if err := shell.SaveImage(utils.CleanPath(filePath), displayServer); err != nil {
 						utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
 						break
 					}
@@ -88,4 +89,17 @@ MainLoop:
 	}
 
 	return nil
+}
+
+// helper func to handler darwin image data
+func getClipboardData(ds string) (string, error) {
+	if ds != "darwin" {
+		return clipboard.ReadAll()
+	}
+
+	imgDataPresent, data := shell.DarwinImageDataPresent()
+	if !imgDataPresent {
+		return clipboard.ReadAll()
+	}
+	return string(data), nil
 }
