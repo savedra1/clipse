@@ -36,7 +36,7 @@ jobs:
           go-version: 'stable'
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
           version: latest
 
@@ -52,7 +52,7 @@ jobs:
           go-version: 'stable'
 
       - name: golangci-lint-updated-code
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
           version: latest
           only-new-issues: true
