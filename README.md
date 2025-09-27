@@ -111,7 +111,7 @@ See below for instructions on getting clipse installed and configured effectivel
 
 ### Installing on NixOs
 
-Due to how irregularly the stable branch of Nixpkgs is updated, you may find the unstable package is more up to date. The Nix package for `clipse` can be found [here](https://search.nixos.org/packages?channel=24.05&from=0&size=50&sort=relevance&type=packages&query=clipse)
+Due to how irregularly the stable branch of Nixpkgs is updated, you may find the unstable package is more up to date. The Nix package for `clipse` can be found [here](https://search.nixos.org/packages?channel=25.05&from=0&size=50&sort=relevance&type=packages&query=clipse)
 
 __Direct install__
 
