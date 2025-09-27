@@ -96,7 +96,7 @@ You can also easily specify source config like custom paths and max history limi
 
 ### Versatility 🌐
 
-The `clipse` binary, installable from the repository, can run on pretty much any Unix-based OS, though currently optimized for Linux. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown at the top of the page using [Hyprland window manager](https://hyprland.org/) on __NixOs__.
+The `clipse` binary, installable from the repository, can run on pretty much any Unix-based OS, though currently optimized for Linux. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown at the top of the page using [Hyprland window manager](https://hypr.land/) on __NixOs__.
 
 __Note that working with image files will require one of the following dependencies to be installed on your system__:
 
@@ -285,7 +285,7 @@ bind = SUPER, V, exec,  <terminal name> --class clipse -e 'clipse'
 # Example: bind = SUPER, V, exec, alacritty --class clipse -e 'clipse'
 ```
 
-[Hyprland reference](https://wiki.hyprland.org/Configuring/Window-Rules/)
+[Hyprland reference](https://wiki.hypr.land/Configuring/Window-Rules/)
 
 ### i3
 
