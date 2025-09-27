@@ -42,7 +42,7 @@ Does not require any additional dependency, but may require you to use a termina
 
 - Persistent history
 - Supports text and image
-- [Customizable UI theme](#Customization)
+- [Customizable UI theme](#Customization-)
 - [Customizable file paths](#configuration)
 - [Customizable maximum history limit](#configuration)
 - Filter items using a fuzzy find
@@ -51,7 +51,7 @@ Does not require any additional dependency, but may require you to use a termina
 - Bulk copy all active filter matches
 - Pin items/pinned items view
 - Vim-like keybindings for navigation available
-- [Run on any Unix machine](#Versatility) with single binary for the clipboard monitor and TUI
+- [Run on any Unix machine](#Versatility-) with single binary for the clipboard monitor and TUI
 - Optional duplicates
 - Ability to set custom key bindings
 
