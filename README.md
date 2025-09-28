@@ -42,7 +42,7 @@ Does not require any additional dependency, but may require you to use a termina
 
 - Persistent history
 - Supports text and image
-- [Customizable UI theme](#Customization)
+- [Customizable UI theme](#Customization-)
 - [Customizable file paths](#configuration)
 - [Customizable maximum history limit](#configuration)
 - Filter items using a fuzzy find
@@ -51,7 +51,7 @@ Does not require any additional dependency, but may require you to use a termina
 - Bulk copy all active filter matches
 - Pin items/pinned items view
 - Vim-like keybindings for navigation available
-- [Run on any Unix machine](#Versatility) with single binary for the clipboard monitor and TUI
+- [Run on any Unix machine](#Versatility-) with single binary for the clipboard monitor and TUI
 - Optional duplicates
 - Ability to set custom key bindings
 
@@ -96,7 +96,7 @@ You can also easily specify source config like custom paths and max history limi
 
 ### Versatility 🌐
 
-The `clipse` binary, installable from the repository, can run on pretty much any Unix-based OS, though currently optimized for Linux. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown at the top of the page using [Hyprland window manager](https://hyprland.org/) on __NixOs__.
+The `clipse` binary, installable from the repository, can run on pretty much any Unix-based OS, though currently optimized for Linux. Being terminal-based also allows for easy integration with a window manager and configuration of how the TUI behaves. For example, binding a floating window to the `clipse` command as shown at the top of the page using [Hyprland window manager](https://hypr.land/) on __NixOs__.
 
 __Note that working with image files will require one of the following dependencies to be installed on your system__:
 
@@ -111,7 +111,7 @@ See below for instructions on getting clipse installed and configured effectivel
 
 ### Installing on NixOs
 
-Due to how irregularly the stable branch of Nixpkgs is updated, you may find the unstable package is more up to date. The Nix package for `clipse` can be found [here](https://search.nixos.org/packages?channel=24.05&from=0&size=50&sort=relevance&type=packages&query=clipse)
+Due to how irregularly the stable branch of Nixpkgs is updated, you may find the unstable package is more up to date. The Nix package for `clipse` can be found [here](https://search.nixos.org/packages?channel=25.05&from=0&size=50&sort=relevance&type=packages&query=clipse)
 
 __Direct install__
 
@@ -285,7 +285,7 @@ bind = SUPER, V, exec,  <terminal name> --class clipse -e 'clipse'
 # Example: bind = SUPER, V, exec, alacritty --class clipse -e 'clipse'
 ```
 
-[Hyprland reference](https://wiki.hyprland.org/Configuring/Window-Rules/)
+[Hyprland reference](https://wiki.hypr.land/Configuring/Window-Rules/)
 
 ### i3
 
