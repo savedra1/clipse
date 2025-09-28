@@ -30,12 +30,12 @@ var pasteImgCmds = map[string]string{
 func ImagesEnabled(displayServer string) bool {
 	cmd, ok := imgIsEnabledCmd[displayServer]
 	if !ok {
-		utils.LogWARN("unknown display server!")
+		utils.LogWARN(fmt.Sprintf("unknown display server: %s", displayServer))
 		return false
 	}
 	execCmd := exec.Command("sh", "-c", cmd)
 	if err := execCmd.Run(); err != nil {
-		utils.LogERROR("!! system is missing image dependency")
+		utils.LogERROR(fmt.Sprintf("%s system is missing image dependency", displayServer))
 		return false
 	}
 	return true
@@ -44,7 +44,7 @@ func ImagesEnabled(displayServer string) bool {
 func CopyImage(imagePath, displayServer string) error {
 	cmd, ok := copyImgCmds[displayServer]
 	if !ok {
-		return fmt.Errorf("!! unknown display server; could not copy image")
+		return fmt.Errorf("unknown display server: %s; could not copy image", displayServer)
 	}
 	cmdFull := fmt.Sprintf(cmd, imagePath)
 	if err := exec.Command("sh", "-c", cmdFull).Run(); err != nil {
@@ -57,7 +57,7 @@ func SaveImage(imagePath, displayServer string) error {
 	// imagePath string cannot contain space chars unless wrapped
 	cmd, ok := pasteImgCmds[displayServer]
 	if !ok {
-		return fmt.Errorf("!! unknown display server; could not save image")
+		return fmt.Errorf("unknown display server: %s; could not save image", displayServer)
 	}
 	cmdFull := fmt.Sprintf(cmd, imagePath)
 	if err := exec.Command("sh", "-c", cmdFull).Run(); err != nil {
@@ -80,7 +80,7 @@ func DeleteAllImages(imgDir string) error {
 	}
 	for _, file := range files {
 		if err := os.Remove(filepath.Join(imgDir, file.Name())); err != nil {
-			utils.LogERROR(fmt.Sprintf("!! failed to delete file %s | %s", file.Name(), err))
+			utils.LogERROR(fmt.Sprintf("failed to delete file %s | %s", file.Name(), err))
 		}
 	}
 	return nil
