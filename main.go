@@ -243,15 +243,16 @@ func handleForceClose() {
 func handleOutputAll(format string) {
 	items := config.TextItems()
 
-	if format == "raw" {
+	switch format {
+	case "raw":
 		for _, v := range items {
 			fmt.Printf("%q\n", v.Value)
 		}
-	} else if format == "unescaped" {
+	case "unescaped":
 		for _, v := range items {
 			fmt.Println(v.Value)
 		}
-	} else {
+	default:
 		fmt.Printf("Invalid argument to -output-all\nSee %s --help for usage", os.Args[0])
 	}
 }

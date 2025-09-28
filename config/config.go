@@ -33,7 +33,7 @@ var ClipseConfig = defaultConfig()
 
 func Init() (string, string, error) {
 	/* Ensure $HOME/.config/clipse/clipboard_history.json OR $XDG_CONFIG_HOME
-		exists and create the path if not.
+	exists and create the path if not.
 	*/
 
 	// returns $HOME/.config || $XDG_CONFIG_HOME

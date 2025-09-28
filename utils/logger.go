@@ -29,7 +29,8 @@ func LogINFO(message string) {
 		logger.Printf("INFO: %s", message)
 		return
 	}
-	log.Fatalf("INFO: %s", message)}
+	log.Fatalf("INFO: %s", message)
+}
 
 func LogWARN(message string) {
 	if logger != nil {
