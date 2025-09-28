@@ -39,9 +39,10 @@ var (
 
 func main() {
 	flag.Parse()
-	logPath, displayServer, imgEnabled, err := config.Init()
+	logPath, displayServer, err := config.Init()
 	utils.HandleError(err)
 	utils.SetUpLogger(logPath)
+	imgEnabled := shell.ImagesEnabled(displayServer)
 
 	switch {
 
