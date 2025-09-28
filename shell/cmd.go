@@ -123,6 +123,9 @@ func RunNohupListener(displayServer string) {
 		// run optimized wl-clipboard listener
 		utils.HandleError(nohupCmdWL("image/png").Start())
 		utils.HandleError(nohupCmdWL("text").Start())
+	case "darwin":
+		cmd := exec.Command("nohup", os.Args[0], darwinListenCmd, ">/dev/null", "2>&1", "&")
+		utils.HandleError(cmd.Start())
 	default:
 		// run default poll listener
 		cmd := exec.Command("nohup", os.Args[0], listenShellCmd, ">/dev/null", "2>&1", "&")

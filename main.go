@@ -25,6 +25,7 @@ var (
 	paste         = flag.Bool("p", false, "Prints the current clipboard content.")
 	listen        = flag.Bool("listen", false, "Start background process for monitoring clipboard activity on wayland/x11/macOS.")
 	listenShell   = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
+	listenDarwin  = flag.Bool("listen-darwin", false, "Starts a clipboard monitor process in the current shell for Darwin systems.")
 	kill          = flag.Bool("kill", false, "Kill any existing background processes.")
 	clearUnpinned = flag.Bool("clear", false, "Remove all contents from the clipboard history except for pinned items.")
 	clearAll      = flag.Bool("clear-all", false, "Remove all contents the clipboard history including pinned items.")
@@ -39,9 +40,11 @@ var (
 
 func main() {
 	flag.Parse()
+
 	logPath, displayServer, err := config.Init()
 	utils.HandleError(err)
 	utils.SetUpLogger(logPath)
+
 	imgEnabled := shell.ImagesEnabled(displayServer)
 
 	switch {
@@ -77,6 +80,9 @@ func main() {
 
 	case *listenShell:
 		handleListenShell(displayServer, imgEnabled)
+
+	case *listenDarwin:
+		handleDarwinListner(displayServer, imgEnabled)
 
 	case *kill:
 		handleKill()
@@ -172,6 +178,10 @@ func handleListen(displayServer string) {
 
 func handleListenShell(displayServer string, imgEnabled bool) {
 	utils.HandleError(handlers.RunListener(displayServer, imgEnabled))
+}
+
+func handleDarwinListner(displayServer string, imgEnabled bool) {
+	utils.HandleError(handlers.RunDarwinListner(displayServer, imgEnabled))
 }
 
 func handleKill() {
