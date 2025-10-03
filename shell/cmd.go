@@ -80,7 +80,7 @@ func KillExistingFG() {
 			continue
 		}
 		pidCmd := strings.Split(string(psOutput), "\n")[1] // skip headers (macOS's ps doesn't support --no-headers)
-		if strings.Contains(pidCmd, listenShellCmd) || strings.Contains(pidCmd, wlStoreCmd) {
+		if strings.Contains(pidCmd, listenShellCmd) || strings.Contains(pidCmd, wlStoreCmd) || strings.Contains(pidCmd, darwinListenCmd) {
 			continue
 		}
 

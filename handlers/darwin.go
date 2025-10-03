@@ -21,11 +21,6 @@ char* getClipboardText() {
     return strdup(utf8String);
 }
 
-long getClipboardChangeCount() {
-    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-    return [pasteboard changeCount];
-}
-
 // Returns 1 if changed, 0 if not
 int hasClipboardChanged() {
     NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
@@ -37,18 +32,50 @@ int hasClipboardChanged() {
     }
     return 0;
 }
+
+unsigned char* getClipboardImage(int *outLen) {
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSData *data = [pb dataForType:NSPasteboardTypePNG];
+    if (data == nil) {
+        return NULL;
+    }
+    *outLen = (int)[data length];
+    unsigned char *buffer = (unsigned char *)malloc(*outLen);
+    if (buffer == NULL) {
+        *outLen = 0;
+        return NULL;
+    }
+    memcpy(buffer, [data bytes], *outLen);
+    return buffer;
+}
+
+// returns 1 if text, 2 if image, 0 if unknown/empty
+int getClipboardType() {
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSArray *types = [pb types];
+    if ([types containsObject:NSPasteboardTypeString]) {
+        return 1;
+    }
+    if ([types containsObject:NSPasteboardTypePNG] || [types containsObject:NSPasteboardTypeTIFF]) {
+        return 2;
+    }
+    return 0;
+}
 */
 import "C"
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+	"unsafe"
 
 	"github.com/savedra1/clipse/config"
-	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
+
+var darwinPollInterval = 50
 
 func GetClipboardText() string {
 	cstr := C.getClipboardText()
@@ -62,42 +89,71 @@ func HasClipboardChanged() bool {
 	return C.hasClipboardChanged() == 1
 }
 
+func readClipboardImage() []byte {
+	var length C.int
+	data := C.getClipboardImage(&length)
+	if data == nil {
+		return nil
+	}
+	defer C.free(unsafe.Pointer(data))
+	return C.GoBytes(unsafe.Pointer(data), length)
+}
+
+func saveDarwinImage(imgData []byte) error {
+	byteLength := strconv.Itoa(len(string(imgData)))
+	fileName := fmt.Sprintf("%s-%s.png", byteLength, utils.GetTimeStamp())
+	itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
+	filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
+
+	if err := os.WriteFile(filePath, imgData, 0644); err != nil {
+		return err
+	}
+
+	if err := config.AddClipboardItem(itemTitle, filePath); err != nil {
+		return err
+	}
+	return nil
+}
+
+func saveDarwinText(textData string) error {
+	if err := config.AddClipboardItem(textData, "null"); err != nil {
+		return err
+	}
+	return nil
+}
+
 func RunDarwinListner(displayServer string, imgEnabled bool) error {
+	var prevText string
+	var prevImg []byte
 	for {
 		if HasClipboardChanged() {
-			text := GetClipboardText()
-			if text != "" {
-				if err := config.AddClipboardItem(text, "null"); err != nil {
-					utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", text, err))
-					return err
+			clipboardType := C.getClipboardType()
+
+			switch clipboardType {
+			case 1: // text
+				text := GetClipboardText()
+				if text == prevText {
+					break
 				}
-				continue
-			}
+				prevText = text
+				if err := saveDarwinText(text); err != nil {
+					utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", text, err))
+				}
 
-			if !imgEnabled {
-				continue
-			}
+			case 2: // image
+				img := readClipboardImage()
+				if string(img) == string(prevImg) {
+					break
+				}
+				prevImg = img
+				if err := saveDarwinImage(img); err != nil {
+					utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
+				}
 
-			imgDataPresent, data := shell.DarwinImageDataPresent()
-			if !imgDataPresent {
-				continue
+			default:
+				utils.LogWARN("Unknown data type found in darwin clipboard")
 			}
-			// TODO: create func to avoid repeat code
-			fileName := fmt.Sprintf("%s-%s.%s", strconv.Itoa(len(data)), utils.GetTimeStamp(), dataType)
-			itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
-			filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
-
-			if err := shell.SaveImage(utils.CleanPath(filePath), displayServer); err != nil {
-				utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
-				return err
-			}
-			if err := config.AddClipboardItem(itemTitle, filePath); err != nil {
-				utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
-				return err
-			}
-
 		}
-
-		time.Sleep(defaultPollInterval * time.Millisecond)
+		time.Sleep(time.Duration(darwinPollInterval) * time.Millisecond)
 	}
 }

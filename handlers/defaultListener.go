@@ -97,9 +97,9 @@ func getClipboardData(ds string) (string, error) {
 		return clipboard.ReadAll()
 	}
 
-	imgDataPresent, data := shell.DarwinImageDataPresent()
-	if !imgDataPresent {
+	imgData := shell.DarwinImageDataPresent()
+	if imgData == nil {
 		return clipboard.ReadAll()
 	}
-	return string(data), nil
+	return string(imgData), nil
 }

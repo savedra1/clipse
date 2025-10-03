@@ -28,6 +28,9 @@ var pasteImgCmds = map[string]string{
 }
 
 func ImagesEnabled(displayServer string) bool {
+	if displayServer == "darwin" {
+		return true
+	}
 	cmd, ok := imgIsEnabledCmd[displayServer]
 	if !ok {
 		utils.LogWARN(fmt.Sprintf("unknown display server: %s", displayServer))
@@ -86,10 +89,10 @@ func DeleteAllImages(imgDir string) error {
 	return nil
 }
 
-func DarwinImageDataPresent() (bool, []byte) {
+func DarwinImageDataPresent() []byte {
 	output, err := exec.Command("sh", "-c", darwinImgCheckCmd).Output()
 	if err != nil {
-		return false, nil
+		return nil
 	}
-	return true, output
+	return output
 }
