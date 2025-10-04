@@ -70,10 +70,10 @@ func main() {
 		handleAdd()
 
 	case *paste:
-		handlePaste()
+		handlePaste(displayServer)
 
 	case *copyInput:
-		handleCopy()
+		handleCopy(displayServer)
 
 	case *listen:
 		handleListen(displayServer)
@@ -209,7 +209,7 @@ func handleClear() {
 	utils.HandleError(config.ClearHistory(clearType))
 }
 
-func handleCopy() {
+func handleCopy(ds string) {
 	var input string
 	switch {
 	case len(os.Args) < 3:
@@ -217,17 +217,24 @@ func handleCopy() {
 	default:
 		input = os.Args[2]
 	}
-	if input != "" {
-		fmt.Println(input)
+	switch ds {
+	case "darwin":
+		handlers.DarwinCopyText(input)
+	default:
 		utils.HandleError(clipboard.WriteAll(input))
 	}
 }
 
-func handlePaste() {
-	currentItem, err := clipboard.ReadAll()
-	utils.HandleError(err)
-	if currentItem != "" {
-		fmt.Println(currentItem)
+func handlePaste(ds string) {
+	switch ds {
+	case "darwin":
+		handlers.DarwinPaste()
+	default:
+		currentItem, err := clipboard.ReadAll()
+		utils.HandleError(err)
+		if currentItem != "" {
+			fmt.Println(currentItem)
+		}
 	}
 }
 

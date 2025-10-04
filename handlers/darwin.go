@@ -61,6 +61,21 @@ int getClipboardType() {
     }
     return 0;
 }
+
+// set clipboard content
+void setClipboardText(const char* text) {
+    if (text == NULL) {
+        return;
+    }
+
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    [pasteboard clearContents];
+
+    NSString *string = [NSString stringWithUTF8String:text];
+    if (string != nil) {
+        [pasteboard setString:string forType:NSPasteboardTypeString];
+    }
+}
 */
 import "C"
 import (
@@ -156,4 +171,27 @@ func RunDarwinListner(displayServer string, imgEnabled bool) error {
 		}
 		time.Sleep(time.Duration(darwinPollInterval) * time.Millisecond)
 	}
+}
+
+func DarwinPaste() error {
+	clipboardType := C.getClipboardType()
+
+	switch clipboardType {
+	case 1: // text
+		_, err := fmt.Println(GetClipboardText())
+		utils.HandleError(err)
+
+	case 2: // image
+		img := readClipboardImage()
+		_, err := fmt.Println(string(img))
+		utils.HandleError(err)
+	}
+
+	return nil
+}
+
+func DarwinCopyText(s string) {
+	cstr := C.CString(s)
+	defer C.free(unsafe.Pointer(cstr))
+	C.setClipboardText(cstr)
 }
