@@ -23,6 +23,13 @@ func StoreWLData() {
 		return
 	}
 
+	// Check if the clipboard content should be excluded based on source application
+	activeWindow := utils.GetActiveWindowTitle()
+	if utils.IsAppExcluded(activeWindow, config.ClipseConfig.ExcludedApps) {
+		utils.LogINFO(fmt.Sprintf("Skipping clipboard content from excluded app: %s", activeWindow))
+		return
+	}
+
 	input, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		utils.LogERROR(fmt.Sprintf("failed to read stdin: %s", err))
