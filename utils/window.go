@@ -75,7 +75,10 @@ func getActiveWindowTitleWayland() string {
 	if title := tryHyprctl(); title != "" {
 		return title
 	}
-	LogWARN("Failed to get active window on Wayland: no suitable tool found")
+	if title := tryWlrctl(); title != "" {
+		return title
+	}
+	LogWARN("Failed to get active window on Wayland: no suitable tool found (Hyprctl, Wlrctl)")
 	return ""
 }
 
@@ -84,11 +87,16 @@ func getActiveWindowTitleX11() string {
 	if title := tryXdotool(); title != "" {
 		return title
 	}
-	LogWARN("Failed to get active window on X11: no suitable tool found")
+	if title := tryXprop(); title != "" {
+		return title
+	}
+	LogWARN("Failed to get active window on X11: no suitable tool found (Xdotool, Xprop)")
 	return ""
 }
 
-// tryHyprctl tries getting the window title using hyprctl - Utility for controlling parts of Hyprland from a CLI or a script
+// tryHyprctl tries getting the window title for Hyprland using hyprctl - Utility for controlling parts of Hyprland from a CLI or a script
+// hyprctl is typically installed by default on Hyprland distros
+// Example output: { "class": "Alacritty", "title": "user@arch:~", ... }
 func tryHyprctl() string {
 	output := execOutput("hyprctl", "activewindow", "-j")
 	if output == "" {
@@ -109,9 +117,65 @@ func tryHyprctl() string {
 	return windowInfo.Title
 }
 
-// tryXdotool tries getting the window title using xdotool - Command-line X11 automation tool
+// tryWlrctl tries getting the window title for wl-roots compositors using wlrctl - Utility for miscellaneous wlroots extensions
+// wlrctl can be installed on any wl-roots system but may not be installed by default
+// Example output: Alacritty: user@arch:~
+func tryWlrctl() string {
+	output := execOutput("wlrctl", "toplevel", "list", "state:focused")
+	lines := strings.Split(output, "\n")
+
+	// Find first non-empty line and process it
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) == 0 {
+			continue
+		}
+
+		// Get first word and remove trailing colon
+		appName := strings.TrimSuffix(fields[0], ":")
+		return appName
+	}
+
+	return ""
+}
+
+// tryXdotool tries getting the window title for X11 systems using xdotool - Command-line X11 automation tool
+// xdotool is installed by default on some distros but it is rather uncommon
+// Example output: Alacritty
 func tryXdotool() string {
 	return execOutput("xdotool", "getactivewindow", "getwindowname")
+}
+
+// tryXprop tries getting the window title for X11 systems using xprop - property displayer for X
+// xprop is widely available on X11 desktop environments
+// Example output: _NET_ACTIVE_WINDOW(WINDOW): window id # 0x1a00005 (then) WM_NAME(STRING) = "Alacritty"
+func tryXprop() string {
+	activeWindowOutput := execOutput("xprop", "-root", "_NET_ACTIVE_WINDOW")
+
+	// Find the "#" and extract the first hex ID after it (there can be more than one, space separated)
+	hashIndex := strings.Index(activeWindowOutput, "#")
+	if hashIndex == -1 {
+		return ""
+	}
+	hexIds := strings.Fields(activeWindowOutput[hashIndex+1:])
+	if len(hexIds) == 0 {
+		return ""
+	}
+	windowID := hexIds[0]
+
+	wmNameOutput := execOutput("xprop", "-id", windowID, "WM_NAME")
+
+	// Return the text between the first and last double-quotes
+	firstQuote := strings.Index(wmNameOutput, `"`)
+	if firstQuote == -1 {
+		return ""
+	}
+	lastQuote := strings.LastIndex(wmNameOutput, `"`)
+	if lastQuote > firstQuote {
+		return wmNameOutput[firstQuote+1 : lastQuote]
+	}
+
+	return ""
 }
 
 func execOutput(name string, args ...string) string {
