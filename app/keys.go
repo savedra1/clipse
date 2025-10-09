@@ -1,6 +1,8 @@
 package app
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 )
@@ -43,6 +45,33 @@ func getHelpChar(configChar string) string {
 		return val
 	}
 	return configChar
+}
+
+func dedupeNonEmptyKeys(keys ...string) []string {
+	seen := make(map[string]struct{}, len(keys))
+	var result []string
+	for _, k := range keys {
+		if k == "" {
+			continue
+		}
+		if _, ok := seen[k]; ok {
+			continue
+		}
+		seen[k] = struct{}{}
+		result = append(result, k)
+	}
+	return result
+}
+
+func formatHelpKeys(keys []string) string {
+	if len(keys) == 0 {
+		return ""
+	}
+	help := make([]string, len(keys))
+	for i, k := range keys {
+		help[i] = getHelpChar(k)
+	}
+	return strings.Join(help, " / ")
 }
 
 func newKeyMap(config map[string]string) *keyMap {
@@ -209,9 +238,29 @@ type previewKeymap struct {
 	pageUp   key.Binding
 	back     key.Binding
 	choose   key.Binding
+	quit     key.Binding
 }
 
 func newPreviewKeyMap(config map[string]string) *previewKeymap {
+	backKeys := dedupeNonEmptyKeys(config["preview"], config["previewBack"], config["quit"])
+	quitKeys := dedupeNonEmptyKeys(config["previewQuit"])
+
+	backBinding := key.NewBinding(key.WithDisabled())
+	if len(backKeys) > 0 {
+		backBinding = key.NewBinding(
+			key.WithKeys(backKeys...),
+			key.WithHelp(formatHelpKeys(backKeys), "back"),
+		)
+	}
+
+	quitBinding := key.NewBinding(key.WithDisabled())
+	if len(quitKeys) > 0 {
+		quitBinding = key.NewBinding(
+			key.WithKeys(quitKeys...),
+			key.WithHelp(formatHelpKeys(quitKeys), "quit"),
+		)
+	}
+
 	return &previewKeymap{
 		up: key.NewBinding(
 			key.WithKeys(config["up"]),
@@ -229,23 +278,24 @@ func newPreviewKeyMap(config map[string]string) *previewKeymap {
 			key.WithKeys(config["prevPage"]),
 			key.WithHelp(getHelpChar(config["prevPage"]), "page up"),
 		),
-		back: key.NewBinding(
-			key.WithKeys(config["preview"], config["quit"]),
-			key.WithHelp(getHelpChar(config["preview"])+" / "+getHelpChar(config["quit"]), "back"),
-		),
+		back: backBinding,
 		choose: key.NewBinding(
 			key.WithKeys(config["choose"]),
 			key.WithHelp(getHelpChar(config["choose"]), "copy"),
 		),
+		quit: quitBinding,
 	}
 }
 
 func (pk previewKeymap) PreviewHelp() []key.Binding {
-	return []key.Binding{
-		pk.up, pk.down,
-		pk.pageDown, pk.pageUp,
-		pk.choose,
+	bindings := []key.Binding{pk.up, pk.down, pk.pageDown, pk.pageUp, pk.choose}
+	if len(pk.back.Keys()) > 0 {
+		bindings = append(bindings, pk.back)
 	}
+	if len(pk.quit.Keys()) > 0 {
+		bindings = append(bindings, pk.quit)
+	}
+	return bindings
 }
 
 func defaultOverrides(config map[string]string) list.KeyMap {
