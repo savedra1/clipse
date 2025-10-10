@@ -2,7 +2,6 @@ package app
 
 import (
 	"strings"
-
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 )
