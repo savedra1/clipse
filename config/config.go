@@ -49,7 +49,7 @@ func Init() (string, string, error) {
 	// Does Config dir exist, if no make it.
 	_, err = os.Stat(clipseDir)
 	if os.IsNotExist(err) {
-		utils.HandleError(os.MkdirAll(clipseDir, 0755))
+		utils.HandleError(os.MkdirAll(clipseDir, 0o755))
 	}
 
 	// load the config from file into ClipseConfig struct
@@ -61,7 +61,7 @@ func Init() (string, string, error) {
 	// Create TempDir for images if it does not exist.
 	_, err = os.Stat(ClipseConfig.TempDirPath)
 	if os.IsNotExist(err) {
-		utils.HandleError(os.MkdirAll(ClipseConfig.TempDirPath, 0755))
+		utils.HandleError(os.MkdirAll(ClipseConfig.TempDirPath, 0o755))
 	}
 
 	return ClipseConfig.LogFilePath, DisplayServer(), nil
@@ -74,7 +74,7 @@ func loadConfig(configPath string) {
 		baseConfig := defaultConfig()
 		jsonData, err := json.MarshalIndent(baseConfig, "", "    ")
 		utils.HandleError(err)
-		utils.HandleError(os.WriteFile(configPath, jsonData, 0644))
+		utils.HandleError(os.WriteFile(configPath, jsonData, 0o644))
 	}
 
 	configDir := filepath.Dir(configPath)
@@ -91,6 +91,19 @@ func loadConfig(configPath string) {
 	ClipseConfig.TempDirPath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), configDir)
 	ClipseConfig.ThemeFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.ThemeFilePath), configDir)
 	ClipseConfig.LogFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.LogFilePath), configDir)
+	mergeKeyBindingDefaults()
+}
+
+func mergeKeyBindingDefaults() {
+	defaults := defaultKeyBindings()
+	if ClipseConfig.KeyBindings == nil {
+		ClipseConfig.KeyBindings = make(map[string]string, len(defaults))
+	}
+	for k, v := range defaults {
+		if _, ok := ClipseConfig.KeyBindings[k]; !ok {
+			ClipseConfig.KeyBindings[k] = v
+		}
+	}
 }
 
 func DisplayServer() string {

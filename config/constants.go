@@ -26,6 +26,8 @@ func defaultKeyBindings() map[string]string {
 		"togglePin":     "p",
 		"togglePinned":  "tab",
 		"preview":       " ",
+		"previewBack":   "q",
+		"previewQuit":   "Q",
 		"selectDown":    "shift+down",
 		"selectUp":      "shift+up",
 		"selectSingle":  "s",
