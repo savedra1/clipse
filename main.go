@@ -142,8 +142,14 @@ func launchTUI() {
 	if *realTime {
 		go newModel.ListenRealTime(p)
 	}
-	_, err := p.Run()
+	finalModel, err := p.Run()
 	utils.HandleError(err)
+
+	if m, ok := finalModel.(app.Model); ok {
+		if m.ExitCode != 0 {
+			os.Exit(m.ExitCode)
+		}
+	}
 }
 
 func handleAdd() {
