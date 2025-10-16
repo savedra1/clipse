@@ -12,7 +12,7 @@ const (
 	wlPasteImgCmd     = "wl-paste -t image/png > %s"
 	wlStoreCmd        = "--wl-store" // internal
 	wlTypeSpec        = "--type"
-	xVersionCmd       = "xclip -v"
+	xVersionCmd       = "xclip -version"
 	xCopyImgCmd       = "xclip -selection clipboard -t image/png -i %s"
 	xPasteImgCmd      = "xclip -selection clipboard -t image/png -o > %s"
 	darwinVersionCmd  = "pngpaste -v"
