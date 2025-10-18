@@ -49,6 +49,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.preview.Height = msg.Height - verticalMarginHeight
 
 	case tea.KeyMsg:
+		rawEsc := msg.Type == tea.KeyEscape
+		escToQuit := false
+
+		if rawEsc && m.list.ShowHelp() {
+			m.list.Help.ShowAll = false
+			m.list.SetShowHelp(false)
+			m.updatePaginator()
+			return m, tea.Batch(cmds...)
+		}
+
+		if rawEsc && !m.showPreview && !m.showConfirmation && !m.list.SettingFilter() && !m.list.ShowHelp() {
+			escToQuit = true
+		}
+
 		if key.Matches(msg, m.keys.filter) && m.list.ShowHelp() {
 			m.list.Help.ShowAll = false // change default back to short help to keep in sync
 			m.list.SetShowHelp(false)
@@ -95,7 +109,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch {
 			case key.Matches(msg, m.previewKeys.quit):
 				return m, tea.Quit
-			case key.Matches(msg, m.previewKeys.back):
+			case key.Matches(msg, m.previewKeys.back), rawEsc:
 				if cmd := m.hidePreview(msg, shouldResizePreview); cmd != nil {
 					cmds = append(cmds, cmd)
 				}
@@ -419,7 +433,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.setPreviewKeys(false)
 
-		case key.Matches(msg, m.keys.quit):
+		case key.Matches(msg, m.keys.quit) || escToQuit:
 			switch {
 			case m.showPreview:
 				if cmd := m.hidePreview(msg, shouldResizePreview); cmd != nil {
