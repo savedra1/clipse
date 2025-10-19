@@ -32,6 +32,7 @@ type Model struct {
 	showPreview      bool                // whether the viewport preview should be displayed
 	previewKeys      *previewKeymap      // keybindings for the viewport model
 	lastUpdated      time.Time
+	ExitCode         int
 }
 
 type item struct {
@@ -88,6 +89,7 @@ func NewModel() Model {
 		preview:          NewPreview(),
 		showPreview:      false,
 		previewKeys:      newPreviewKeyMap(keyConfig),
+		ExitCode:         0,
 	}
 
 	entryItems := filterItems(clipboardItems, false, m.theme)

@@ -429,6 +429,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Batch(cmds...)
 
 			default:
+				m.ExitCode = 1
 				return m, tea.Quit
 			}
 		}
