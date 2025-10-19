@@ -93,8 +93,6 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
-var darwinPollInterval = 50
-
 func GetClipboardText() string {
 	cstr := C.getClipboardText()
 	if cstr == nil {
@@ -172,7 +170,7 @@ func RunDarwinListener(displayServer string, imgEnabled bool) error {
 				utils.LogWARN("Unknown data type found in darwin clipboard")
 			}
 		}
-		time.Sleep(time.Duration(darwinPollInterval) * time.Millisecond)
+		time.Sleep(time.Duration(config.ClipseConfig.PollInterval) * time.Millisecond)
 	}
 }
 
