@@ -19,4 +19,5 @@ const (
 	darwinCopyImgCmd  = "osascript -e 'set the clipboard to (read (POSIX file \"%s\") as «class PNGf»)'"
 	darwinPasteImgCmd = "pngpaste %s"
 	darwinImgCheckCmd = "pngpaste -"
+	darwinListenCmd   = "--listen-darwin"
 )

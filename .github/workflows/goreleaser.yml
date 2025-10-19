@@ -3,7 +3,7 @@ name: Release Workflow
 on:
   push:
     tags:
-      - 'v*.*.*' # Trigger workflow on tags that start with 'v'
+      - "v*.*.*" # Trigger workflow on tags that start with 'v'
 
 permissions:
   contents: write
@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: stable
-      
+
       #- name: Install modules # This is needed before running goreleaser as parallel builds crash the process when having to install deps
       #  run: go mod tidy
 

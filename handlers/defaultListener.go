@@ -40,17 +40,17 @@ func RunListener(displayServer string, imgEnabled bool) error {
 		for {
 			input, err := getClipboardData(displayServer)
 			if err != nil {
-				time.Sleep(1 * time.Second) // wait for boot
+				time.Sleep(time.Duration(1 * time.Second)) // wait for boot
 			}
 			if input != prevClipboardContent {
 				clipboardData <- input       // Pass clipboard data to main goroutine
 				prevClipboardContent = input // update previous content
 			}
 			if dataType == Text {
-				time.Sleep(defaultPollInterval)
+				time.Sleep(time.Duration(config.ClipseConfig.PollInterval))
 				continue
 			}
-			time.Sleep(mediaPollInterval)
+			time.Sleep(time.Duration(config.ClipseConfig.PollInterval * 10))
 		}
 	}()
 
@@ -97,9 +97,9 @@ func getClipboardData(ds string) (string, error) {
 		return clipboard.ReadAll()
 	}
 
-	imgDataPresent, data := shell.DarwinImageDataPresent()
-	if !imgDataPresent {
+	imgData := shell.DarwinImageDataPresent()
+	if imgData == nil {
 		return clipboard.ReadAll()
 	}
-	return string(data), nil
+	return string(imgData), nil
 }

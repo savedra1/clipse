@@ -25,6 +25,7 @@ var (
 	paste         = flag.Bool("p", false, "Prints the current clipboard content.")
 	listen        = flag.Bool("listen", false, "Start background process for monitoring clipboard activity on wayland/x11/macOS.")
 	listenShell   = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
+	listenDarwin  = flag.Bool("listen-darwin", false, "Starts a clipboard monitor process in the current shell for Darwin systems.")
 	kill          = flag.Bool("kill", false, "Kill any existing background processes.")
 	clearUnpinned = flag.Bool("clear", false, "Remove all contents from the clipboard history except for pinned items.")
 	clearAll      = flag.Bool("clear-all", false, "Remove all contents the clipboard history including pinned items.")
@@ -39,9 +40,11 @@ var (
 
 func main() {
 	flag.Parse()
+
 	logPath, displayServer, err := config.Init()
 	utils.HandleError(err)
 	utils.SetUpLogger(logPath)
+
 	imgEnabled := shell.ImagesEnabled(displayServer)
 
 	switch {
@@ -67,16 +70,19 @@ func main() {
 		handleAdd()
 
 	case *paste:
-		handlePaste()
+		handlePaste(displayServer)
 
 	case *copyInput:
-		handleCopy()
+		handleCopy(displayServer)
 
 	case *listen:
 		handleListen(displayServer)
 
 	case *listenShell:
 		handleListenShell(displayServer, imgEnabled)
+
+	case *listenDarwin:
+		handleDarwinListener(displayServer, imgEnabled)
 
 	case *kill:
 		handleKill()
@@ -174,6 +180,10 @@ func handleListenShell(displayServer string, imgEnabled bool) {
 	utils.HandleError(handlers.RunListener(displayServer, imgEnabled))
 }
 
+func handleDarwinListener(displayServer string, imgEnabled bool) {
+	utils.HandleError(handlers.RunDarwinListener(displayServer, imgEnabled))
+}
+
 func handleKill() {
 	shell.KillAll(os.Args[0])
 }
@@ -199,7 +209,7 @@ func handleClear() {
 	utils.HandleError(config.ClearHistory(clearType))
 }
 
-func handleCopy() {
+func handleCopy(ds string) {
 	var input string
 	switch {
 	case len(os.Args) < 3:
@@ -207,17 +217,24 @@ func handleCopy() {
 	default:
 		input = os.Args[2]
 	}
-	if input != "" {
-		fmt.Println(input)
+	switch ds {
+	case "darwin":
+		handlers.DarwinCopyText(input)
+	default:
 		utils.HandleError(clipboard.WriteAll(input))
 	}
 }
 
-func handlePaste() {
-	currentItem, err := clipboard.ReadAll()
-	utils.HandleError(err)
-	if currentItem != "" {
-		fmt.Println(currentItem)
+func handlePaste(ds string) {
+	switch ds {
+	case "darwin":
+		handlers.DarwinPaste()
+	default:
+		currentItem, err := clipboard.ReadAll()
+		utils.HandleError(err)
+		if currentItem != "" {
+			fmt.Println(currentItem)
+		}
 	}
 }
 
