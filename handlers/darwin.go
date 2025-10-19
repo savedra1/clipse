@@ -137,7 +137,7 @@ func saveDarwinText(textData string) error {
 	return nil
 }
 
-func RunDarwinListner(displayServer string, imgEnabled bool) error {
+func RunDarwinListener(displayServer string, imgEnabled bool) error {
 	var prevText string
 	var prevImg []byte
 	for {

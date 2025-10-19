@@ -82,7 +82,7 @@ func main() {
 		handleListenShell(displayServer, imgEnabled)
 
 	case *listenDarwin:
-		handleDarwinListner(displayServer, imgEnabled)
+		handleDarwinListener(displayServer, imgEnabled)
 
 	case *kill:
 		handleKill()
@@ -180,8 +180,8 @@ func handleListenShell(displayServer string, imgEnabled bool) {
 	utils.HandleError(handlers.RunListener(displayServer, imgEnabled))
 }
 
-func handleDarwinListner(displayServer string, imgEnabled bool) {
-	utils.HandleError(handlers.RunDarwinListner(displayServer, imgEnabled))
+func handleDarwinListener(displayServer string, imgEnabled bool) {
+	utils.HandleError(handlers.RunDarwinListener(displayServer, imgEnabled))
 }
 
 func handleKill() {
