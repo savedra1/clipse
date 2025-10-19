@@ -1,3 +1,6 @@
+// handlers/darwin.go
+//go:build darwin && cgo
+
 package handlers
 
 /*

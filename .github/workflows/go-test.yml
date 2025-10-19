@@ -7,11 +7,12 @@ on:
     paths:
       - "**/*.go"
 
+env:
+  CGO_ENABLED: "0"
+
 jobs:
   go-test:
     runs-on: ubuntu-latest
-    env:
-      CGO_ENABLED: "1"
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -27,8 +28,6 @@ jobs:
 
   golangci-all-codebase:
     runs-on: ubuntu-latest
-    env:
-      CGO_ENABLED: "1"
     continue-on-error: true
     steps:
       - name: Checkout code
@@ -46,8 +45,6 @@ jobs:
 
   golangci-updated-code:
     runs-on: ubuntu-latest
-    env:
-      CGO_ENABLED: "1"
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
