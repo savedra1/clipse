@@ -2,14 +2,16 @@ name: Test go build
 
 on:
   pull_request:
-    branches: 
+    branches:
       - main
     paths:
-      - '**/*.go'
+      - "**/*.go"
 
 jobs:
   go-test:
     runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: "1"
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -17,7 +19,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: 'stable'
+          go-version: "stable"
 
       - name: Run go test (syntax check)
         id: test-syntax
@@ -25,6 +27,8 @@ jobs:
 
   golangci-all-codebase:
     runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: "1"
     continue-on-error: true
     steps:
       - name: Checkout code
@@ -33,7 +37,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: 'stable'
+          go-version: "stable"
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
@@ -42,6 +46,8 @@ jobs:
 
   golangci-updated-code:
     runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: "1"
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -49,7 +55,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: 'stable'
+          go-version: "stable"
 
       - name: golangci-lint-updated-code
         uses: golangci/golangci-lint-action@v8
