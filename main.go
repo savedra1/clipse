@@ -19,6 +19,7 @@ import (
 var (
 	version       = "v1.1.0"
 	help          = flag.Bool("help", false, "Show help message.")
+  debug         = flag.Bool("debug", false, "Print debug messages.")
 	v             = flag.Bool("v", false, "Show app version.")
 	add           = flag.Bool("a", false, "Add the following arg to the clipboard history.")
 	copyInput     = flag.Bool("c", false, "Copy the input to your systems clipboard.")
@@ -43,13 +44,13 @@ func main() {
 
 	logPath, displayServer, err := config.Init()
 	utils.HandleError(err)
-	utils.SetUpLogger(logPath)
+	utils.SetUpLogger(logPath, *debug)
 
 	imgEnabled := shell.ImagesEnabled(displayServer)
 
 	switch {
 
-	case flag.NFlag() == 0:
+	case flag.NFlag() == 0 || (flag.NFlag() == 1 && *debug):
 		if len(os.Args) > 2 {
 			fmt.Println("Too many args provided. See usage:")
 			flag.PrintDefaults()
@@ -58,7 +59,9 @@ func main() {
 		launchTUI()
 
 	case flag.NFlag() > 1:
-		fmt.Printf("Too many flags provided. Use %s --help for more info.", os.Args[0])
+		if !*debug || flag.NFlag() > 2 {
+			fmt.Printf("Too many flags provided. Use %s --help for more info.", os.Args[0])
+		}
 
 	case *help:
 		flag.PrintDefaults()

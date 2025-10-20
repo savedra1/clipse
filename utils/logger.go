@@ -6,8 +6,11 @@ import (
 )
 
 var logger *log.Logger
+var debugging = false
 
-func SetUpLogger(logFilePath string) {
+func SetUpLogger(logFilePath string, debug bool) {
+	debugging = debug
+
 	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("Failed to open log file: %s", err)
@@ -38,4 +41,10 @@ func LogWARN(message string) {
 		return
 	}
 	log.Fatalf("WARN: %s", message)
+}
+
+func LogDEBUG(message string) {
+	if debugging {
+		logger.Printf("DEBUG: %s", message)
+	}
 }
