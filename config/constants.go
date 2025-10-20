@@ -20,6 +20,7 @@ func defaultKeyBindings() map[string]string {
 	return map[string]string{
 		"filter":        "/",
 		"quit":          "esc",
+		"forceQuit":     "ctrl+c",
 		"more":          "?",
 		"choose":        "enter",
 		"remove":        "backspace",

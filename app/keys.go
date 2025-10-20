@@ -11,6 +11,7 @@ import (
 type keyMap struct {
 	filter        key.Binding
 	quit          key.Binding
+	forceQuit     key.Binding
 	more          key.Binding
 	choose        key.Binding
 	remove        key.Binding
@@ -74,7 +75,20 @@ func formatHelpKeys(keys []string) string {
 	return strings.Join(help, " / ")
 }
 
+func newOptionalBinding(keys []string, help string) key.Binding {
+	if len(keys) == 0 {
+		return key.NewBinding(key.WithDisabled())
+	}
+
+	return key.NewBinding(
+		key.WithKeys(keys...),
+		key.WithHelp(formatHelpKeys(keys), help),
+	)
+}
+
 func newKeyMap(config map[string]string) *keyMap {
+	forceQuit := newOptionalBinding(dedupeNonEmptyKeys("ctrl+c", config["forceQuit"]), "force quit")
+
 	return &keyMap{
 		filter: key.NewBinding(
 			key.WithKeys(config["filter"]),
@@ -84,6 +98,7 @@ func newKeyMap(config map[string]string) *keyMap {
 			key.WithKeys(config["quit"]),
 			key.WithHelp(getHelpChar(config["quit"]), "quit"),
 		),
+		forceQuit: forceQuit,
 		more: key.NewBinding(
 			key.WithKeys(config["more"]),
 			key.WithHelp(getHelpChar(config["more"]), "more"),
@@ -158,12 +173,17 @@ func (k keyMap) ShortHelp() []key.Binding {
 // not currently in use as intentionally being overridden by the default
 // full help view
 func (k keyMap) FullHelp() [][]key.Binding {
+	quitRow := []key.Binding{k.filter, k.quit}
+	if len(k.forceQuit.Keys()) > 0 {
+		quitRow = append(quitRow, k.forceQuit)
+	}
+
 	return [][]key.Binding{
 		{k.up, k.down, k.home, k.end},
 		{k.choose, k.remove},
 		{k.togglePin, k.togglePinned},
 		{k.selectDown, k.selectUp, k.selectSingle, k.clearSelected},
-		{k.filter, k.quit},
+		quitRow,
 	}
 }
 
@@ -299,6 +319,8 @@ func (pk previewKeymap) PreviewHelp() []key.Binding {
 }
 
 func defaultOverrides(config map[string]string) list.KeyMap {
+	forceQuit := newOptionalBinding(dedupeNonEmptyKeys("ctrl+c", config["forceQuit"]), "force quit")
+
 	return list.KeyMap{
 		CursorUp: key.NewBinding(
 			key.WithKeys(config["up"]),
@@ -352,6 +374,6 @@ func defaultOverrides(config map[string]string) list.KeyMap {
 			key.WithKeys(config["quit"]),
 			key.WithDisabled(),
 		),
-		ForceQuit: key.NewBinding(key.WithDisabled()),
+		ForceQuit: forceQuit,
 	}
 }
