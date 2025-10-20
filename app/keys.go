@@ -1,6 +1,8 @@
 package app
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 )
@@ -9,6 +11,7 @@ import (
 type keyMap struct {
 	filter        key.Binding
 	quit          key.Binding
+	forceQuit     key.Binding
 	more          key.Binding
 	choose        key.Binding
 	remove        key.Binding
@@ -45,7 +48,47 @@ func getHelpChar(configChar string) string {
 	return configChar
 }
 
+func dedupeNonEmptyKeys(keys ...string) []string {
+	seen := make(map[string]struct{}, len(keys))
+	var result []string
+	for _, k := range keys {
+		if k == "" {
+			continue
+		}
+		if _, ok := seen[k]; ok {
+			continue
+		}
+		seen[k] = struct{}{}
+		result = append(result, k)
+	}
+	return result
+}
+
+func formatHelpKeys(keys []string) string {
+	if len(keys) == 0 {
+		return ""
+	}
+	help := make([]string, len(keys))
+	for i, k := range keys {
+		help[i] = getHelpChar(k)
+	}
+	return strings.Join(help, " / ")
+}
+
+func newOptionalBinding(keys []string, help string) key.Binding {
+	if len(keys) == 0 {
+		return key.NewBinding(key.WithDisabled())
+	}
+
+	return key.NewBinding(
+		key.WithKeys(keys...),
+		key.WithHelp(formatHelpKeys(keys), help),
+	)
+}
+
 func newKeyMap(config map[string]string) *keyMap {
+	forceQuit := newOptionalBinding(dedupeNonEmptyKeys("ctrl+c", config["forceQuit"]), "force quit")
+
 	return &keyMap{
 		filter: key.NewBinding(
 			key.WithKeys(config["filter"]),
@@ -55,6 +98,7 @@ func newKeyMap(config map[string]string) *keyMap {
 			key.WithKeys(config["quit"]),
 			key.WithHelp(getHelpChar(config["quit"]), "quit"),
 		),
+		forceQuit: forceQuit,
 		more: key.NewBinding(
 			key.WithKeys(config["more"]),
 			key.WithHelp(getHelpChar(config["more"]), "more"),
@@ -129,12 +173,17 @@ func (k keyMap) ShortHelp() []key.Binding {
 // not currently in use as intentionally being overridden by the default
 // full help view
 func (k keyMap) FullHelp() [][]key.Binding {
+	quitRow := []key.Binding{k.filter, k.quit}
+	if len(k.forceQuit.Keys()) > 0 {
+		quitRow = append(quitRow, k.forceQuit)
+	}
+
 	return [][]key.Binding{
 		{k.up, k.down, k.home, k.end},
 		{k.choose, k.remove},
 		{k.togglePin, k.togglePinned},
 		{k.selectDown, k.selectUp, k.selectSingle, k.clearSelected},
-		{k.filter, k.quit},
+		quitRow,
 	}
 }
 
@@ -209,9 +258,29 @@ type previewKeymap struct {
 	pageUp   key.Binding
 	back     key.Binding
 	choose   key.Binding
+	quit     key.Binding
 }
 
 func newPreviewKeyMap(config map[string]string) *previewKeymap {
+	backKeys := dedupeNonEmptyKeys(config["preview"], config["previewBack"], config["quit"])
+	quitKeys := dedupeNonEmptyKeys(config["previewQuit"])
+
+	backBinding := key.NewBinding(key.WithDisabled())
+	if len(backKeys) > 0 {
+		backBinding = key.NewBinding(
+			key.WithKeys(backKeys...),
+			key.WithHelp(formatHelpKeys(backKeys), "back"),
+		)
+	}
+
+	quitBinding := key.NewBinding(key.WithDisabled())
+	if len(quitKeys) > 0 {
+		quitBinding = key.NewBinding(
+			key.WithKeys(quitKeys...),
+			key.WithHelp(formatHelpKeys(quitKeys), "quit"),
+		)
+	}
+
 	return &previewKeymap{
 		up: key.NewBinding(
 			key.WithKeys(config["up"]),
@@ -229,26 +298,29 @@ func newPreviewKeyMap(config map[string]string) *previewKeymap {
 			key.WithKeys(config["prevPage"]),
 			key.WithHelp(getHelpChar(config["prevPage"]), "page up"),
 		),
-		back: key.NewBinding(
-			key.WithKeys(config["preview"], config["quit"]),
-			key.WithHelp(getHelpChar(config["preview"])+" / "+getHelpChar(config["quit"]), "back"),
-		),
+		back: backBinding,
 		choose: key.NewBinding(
 			key.WithKeys(config["choose"]),
 			key.WithHelp(getHelpChar(config["choose"]), "copy"),
 		),
+		quit: quitBinding,
 	}
 }
 
 func (pk previewKeymap) PreviewHelp() []key.Binding {
-	return []key.Binding{
-		pk.up, pk.down,
-		pk.pageDown, pk.pageUp,
-		pk.choose,
+	bindings := []key.Binding{pk.up, pk.down, pk.pageDown, pk.pageUp, pk.choose}
+	if len(pk.back.Keys()) > 0 {
+		bindings = append(bindings, pk.back)
 	}
+	if len(pk.quit.Keys()) > 0 {
+		bindings = append(bindings, pk.quit)
+	}
+	return bindings
 }
 
 func defaultOverrides(config map[string]string) list.KeyMap {
+	forceQuit := newOptionalBinding(dedupeNonEmptyKeys("ctrl+c", config["forceQuit"]), "force quit")
+
 	return list.KeyMap{
 		CursorUp: key.NewBinding(
 			key.WithKeys(config["up"]),
@@ -302,6 +374,6 @@ func defaultOverrides(config map[string]string) list.KeyMap {
 			key.WithKeys(config["quit"]),
 			key.WithDisabled(),
 		),
-		ForceQuit: key.NewBinding(key.WithDisabled()),
+		ForceQuit: forceQuit,
 	}
 }

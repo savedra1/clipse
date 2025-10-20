@@ -103,7 +103,7 @@ func NewModel() Model {
 	clipboardList.Styles.PaginationStyle = style.MarginBottom(1).MarginLeft(2) // set custom pagination spacing
 	//clipboardList.StatusMessageLifetime = time.Second // can override this if necessary
 	clipboardList.AdditionalFullHelpKeys = func() []key.Binding {
-		return []key.Binding{
+		bindings := []key.Binding{
 			listKeys.preview,
 			listKeys.selectDown,
 			listKeys.selectUp,
@@ -111,6 +111,10 @@ func NewModel() Model {
 			listKeys.clearSelected,
 			listKeys.quit,
 		}
+		if len(listKeys.forceQuit.Keys()) > 0 {
+			bindings = append(bindings, listKeys.forceQuit)
+		}
+		return bindings
 	}
 
 	confirmationList := newConfirmationList(del)

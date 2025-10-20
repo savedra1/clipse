@@ -49,6 +49,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.preview.Height = msg.Height - verticalMarginHeight
 
 	case tea.KeyMsg:
+		rawEsc := msg.Type == tea.KeyEscape
+		escToQuit := false
+
+		if rawEsc && m.list.ShowHelp() {
+			m.list.Help.ShowAll = false
+			m.list.SetShowHelp(false)
+			m.updatePaginator()
+			return m, tea.Batch(cmds...)
+		}
+
+		if rawEsc && !m.showPreview && !m.showConfirmation && !m.list.SettingFilter() && !m.list.ShowHelp() {
+			escToQuit = true
+		}
+
 		if key.Matches(msg, m.keys.filter) && m.list.ShowHelp() {
 			m.list.Help.ShowAll = false // change default back to short help to keep in sync
 			m.list.SetShowHelp(false)
@@ -89,6 +103,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		fullValue := i.TitleFull()
 		fp := i.FilePath()
 		timestamp := i.TimeStamp()
+		shouldResizePreview := fp != "null" && config.ClipseConfig.ImageDisplay.Type != "basic"
+
+		if m.showPreview {
+			switch {
+			case key.Matches(msg, m.previewKeys.quit):
+				return m, tea.Quit
+			case key.Matches(msg, m.previewKeys.back), rawEsc:
+				if cmd := m.hidePreview(msg, shouldResizePreview); cmd != nil {
+					cmds = append(cmds, cmd)
+				}
+				return m, tea.Batch(cmds...)
+			}
+		}
 
 		switch {
 
@@ -112,7 +139,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if item.Value == currentContent {
 						if err := clipboard.WriteAll(""); err != nil {
 							utils.LogERROR(fmt.Sprintf("could not delete all items from history: %s", err))
-
 						}
 					}
 					timeStamps = append(timeStamps, item.TimeStamp)
@@ -385,9 +411,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if m.showPreview {
 				content := m.styledPreviewContent(i.titleFull)
-				if i.filePath != "null" {
+				if fp != "null" {
 					content = getImgPreview(i.filePath, m.preview.Width, m.preview.Height)
-					if config.ClipseConfig.ImageDisplay.Type != "basic" {
+					if shouldResizePreview {
 						m.originalHeight = m.preview.Height
 						m.preview.Height /= config.ClipseConfig.ImageDisplay.HeightCut
 					}
@@ -402,20 +428,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				return m, tea.Batch(cmds...)
 			}
-			if i.filePath != "null" && config.ClipseConfig.ImageDisplay.Type != "basic" {
+			if shouldResizePreview {
 				m.preview.Height = m.originalHeight
 			}
 			m.setPreviewKeys(false)
 
-		case key.Matches(msg, m.keys.quit):
+		case key.Matches(msg, m.keys.quit) || escToQuit:
 			switch {
 			case m.showPreview:
-				m.showPreview = !m.showPreview
-				var cmd tea.Cmd
-				m.preview, cmd = m.preview.Update(msg)
-				cmds = append(cmds, cmd)
-				m.preview.GotoTop()
-				m.setPreviewKeys(false)
+				if cmd := m.hidePreview(msg, shouldResizePreview); cmd != nil {
+					cmds = append(cmds, cmd)
+				}
 				return m, tea.Batch(cmds...)
 
 			case m.list.IsFiltered():
@@ -587,6 +610,18 @@ func (m *Model) removeCachedItem(ts string) {
 			m.list.RemoveItem(i)
 		}
 	}
+}
+
+func (m *Model) hidePreview(msg tea.Msg, restoreHeight bool) tea.Cmd {
+	if restoreHeight {
+		m.preview.Height = m.originalHeight
+	}
+	m.showPreview = false
+	var cmd tea.Cmd
+	m.preview, cmd = m.preview.Update(msg)
+	m.preview.GotoTop()
+	m.setPreviewKeys(false)
+	return cmd
 }
 
 // enable/disable the main keys relevant to the preview view
