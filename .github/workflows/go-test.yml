@@ -2,10 +2,13 @@ name: Test go build
 
 on:
   pull_request:
-    branches: 
+    branches:
       - main
     paths:
-      - '**/*.go'
+      - "**/*.go"
+
+env:
+  CGO_ENABLED: "0"
 
 jobs:
   go-test:
@@ -17,7 +20,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: 'stable'
+          go-version: "stable"
 
       - name: Run go test (syntax check)
         id: test-syntax
@@ -33,7 +36,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: 'stable'
+          go-version: "stable"
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
@@ -49,7 +52,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: 'stable'
+          go-version: "stable"
 
       - name: golangci-lint-updated-code
         uses: golangci/golangci-lint-action@v8

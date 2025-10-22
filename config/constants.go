@@ -8,10 +8,9 @@ const (
 	defaultMaxHist         = 100
 	defaultDeleteAfter     = 0
 	defaultLogFile         = "clipse.log"
+	defaultPollInterval    = 50
 	defaultTempDir         = "tmp_files"
 	defaultThemeFile       = "custom_theme.json"
-	listenShellCmd         = "--listen-shell"
-	listenCmd              = "-listen"
 	maxChar                = 65
 )
 
@@ -62,6 +61,7 @@ func defaultConfig() Config {
 		AllowDuplicates: defaultAllowDuplicates,
 		TempDirPath:     defaultTempDir,
 		LogFilePath:     defaultLogFile,
+		PollInterval:    defaultPollInterval,
 		ThemeFilePath:   defaultThemeFile,
 		KeyBindings:     defaultKeyBindings(),
 		ExcludedApps:    defaultExcludedApps(),

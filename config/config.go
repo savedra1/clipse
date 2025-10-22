@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
 
@@ -16,6 +15,7 @@ type Config struct {
 	MaxHistory      int               `json:"maxHistory"`
 	DeleteAfter     int               `json:"deleteAfter"`
 	LogFilePath     string            `json:"logFile"`
+	PollInterval    int               `json:"PollInterval"`
 	ThemeFilePath   string            `json:"themeFile"`
 	TempDirPath     string            `json:"tempDir"`
 	KeyBindings     map[string]string `json:"keyBindings"`
@@ -32,16 +32,15 @@ type ImageDisplay struct {
 // Global config object, accessed and used when any configuration is needed.
 var ClipseConfig = defaultConfig()
 
-func Init() (string, string, bool, error) {
-	/*
-		Ensure $HOME/.config/clipse/clipboard_history.json OR $XDG_CONFIG_HOME
-		exists and create the path if not.
+func Init() (string, string, error) {
+	/* Ensure $HOME/.config/clipse/clipboard_history.json OR $XDG_CONFIG_HOME
+	exists and create the path if not.
 	*/
 
 	// returns $HOME/.config || $XDG_CONFIG_HOME
 	userHome, err := os.UserConfigDir()
 	if err != nil {
-		return "", "", false, fmt.Errorf("failed to read home dir.\nerror: %s", err)
+		return "", "", fmt.Errorf("failed to read home dir.\nerror: %s", err)
 	}
 
 	// Construct the path to the config directory
@@ -66,10 +65,7 @@ func Init() (string, string, bool, error) {
 		utils.HandleError(os.MkdirAll(ClipseConfig.TempDirPath, 0755))
 	}
 
-	ds := utils.DisplayServer()
-	ie := shell.ImagesEnabled(ds) // images enabled?
-
-	return ClipseConfig.LogFilePath, ds, ie, nil
+	return ClipseConfig.LogFilePath, utils.DisplayServer(), nil
 }
 
 func loadConfig(configPath string) {
