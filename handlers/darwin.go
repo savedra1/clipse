@@ -143,6 +143,13 @@ func RunDarwinListener(displayServer string, imgEnabled bool) error {
 	var prevImg []byte
 	for {
 		if HasClipboardChanged() {
+			// Check if the clipboard content should be excluded based on source application
+			activeWindow := utils.GetActiveWindowTitle()
+			if utils.IsAppExcluded(activeWindow, config.ClipseConfig.ExcludedApps) {
+				utils.LogINFO(fmt.Sprintf("Skipping clipboard content from excluded app: %s", activeWindow))
+				continue
+			}
+
 			clipboardType := C.getClipboardType()
 
 			switch clipboardType {
