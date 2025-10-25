@@ -253,7 +253,7 @@ func (pk previewKeymap) PreviewHelp() []key.Binding {
 	}
 }
 
-// keys defined here do not need to be handled via the update func unless purposefully diabled
+// keys defined here do not need to be handled via the update func unless purposefully disabled
 func defaultOverrides(config map[string]string) list.KeyMap {
 	return list.KeyMap{
 		CursorUp: key.NewBinding(
