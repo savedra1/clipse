@@ -35,6 +35,10 @@ func (m Model) View() string {
 		)
 
 	case m.list.ShowHelp():
+		/* ListModel's default help view is used when in "full help" mode.
+		When a customized full help view is used, it causes rendering issues with
+		the paginator.
+		*/
 		return render(listView)
 
 	default:

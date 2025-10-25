@@ -110,6 +110,7 @@ func NewModel() Model {
 			listKeys.selectSingle,
 			listKeys.clearSelected,
 			listKeys.quit,
+			listKeys.forceQuit,
 		}
 	}
 
@@ -122,7 +123,6 @@ func NewModel() Model {
 	statusMessageStyle = styledStatusMessage(theme)
 	m.help = styledHelp(m.help, theme)
 	m.list = styledList(clipboardList, theme)
-	m.list.DisableQuitKeybindings() // handle quit via update func
 	m.confirmationList = styledList(confirmationList, theme)
 	m.enableConfirmationKeys(false)
 

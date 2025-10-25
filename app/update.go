@@ -75,6 +75,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 
+		if m.showPreview {
+			switch {
+			case key.Matches(msg, m.keys.nextPage):
+				m.preview.ViewDown()
+				return m, nil
+			case key.Matches(msg, m.keys.prevPage):
+				m.preview.ViewUp()
+				return m, nil
+
+			case key.Matches(msg, m.keys.down):
+				m.preview.LineDown(1)
+				return m, nil
+
+			case key.Matches(msg, m.keys.up):
+				m.preview.LineUp(1)
+				return m, nil
+
+			default:
+				break
+			}
+		}
+
 		i, ok := m.list.SelectedItem().(item)
 		if !ok {
 
@@ -432,6 +454,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.ExitCode = 1
 				return m, tea.Quit
 			}
+
+		case key.Matches(msg, m.keys.forceQuit):
+			m.ExitCode = 1
+			return m, tea.Quit
 		}
 	}
 
