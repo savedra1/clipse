@@ -9,6 +9,7 @@ import (
 type keyMap struct {
 	filter        key.Binding
 	quit          key.Binding
+	forceQuit     key.Binding
 	more          key.Binding
 	choose        key.Binding
 	remove        key.Binding
@@ -54,6 +55,10 @@ func newKeyMap(config map[string]string) *keyMap {
 		quit: key.NewBinding(
 			key.WithKeys(config["quit"]),
 			key.WithHelp(getHelpChar(config["quit"]), "quit"),
+		),
+		forceQuit: key.NewBinding(
+			key.WithKeys(config["forceQuit"]),
+			key.WithHelp(getHelpChar(config["forceQuit"]), "force quit"),
 		),
 		more: key.NewBinding(
 			key.WithKeys(config["more"]),
@@ -134,7 +139,7 @@ func (k keyMap) FullHelp() [][]key.Binding {
 		{k.choose, k.remove},
 		{k.togglePin, k.togglePinned},
 		{k.selectDown, k.selectUp, k.selectSingle, k.clearSelected},
-		{k.filter, k.quit},
+		{k.filter, k.quit, k.forceQuit},
 	}
 }
 
@@ -148,12 +153,12 @@ type filterKeyMap struct {
 func newFilterKeymap(config map[string]string) *filterKeyMap {
 	return &filterKeyMap{
 		apply: key.NewBinding(
-			key.WithKeys(config["choose"]),
-			key.WithHelp(getHelpChar(config["choose"]), "apply"),
+			key.WithKeys("enter"), // hardcoded enter prevents `choose` key from interrupting filter
+			key.WithHelp(enterChar, "apply"),
 		),
 		cancel: key.NewBinding(
-			key.WithKeys(config["quit"]),
-			key.WithHelp(getHelpChar(config["quit"]), "cancel"),
+			key.WithKeys("esc"), // hardcoded esc prevents custom `quit` key from interrupting filter
+			key.WithHelp(getHelpChar("esc"), "cancel"),
 		),
 		yankMatches: key.NewBinding(
 			key.WithKeys(config["yankFilter"]),
@@ -248,6 +253,7 @@ func (pk previewKeymap) PreviewHelp() []key.Binding {
 	}
 }
 
+// keys defined here do not need to be handled via the update func unless purposefully diabled
 func defaultOverrides(config map[string]string) list.KeyMap {
 	return list.KeyMap{
 		CursorUp: key.NewBinding(
@@ -279,8 +285,12 @@ func defaultOverrides(config map[string]string) list.KeyMap {
 			key.WithHelp(getHelpChar(config["filter"]), "filter"),
 		),
 		Quit: key.NewBinding(
-			key.WithKeys(config["quit"]),
+			key.WithDisabled(), // quit keys handles by update func
 			key.WithHelp(getHelpChar(config["quit"]), "quit"),
+		),
+		ForceQuit: key.NewBinding(
+			key.WithDisabled(),
+			key.WithHelp("ctrl+c / "+getHelpChar(config["forceQuit"]), "force quit"),
 		),
 		ShowFullHelp: key.NewBinding(
 			key.WithKeys(config["more"]),
@@ -291,17 +301,16 @@ func defaultOverrides(config map[string]string) list.KeyMap {
 			key.WithHelp(getHelpChar(config["more"]), "less"),
 		),
 		AcceptWhileFiltering: key.NewBinding(
-			key.WithKeys(config["choose"]),
+			key.WithKeys("enter"), // hardcoded enter prevents `choose` key from interrupting filter
 			key.WithDisabled(),
 		),
 		CancelWhileFiltering: key.NewBinding(
-			key.WithKeys(config["quit"]),
+			key.WithKeys("esc"), // hardcoded esc prevents custom `quit` key from interrupting filter
 			key.WithDisabled(),
 		),
 		ClearFilter: key.NewBinding(
 			key.WithKeys(config["quit"]),
 			key.WithDisabled(),
 		),
-		ForceQuit: key.NewBinding(key.WithDisabled()),
 	}
 }

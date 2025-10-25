@@ -432,6 +432,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.ExitCode = 1
 				return m, tea.Quit
 			}
+
+		case key.Matches(msg, m.keys.forceQuit):
+			m.ExitCode = 1
+			return m, tea.Quit
 		}
 	}
 
