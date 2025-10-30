@@ -124,6 +124,7 @@ func RunNohupListener(displayServer string) {
 		utils.HandleError(nohupCmdWL("image/png").Start())
 		utils.HandleError(nohupCmdWL("text").Start())
 	case "darwin":
+		// run optimized darwin cgo listener
 		cmd := exec.Command("nohup", os.Args[0], darwinListenCmd, ">/dev/null", "2>&1", "&")
 		utils.HandleError(cmd.Start())
 	default:

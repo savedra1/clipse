@@ -38,7 +38,7 @@ func RunListener(displayServer string, imgEnabled bool) error {
 	// Goroutine to monitor clipboard
 	go func() {
 		for {
-			input, err := getClipboardData(displayServer)
+			input, err := clipboard.ReadAll()
 			if err != nil {
 				time.Sleep(time.Duration(1 * time.Second)) // wait for boot
 			}
@@ -89,17 +89,4 @@ MainLoop:
 	}
 
 	return nil
-}
-
-// helper func to handler darwin image data
-func getClipboardData(ds string) (string, error) {
-	if ds != "darwin" {
-		return clipboard.ReadAll()
-	}
-
-	imgData := shell.DarwinImageDataPresent()
-	if imgData == nil {
-		return clipboard.ReadAll()
-	}
-	return string(imgData), nil
 }

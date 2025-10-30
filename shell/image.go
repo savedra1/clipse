@@ -10,7 +10,6 @@ import (
 )
 
 var imgIsEnabledCmd = map[string]string{
-	"darwin":  darwinVersionCmd,
 	"wayland": wlVersionCmd,
 	"x11":     xVersionCmd,
 }
@@ -22,7 +21,6 @@ var copyImgCmds = map[string]string{
 }
 
 var pasteImgCmds = map[string]string{
-	"darwin":  darwinPasteImgCmd,
 	"wayland": wlPasteImgCmd,
 	"x11":     xPasteImgCmd,
 }
@@ -87,12 +85,4 @@ func DeleteAllImages(imgDir string) error {
 		}
 	}
 	return nil
-}
-
-func DarwinImageDataPresent() []byte {
-	output, err := exec.Command("sh", "-c", darwinImgCheckCmd).Output()
-	if err != nil {
-		return nil
-	}
-	return output
 }
