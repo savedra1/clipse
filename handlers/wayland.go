@@ -149,3 +149,14 @@ func renameImgFile(filePath, fileName, dt string) (string, string, error) {
 
 	return updatedFileName, updatedFilePath, nil
 }
+
+func WaylandPaste() {
+	clipboardContent, err := shell.GetWLClipBoard()
+	utils.HandleError(err)
+	fmt.Print(clipboardContent)
+}
+
+func WaylandCopy(s string) {
+	err := shell.UpdateWLClipboard(s)
+	utils.HandleError(err)
+}

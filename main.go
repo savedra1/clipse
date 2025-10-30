@@ -235,6 +235,8 @@ func handlePaste(ds string) {
 	switch ds {
 	case "darwin":
 		handlers.DarwinPaste()
+	case "wayland":
+		handlers.WaylandPaste()
 	default:
 		currentItem, err := clipboard.ReadAll()
 		utils.HandleError(err)
