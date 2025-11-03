@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/savedra1/clipse/utils"
 )
@@ -21,6 +20,7 @@ type Config struct {
 	TempDirPath     string            `json:"tempDir"`
 	KeyBindings     map[string]string `json:"keyBindings"`
 	ImageDisplay    ImageDisplay      `json:"imageDisplay"`
+	ExcludedApps    []string          `json:"excludedApps"`
 }
 type ImageDisplay struct {
 	Type      string `json:"type"`
@@ -65,7 +65,7 @@ func Init() (string, string, error) {
 		utils.HandleError(os.MkdirAll(ClipseConfig.TempDirPath, 0755))
 	}
 
-	return ClipseConfig.LogFilePath, DisplayServer(), nil
+	return ClipseConfig.LogFilePath, utils.DisplayServer(), nil
 }
 
 func loadConfig(configPath string) {
@@ -92,24 +92,4 @@ func loadConfig(configPath string) {
 	ClipseConfig.TempDirPath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), configDir)
 	ClipseConfig.ThemeFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.ThemeFilePath), configDir)
 	ClipseConfig.LogFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.LogFilePath), configDir)
-}
-
-func DisplayServer() string {
-	/* Determine runtime and return appropriate window server.
-	used to determine which dependency is required for handling
-	image files.
-	*/
-	osName := runtime.GOOS
-	switch osName {
-	case "linux":
-		waylandDisplay := os.Getenv("WAYLAND_DISPLAY")
-		if waylandDisplay != "" {
-			return "wayland"
-		}
-		return "x11"
-	case "darwin":
-		return "darwin"
-	default:
-		return "unknown"
-	}
 }
