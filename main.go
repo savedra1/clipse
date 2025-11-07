@@ -45,7 +45,7 @@ func main() {
 	utils.HandleError(err)
 	utils.SetUpLogger(logPath)
 
-	clipboardTest := handlers.GetClipboardText()
+	clipboardTest := handlers.DarwinGetClipboardText()
 	fmt.Print(clipboardTest)
 
 	return

@@ -20,5 +20,5 @@ var errUnsupported = errors.New(darwinErrString)
 func RunDarwinListener(_ string, _ bool) error { return errUnsupported }
 func DarwinCopyText(_ string)                  {}
 func DarwinPaste()                             {}
-func GetClipboardText() string                 { return darwinErrString }
-func HasClipboardChanged() bool                { return false }
+func DarwinGetClipboardText() string           { return darwinErrString }
+func DarwinHasClipboardChanged() bool          { return false }

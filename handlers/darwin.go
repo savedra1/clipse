@@ -93,7 +93,7 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
-func GetClipboardText() string {
+func DarwinGetClipboardText() string {
 	cstr := C.getClipboardText()
 	if cstr == nil {
 		return ""
@@ -101,7 +101,7 @@ func GetClipboardText() string {
 	return C.GoString(cstr)
 }
 
-func HasClipboardChanged() bool {
+func DarwinHasClipboardChanged() bool {
 	return C.hasClipboardChanged() == 1
 }
 
@@ -142,12 +142,12 @@ func RunDarwinListener(displayServer string, imgEnabled bool) error {
 	var prevText string
 	var prevImg []byte
 	for {
-		if HasClipboardChanged() {
+		if DarwinHasClipboardChanged() {
 			clipboardType := C.getClipboardType()
 
 			switch clipboardType {
 			case 1: // text
-				text := GetClipboardText()
+				text := DarwinGetClipboardText()
 				if text == prevText {
 					break
 				}
@@ -179,7 +179,7 @@ func DarwinPaste() error {
 
 	switch clipboardType {
 	case 1: // text
-		_, err := fmt.Println(GetClipboardText())
+		_, err := fmt.Println(DarwinGetClipboardText())
 		utils.HandleError(err)
 
 	case 2: // image

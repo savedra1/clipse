@@ -3,8 +3,9 @@
 
 package handlers
 
-/*]
+/*
 #cgo LDFLAGS: -lx11 -lXfixes
+#include <sys/types.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/Xfixes.h>
@@ -65,7 +66,9 @@ char* getClipboardTextX11() {
     return out;
 }
 
-// Returns 1 if clipboard changed
+// The following functions are optional, uncomment to enable
+
+// // Returns 1 if clipboard changed
 // int hasClipboardChangedX11() {
 //     init_x11();
 //     if (!dpy) return 0;
@@ -95,7 +98,6 @@ char* getClipboardTextX11() {
 //     XSetSelectionOwner(dpy, XA_CLIPBOARD, win, CurrentTime);
 //     XFlush(dpy);
 
-//     // respond to selection requests
 //     XEvent ev;
 //     for (;;) {
 //         XNextEvent(dpy, &ev);
@@ -129,7 +131,7 @@ char* getClipboardTextX11() {
 import "C"
 import "unsafe"
 
-func GetClipboardText() string {
+func X11GetClipboardText() string {
 	cstr := C.getClipboardTextX11()
 	if cstr == nil {
 		return ""
@@ -138,7 +140,8 @@ func GetClipboardText() string {
 	return C.GoString(cstr)
 }
 
-// func XHasClipboardChanged() bool {
+// Optional functions
+// func XDarwinHasClipboardChanged() bool {
 // 	return C.hasClipboardChangedX11() == 1
 // }
 
