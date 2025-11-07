@@ -45,6 +45,11 @@ func main() {
 	utils.HandleError(err)
 	utils.SetUpLogger(logPath)
 
+	clipboardTest := handlers.XGetClipboardText()
+	fmt.Print(clipboardTest)
+
+	return
+
 	imgEnabled := shell.ImagesEnabled(displayServer)
 
 	switch {
