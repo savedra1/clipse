@@ -1,105 +1,149 @@
+//go:build linux && !wayland
+// +build linux,!wayland
+
 package handlers
 
-/*
-#cgo CFLAGS: -x objective-c
-#cgo LDFLAGS: -framework AppKit
-#import <AppKit/AppKit.h>
+/*]
+#cgo pkg-config: x11 xfixes
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#include <X11/extensions/Xfixes.h>
 #include <stdlib.h>
+#include <string.h>
 
-static long lastChangeCount = -1;
+static Display *dpy = NULL;
+static Window win;
+static Atom XA_CLIPBOARD;
+static Atom XA_UTF8_STRING;
+static long last_serial = -1;
 
-char* getClipboardText() {
-    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-    NSString *string = [pasteboard stringForType:NSPasteboardTypeString];
-    if (string == nil) {
-        return NULL;
-    }
-    const char* utf8String = [string UTF8String];
-    if (utf8String == NULL) {
-        return NULL;
-    }
-    return strdup(utf8String);
+// Initialize X11 resources once
+static void init_x11() {
+    if (dpy != NULL) return;
+
+    dpy = XOpenDisplay(NULL);
+    if (!dpy) return;
+
+    win = XCreateSimpleWindow(dpy, DefaultRootWindow(dpy), 0, 0, 1, 1, 0, 0, 0);
+
+    XA_CLIPBOARD = XInternAtom(dpy, "CLIPBOARD", False);
+    XA_UTF8_STRING = XInternAtom(dpy, "UTF8_STRING", False);
+
+    XFixesSelectSelectionInput(dpy, win, XA_CLIPBOARD, XFixesSetSelectionOwnerNotifyMask);
 }
 
-// Returns 1 if changed, 0 if not
-int hasClipboardChanged() {
-    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-    long currentCount = [pasteboard changeCount];
+// Returns clipboard text (UTF-8) or NULL
+char* getClipboardTextX11() {
+    init_x11();
+    if (!dpy) return NULL;
 
-    if (currentCount != lastChangeCount) {
-        lastChangeCount = currentCount;
-        return 1;
-    }
-    return 0;
+    Atom sel = XA_CLIPBOARD;
+    Atom target = XA_UTF8_STRING;
+
+    XConvertSelection(dpy, sel, target, target, win, CurrentTime);
+    XFlush(dpy);
+
+    XEvent ev;
+    XNextEvent(dpy, &ev);
+
+    if (ev.type != SelectionNotify) return NULL;
+    if (ev.xselection.property == None) return NULL;
+
+    Atom type;
+    int format;
+    unsigned long len, bytes_left;
+    unsigned char *data = NULL;
+
+    XGetWindowProperty(dpy, win, target, 0, ~0, False,
+                       AnyPropertyType, &type, &format,
+                       &len, &bytes_left, &data);
+
+    if (!data) return NULL;
+
+    char *out = strdup((char*)data);
+    XFree(data);
+    return out;
 }
 
-unsigned char* getClipboardImage(int *outLen) {
-    NSPasteboard *pb = [NSPasteboard generalPasteboard];
-    NSData *data = [pb dataForType:NSPasteboardTypePNG];
-    if (data == nil) {
-        return NULL;
-    }
-    *outLen = (int)[data length];
-    unsigned char *buffer = (unsigned char *)malloc(*outLen);
-    if (buffer == NULL) {
-        *outLen = 0;
-        return NULL;
-    }
-    memcpy(buffer, [data bytes], *outLen);
-    return buffer;
-}
+// Returns 1 if clipboard changed
+// int hasClipboardChangedX11() {
+//     init_x11();
+//     if (!dpy) return 0;
 
-// returns 1 if text, 2 if image, 0 if unknown/empty
-int getClipboardType() {
-    NSPasteboard *pb = [NSPasteboard generalPasteboard];
-    NSArray *types = [pb types];
-    if ([types containsObject:NSPasteboardTypeString]) {
-        return 1;
-    }
-    if ([types containsObject:NSPasteboardTypePNG] || [types containsObject:NSPasteboardTypeTIFF]) {
-        return 2;
-    }
-    return 0;
-}
+//     XEvent ev;
+//     int changed = 0;
 
-// set clipboard content
-void setClipboardText(const char* text) {
-    if (text == NULL) {
-        return;
-    }
+//     while (XPending(dpy)) {
+//         XNextEvent(dpy, &ev);
+//         if (ev.type == XFixesSelectionNotify) {
+//             long serial = ev.xfixesselection.selection_timestamp;
+//             if (serial != last_serial) {
+//                 last_serial = serial;
+//                 changed = 1;
+//             }
+//         }
+//     }
+//     return changed;
+// }
 
-    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-    [pasteboard clearContents];
+// // Sets text into clipboard
+// void setClipboardTextX11(const char *text) {
+//     init_x11();
+//     if (!dpy) return;
+//     if (!text) return;
 
-    NSString *string = [NSString stringWithUTF8String:text];
-    if (string != nil) {
-        [pasteboard setString:string forType:NSPasteboardTypeString];
-    }
-}
+//     XSetSelectionOwner(dpy, XA_CLIPBOARD, win, CurrentTime);
+//     XFlush(dpy);
+
+//     // respond to selection requests
+//     XEvent ev;
+//     for (;;) {
+//         XNextEvent(dpy, &ev);
+//         if (ev.type == SelectionRequest) {
+//             XSelectionRequestEvent *req = &ev.xselectionrequest;
+
+//             XEvent reply;
+//             memset(&reply, 0, sizeof(reply));
+//             reply.xselection.type = SelectionNotify;
+//             reply.xselection.display = req->display;
+//             reply.xselection.requestor = req->requestor;
+//             reply.xselection.selection = req->selection;
+//             reply.xselection.target = req->target;
+//             reply.xselection.property = None;
+//             reply.xselection.time = req->time;
+
+//             if (req->target == XA_UTF8_STRING) {
+//                 XChangeProperty(dpy, req->requestor, req->property,
+//                                 XA_UTF8_STRING, 8, PropModeReplace,
+//                                 (unsigned char*)text, strlen(text));
+//                 reply.xselection.property = req->property;
+//             }
+
+//             XSendEvent(dpy, req->requestor, True, 0, &reply);
+//             XFlush(dpy);
+//             break;
+//         }
+//     }
+// }
 */
 import "C"
-import (
-	"unsafe"
-)
+import "unsafe"
 
 func GetClipboardText() string {
-	cstr := C.getClipboardText()
+	cstr := C.getClipboardTextX11()
 	if cstr == nil {
 		return ""
 	}
+	defer C.free(unsafe.Pointer(cstr))
 	return C.GoString(cstr)
 }
 
-func HasClipboardChanged() bool {
-	return C.hasClipboardChanged() == 1
-}
+// func XHasClipboardChanged() bool {
+// 	return C.hasClipboardChangedX11() == 1
+// }
 
-func readClipboardImage() []byte {
-	var length C.int
-	data := C.getClipboardImage(&length)
-	if data == nil {
-		return nil
-	}
-	defer C.free(unsafe.Pointer(data))
-	return C.GoBytes(unsafe.Pointer(data), length)
-}
+// func XSetClipboardText(s string) {
+// 	cs := C.CString(s)
+// 	defer C.free(unsafe.Pointer(cs))
+// 	C.setClipboardTextX11(cs)
+// }
