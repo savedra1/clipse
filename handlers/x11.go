@@ -69,25 +69,25 @@ char* getClipboardTextX11() {
 // The following functions are optional, uncomment to enable
 
 // // Returns 1 if clipboard changed
-// int hasClipboardChangedX11() {
-//     init_x11();
-//     if (!dpy) return 0;
+int hasClipboardChangedX11() {
+    init_x11();
+    if (!dpy) return 0;
 
-//     XEvent ev;
-//     int changed = 0;
+    XEvent ev;
+    int changed = 0;
 
-//     while (XPending(dpy)) {
-//         XNextEvent(dpy, &ev);
-//         if (ev.type == XFixesSelectionNotify) {
-//             long serial = ev.xfixesselection.selection_timestamp;
-//             if (serial != last_serial) {
-//                 last_serial = serial;
-//                 changed = 1;
-//             }
-//         }
-//     }
-//     return changed;
-// }
+    while (XPending(dpy)) {
+        XNextEvent(dpy, &ev);
+        if (ev.type == XFixesSelectionNotify) {
+            long serial = ev.xfixesselection.selection_timestamp;
+            if (serial != last_serial) {
+                last_serial = serial;
+                changed = 1;
+            }
+        }
+    }
+    return changed;
+}
 
 // // Sets text into clipboard
 // void setClipboardTextX11(const char *text) {
@@ -129,7 +129,13 @@ char* getClipboardTextX11() {
 // }
 */
 import "C"
-import "unsafe"
+import (
+	"fmt"
+	"time"
+	"unsafe"
+
+	"github.com/savedra1/clipse/config"
+)
 
 func X11GetClipboardText() string {
 	cstr := C.getClipboardTextX11()
@@ -138,6 +144,16 @@ func X11GetClipboardText() string {
 	}
 	defer C.free(unsafe.Pointer(cstr))
 	return C.GoString(cstr)
+}
+
+func RunX11Listner() {
+	for {
+		if C.hasClipboardChangedX11() {
+			fmt.Printf("Clipborad changed. New value: %s", X11GetClipboardText())
+		}
+		time.Sleep(time.Duration(config.ClipseConfig.PollInterval) * time.Millisecond)
+	}
+
 }
 
 // Optional functions

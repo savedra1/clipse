@@ -13,3 +13,4 @@ to expose the global functions.
 package handlers
 
 func X11GetClipboardText() string { return "This function can only be used on X11 systems." }
+func RunX11Listner()              {}
