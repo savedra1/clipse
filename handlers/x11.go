@@ -4,7 +4,7 @@
 package handlers
 
 /*
-#cgo LDFLAGS: -lx11 -lXfixes
+#cgo pkg-config: x11 xfixes
 #include <sys/types.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>

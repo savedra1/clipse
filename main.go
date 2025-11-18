@@ -40,13 +40,13 @@ var (
 
 func main() {
 	flag.Parse()
+	clipboardTest := handlers.X11GetClipboardText()
 
 	logPath, displayServer, err := config.Init()
 	utils.HandleError(err)
 	utils.SetUpLogger(logPath)
 
-	clipboardTest := handlers.DarwinGetClipboardText()
-	fmt.Print(clipboardTest)
+	fmt.Println(clipboardTest)
 
 	return
 
