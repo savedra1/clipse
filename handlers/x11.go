@@ -66,67 +66,66 @@ char* getClipboardTextX11() {
     return out;
 }
 
-// The following functions are optional, uncomment to enable
-
-// // Returns 1 if clipboard changed
-int hasClipboardChangedX11() {
+unsigned char* getClipboardImageX11(int *out_len) {
     init_x11();
-    if (!dpy) return 0;
+    if (!dpy) return NULL;
 
-    XEvent ev;
-    int changed = 0;
+    *out_len = 0;
 
-    while (XPending(dpy)) {
+    Atom sel = XA_CLIPBOARD;
+
+    // preferred MIME targets (BMP removed)
+    Atom PNG  = XInternAtom(dpy, "image/png", False);
+    Atom JPEG = XInternAtom(dpy, "image/jpeg", False);
+
+    Atom targets[] = { PNG, JPEG };
+    const int ntargets = sizeof(targets) / sizeof(targets[0]);
+
+    for (int i = 0; i < ntargets; i++) {
+        Atom target = targets[i];
+
+        // Ask clipboard owner to convert to requested type
+        XConvertSelection(dpy, sel, target, target, win, CurrentTime);
+        XFlush(dpy);
+
+        // Wait for the SelectionNotify event
+        XEvent ev;
         XNextEvent(dpy, &ev);
-        if (ev.type == XFixesSelectionNotify) {
-            long serial = ev.xfixesselection.selection_timestamp;
-            if (serial != last_serial) {
-                last_serial = serial;
-                changed = 1;
-            }
+
+        if (ev.type != SelectionNotify)
+            continue;
+
+        if (ev.xselection.property == None)
+            continue;
+
+        Atom type;
+        int format;
+        unsigned long len, bytes_left;
+        unsigned char *data = NULL;
+
+        if (XGetWindowProperty(dpy, win, target, 0, ~0, False,
+                               AnyPropertyType, &type, &format,
+                               &len, &bytes_left, &data) != Success) {
+            continue;
         }
+
+        if (!data || len == 0) {
+            if (data) XFree(data);
+            continue;
+        }
+
+        // Copy result to malloc'd buffer (Go will free this)
+        unsigned char *copy = malloc(len);
+        memcpy(copy, data, len);
+        XFree(data);
+
+        *out_len = (int)len;
+        return copy;
     }
-    return changed;
+
+    return NULL; // neither PNG nor JPEG available
 }
 
-// // Sets text into clipboard
-// void setClipboardTextX11(const char *text) {
-//     init_x11();
-//     if (!dpy) return;
-//     if (!text) return;
-
-//     XSetSelectionOwner(dpy, XA_CLIPBOARD, win, CurrentTime);
-//     XFlush(dpy);
-
-//     XEvent ev;
-//     for (;;) {
-//         XNextEvent(dpy, &ev);
-//         if (ev.type == SelectionRequest) {
-//             XSelectionRequestEvent *req = &ev.xselectionrequest;
-
-//             XEvent reply;
-//             memset(&reply, 0, sizeof(reply));
-//             reply.xselection.type = SelectionNotify;
-//             reply.xselection.display = req->display;
-//             reply.xselection.requestor = req->requestor;
-//             reply.xselection.selection = req->selection;
-//             reply.xselection.target = req->target;
-//             reply.xselection.property = None;
-//             reply.xselection.time = req->time;
-
-//             if (req->target == XA_UTF8_STRING) {
-//                 XChangeProperty(dpy, req->requestor, req->property,
-//                                 XA_UTF8_STRING, 8, PropModeReplace,
-//                                 (unsigned char*)text, strlen(text));
-//                 reply.xselection.property = req->property;
-//             }
-
-//             XSendEvent(dpy, req->requestor, True, 0, &reply);
-//             XFlush(dpy);
-//             break;
-//         }
-//     }
-// }
 */
 import "C"
 import (
@@ -136,6 +135,8 @@ import (
 
 	"github.com/savedra1/clipse/config"
 )
+
+var clipboardContents string
 
 func X11GetClipboardText() string {
 	cstr := C.getClipboardTextX11()
@@ -148,12 +149,34 @@ func X11GetClipboardText() string {
 
 func RunX11Listner() {
 	for {
-		if C.hasClipboardChangedX11() {
-			fmt.Printf("Clipborad changed. New value: %s", X11GetClipboardText())
-		}
+		//contents := X11GetClipboardText()
+		contents := GetClipboardImage()
+		fmt.Println(contents)
+		// if C.hasClipboardChangedX11() == 1 {
+		// 	fmt.Printf("Clipborad changed. New value: %s", X11GetClipboardText())
+		// } else {
+		// 	fmt.Printf("Cliboard contents: %s", X11GetClipboardText())
+		// }
 		time.Sleep(time.Duration(config.ClipseConfig.PollInterval) * time.Millisecond)
 	}
+}
 
+func GetClipboardImage() ([]byte, error) {
+	var outLen C.int
+
+	// Call your C function
+	ptr := C.getClipboardImageX11(&outLen)
+	if ptr == nil || outLen == 0 {
+		return nil, nil // no image
+	}
+
+	// Copy into Go memory
+	buf := C.GoBytes(unsafe.Pointer(ptr), outLen)
+
+	// Free C memory
+	C.free(unsafe.Pointer(ptr))
+
+	return buf, nil
 }
 
 // Optional functions

@@ -40,14 +40,12 @@ var (
 
 func main() {
 	flag.Parse()
-	clipboardTest := handlers.RunX11Listner()
+	handlers.RunX11Listner()
 	return
 
 	logPath, displayServer, err := config.Init()
 	utils.HandleError(err)
 	utils.SetUpLogger(logPath)
-
-	fmt.Println(clipboardTest)
 
 	imgEnabled := shell.ImagesEnabled(displayServer)
 
