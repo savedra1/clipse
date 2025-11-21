@@ -335,13 +335,9 @@ int setClipboardImageX11(unsigned char *data, int len, const char *mime_type) {
 import "C"
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"strconv"
 	"time"
 	"unsafe"
 
-	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/utils"
 )
 
@@ -374,14 +370,14 @@ func RunX11Listner() {
 			}
 
 			if imgContents != nil {
-				if err := saveX11Image(imgContents); err != nil {
+				if err := saveImage(imgContents); err != nil {
 					utils.HandleError(err)
 				}
 				return
 			}
 
 			textContents := X11GetClipboardText()
-			if err := saveX11Text(textContents); err != nil {
+			if err := saveText(textContents); err != nil {
 				utils.LogERROR("FAILING HERE (RunX11Listner)")
 				utils.HandleError(err)
 			}
@@ -408,29 +404,6 @@ func GetClipboardImage() ([]byte, error) {
 	C.free(unsafe.Pointer(ptr))
 
 	return buf, nil
-}
-
-func saveX11Image(imgData []byte) error {
-	byteLength := strconv.Itoa(len(string(imgData)))
-	fileName := fmt.Sprintf("%s-%s.png", byteLength, utils.GetTimeStamp())
-	itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
-	filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
-
-	if err := os.WriteFile(filePath, imgData, 0644); err != nil {
-		return err
-	}
-
-	if err := config.AddClipboardItem(itemTitle, filePath); err != nil {
-		return err
-	}
-	return nil
-}
-
-func saveX11Text(textData string) error {
-	if err := config.AddClipboardItem(textData, "null"); err != nil {
-		return err
-	}
-	return nil
 }
 
 func X11SetClipboardText(text string) {

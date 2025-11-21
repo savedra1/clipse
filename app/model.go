@@ -33,6 +33,7 @@ type Model struct {
 	previewKeys      *previewKeymap      // keybindings for the viewport model
 	lastUpdated      time.Time
 	ExitCode         int
+	displayServer    string
 }
 
 type item struct {
@@ -65,7 +66,7 @@ func (m Model) Init() tea.Cmd {
 	return tea.EnterAltScreen
 }
 
-func NewModel() Model {
+func NewModel(displayServer string) Model {
 	var (
 		keyConfig        = config.ClipseConfig.KeyBindings
 		listKeys         = newKeyMap(keyConfig)
@@ -90,6 +91,7 @@ func NewModel() Model {
 		showPreview:      false,
 		previewKeys:      newPreviewKeyMap(keyConfig),
 		ExitCode:         0,
+		displayServer:    displayServer,
 	}
 
 	entryItems := filterItems(clipboardItems, false, m.theme)

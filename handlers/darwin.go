@@ -83,9 +83,6 @@ void setClipboardText(const char* text) {
 import "C"
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"strconv"
 	"time"
 	"unsafe"
 
@@ -115,29 +112,6 @@ func readClipboardImage() []byte {
 	return C.GoBytes(unsafe.Pointer(data), length)
 }
 
-func saveDarwinImage(imgData []byte) error {
-	byteLength := strconv.Itoa(len(string(imgData)))
-	fileName := fmt.Sprintf("%s-%s.png", byteLength, utils.GetTimeStamp())
-	itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
-	filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
-
-	if err := os.WriteFile(filePath, imgData, 0644); err != nil {
-		return err
-	}
-
-	if err := config.AddClipboardItem(itemTitle, filePath); err != nil {
-		return err
-	}
-	return nil
-}
-
-func saveDarwinText(textData string) error {
-	if err := config.AddClipboardItem(textData, "null"); err != nil {
-		return err
-	}
-	return nil
-}
-
 func RunDarwinListener() {
 	var prevText string
 	var prevImg []byte
@@ -152,7 +126,7 @@ func RunDarwinListener() {
 					break
 				}
 				prevText = text
-				if err := saveDarwinText(text); err != nil {
+				if err := saveText(text); err != nil {
 					utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", text, err))
 				}
 
@@ -162,7 +136,7 @@ func RunDarwinListener() {
 					break
 				}
 				prevImg = img
-				if err := saveDarwinImage(img); err != nil {
+				if err := saveImage(img); err != nil {
 					utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
 				}
 

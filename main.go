@@ -56,7 +56,7 @@ func main() {
 			flag.PrintDefaults()
 			return
 		}
-		launchTUI()
+		launchTUI(displayServer)
 
 	case flag.NFlag() > 1:
 		fmt.Printf("Too many flags provided. Use %s --help for more info.", os.Args[0])
@@ -95,13 +95,13 @@ func main() {
 		handleClear()
 
 	case *forceClose:
-		handleForceClose()
+		handleForceClose(displayServer)
 
 	case *wlStore:
 		handlers.StoreWLData()
 
 	case *realTime:
-		launchTUI()
+		launchTUI(displayServer)
 
 	case *outputAll != "":
 		handleOutputAll(*outputAll)
@@ -145,9 +145,9 @@ func handlePause(s string) {
 	shell.RunListenerAfterDelay(&duration)
 }
 
-func launchTUI() {
+func launchTUI(ds string) {
 	shell.KillExistingFG()
-	newModel := app.NewModel()
+	newModel := app.NewModel(ds)
 	p := tea.NewProgram(newModel)
 	if *realTime {
 		go newModel.ListenRealTime(p)
@@ -243,7 +243,7 @@ func handlePaste(ds string) {
 	}
 }
 
-func handleForceClose() {
+func handleForceClose(ds string) {
 	if len(os.Args) < 3 {
 		fmt.Printf("No PPID provided. Usage: %s' -fc $PPID'", os.Args[0])
 		return
@@ -259,7 +259,7 @@ func handleForceClose() {
 		return
 	}
 
-	launchTUI()
+	launchTUI(ds)
 }
 
 func handleOutputAll(format string) {
