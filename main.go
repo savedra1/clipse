@@ -40,11 +40,11 @@ var (
 
 func main() {
 	flag.Parse()
-	handlers.RunX11Listner()
-	return
 
 	logPath, displayServer, err := config.Init()
+	handlers.RunX11Listner()
 	utils.HandleError(err)
+	return
 	utils.SetUpLogger(logPath)
 
 	imgEnabled := shell.ImagesEnabled(displayServer)
