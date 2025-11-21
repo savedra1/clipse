@@ -1,5 +1,6 @@
-//go:build linux && !wayland
-// +build linux,!wayland
+//handlers/x11.go
+//go:build (linux && !wayland) || !cgo
+// +build linux,!wayland !cgo
 
 package handlers
 

@@ -1,5 +1,5 @@
 // handlers/x11Stub.go
-//go:build !linux || wayland
+//go:build !linux || wayland || !cgo
 
 /* This file is a stub used for CI tests. The cgo lib has introduced
 complexity with cross-platform builds, as ubuntu-latest cannot be used for testing
