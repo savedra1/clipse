@@ -326,6 +326,7 @@ func RunX11Listner() {
 
 			if imgContents != nil {
 				fmt.Printf("Clipboard changed - Image detected (%d bytes)\n", len(imgContents))
+				fmt.Println(string(imgContents))
 			} else {
 				textContents := X11GetClipboardText()
 				fmt.Printf("Clipboard changed - Text: %s\n", textContents)
