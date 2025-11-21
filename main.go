@@ -40,7 +40,8 @@ var (
 
 func main() {
 	flag.Parse()
-	handlers.RunX11Listner()
+	handlers.X11SetClipboardText("testing123")
+	//handlers.RunX11Listner()
 	return
 
 	logPath, displayServer, err := config.Init()

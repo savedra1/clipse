@@ -195,6 +195,91 @@ unsigned char* getClipboardImageX11(int *out_len) {
 
     return NULL; // neither PNG nor JPEG available
 }
+
+// Clipboard data holder
+static unsigned char *clipboard_data = NULL;
+static int clipboard_data_len = 0;
+static Atom clipboard_data_type;
+
+// Selection handler - responds to requests for our clipboard data
+static Bool handleSelectionRequest(XEvent *ev) {
+    XSelectionRequestEvent *req = &ev->xselectionrequest;
+    XSelectionEvent notify;
+
+    notify.type = SelectionNotify;
+    notify.requestor = req->requestor;
+    notify.selection = req->selection;
+    notify.target = req->target;
+    notify.time = req->time;
+    notify.property = None;
+
+    Atom TARGETS = XInternAtom(dpy, "TARGETS", False);
+
+    // Handle TARGETS request - tell what formats we support
+    if (req->target == TARGETS) {
+        Atom supported[] = { clipboard_data_type, TARGETS };
+        XChangeProperty(dpy, req->requestor, req->property,
+                       XA_ATOM, 32, PropModeReplace,
+                       (unsigned char*)supported, 2);
+        notify.property = req->property;
+    }
+    // Handle request for our actual data
+    else if (req->target == clipboard_data_type && clipboard_data != NULL) {
+        XChangeProperty(dpy, req->requestor, req->property,
+                       clipboard_data_type, 8, PropModeReplace,
+                       clipboard_data, clipboard_data_len);
+        notify.property = req->property;
+    }
+
+    XSendEvent(dpy, req->requestor, False, 0, (XEvent*)&notify);
+    XFlush(dpy);
+    return True;
+}
+
+// Set text to clipboard
+int setClipboardTextX11(const char *text) {
+    init_x11();
+    if (!dpy || !text) return 0;
+
+    // Free old data
+    if (clipboard_data) {
+        free(clipboard_data);
+        clipboard_data = NULL;
+    }
+
+    // Copy text data
+    clipboard_data_len = strlen(text);
+    clipboard_data = malloc(clipboard_data_len);
+    memcpy(clipboard_data, text, clipboard_data_len);
+    clipboard_data_type = XA_UTF8_STRING;
+
+    // Take ownership of clipboard
+    XSetSelectionOwner(dpy, XA_CLIPBOARD, win, CurrentTime);
+    XFlush(dpy);
+
+    // Verify we own it
+    if (XGetSelectionOwner(dpy, XA_CLIPBOARD) != win) {
+        free(clipboard_data);
+        clipboard_data = NULL;
+        return 0;
+    }
+
+    // Process selection requests for a bit to let other apps grab the data
+    // This is a simple approach - a proper implementation would do this in the background
+    time_t start = time(NULL);
+    while (time(NULL) - start < 1) {
+        while (XPending(dpy)) {
+            XEvent ev;
+            XNextEvent(dpy, &ev);
+            if (ev.type == SelectionRequest) {
+                handleSelectionRequest(&ev);
+            }
+        }
+        usleep(10000); // 10ms
+    }
+
+    return 1;
+}
 */
 import "C"
 import (
@@ -284,4 +369,14 @@ func GetClipboardImage() ([]byte, error) {
 	C.free(unsafe.Pointer(ptr))
 
 	return buf, nil
+}
+
+func X11SetClipboardText(text string) error {
+	cstr := C.CString(text)
+	defer C.free(unsafe.Pointer(cstr))
+
+	if C.setClipboardTextX11(cstr) == 0 {
+		return fmt.Errorf("failed to set clipboard text")
+	}
+	return nil
 }
