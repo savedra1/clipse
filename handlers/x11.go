@@ -5,12 +5,14 @@ package handlers
 
 /*
 #cgo pkg-config: x11 xfixes
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/Xfixes.h>
-#include <stdlib.h>
-#include <string.h>
 
 static Display *dpy = NULL;
 static Window win;
