@@ -237,9 +237,7 @@ func handlePaste(ds string) {
 	case "wayland":
 		handlers.WaylandPaste()
 	case "x11":
-		if err := handlers.X11Paste(); err != nil {
-			utils.LogERROR(err)
-		}
+		handlers.X11Paste()
 	default:
 		utils.LogERROR(fmt.Sprintf("failed to paste content; unknown display server: %s", ds))
 	}
