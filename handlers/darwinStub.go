@@ -12,13 +12,10 @@ to expose the global functions.
 
 package handlers
 
-import "errors"
-
 var darwinErrString = "macOS-only feature"
-var errUnsupported = errors.New(darwinErrString)
 
 func RunDarwinListener()              {}
 func DarwinCopyText(_ string)         {}
-func DarwinPaste() error              { return errUnsupported }
+func DarwinPaste()                    {}
 func DarwinGetClipboardText() string  { return darwinErrString }
 func DarwinHasClipboardChanged() bool { return false }

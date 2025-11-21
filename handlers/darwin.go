@@ -148,7 +148,7 @@ func RunDarwinListener() {
 	}
 }
 
-func DarwinPaste() error {
+func DarwinPaste() {
 	clipboardType := C.getClipboardType()
 
 	switch clipboardType {
@@ -161,8 +161,6 @@ func DarwinPaste() error {
 		_, err := fmt.Println(string(img))
 		utils.HandleError(err)
 	}
-
-	return nil
 }
 
 func DarwinCopyText(s string) {
