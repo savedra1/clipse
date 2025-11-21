@@ -80,7 +80,10 @@ func KillExistingFG() {
 			continue
 		}
 		pidCmd := strings.Split(string(psOutput), "\n")[1] // skip headers (macOS's ps doesn't support --no-headers)
-		if strings.Contains(pidCmd, listenShellCmd) || strings.Contains(pidCmd, wlStoreCmd) || strings.Contains(pidCmd, darwinListenCmd) {
+		if strings.Contains(pidCmd, listenShellCmd) ||
+			strings.Contains(pidCmd, wlStoreCmd) ||
+			strings.Contains(pidCmd, darwinListenCmd) ||
+			strings.Contains(pidCmd, x11ListenCmd) {
 			continue
 		}
 
@@ -123,14 +126,20 @@ func RunNohupListener(displayServer string) {
 		// run optimized wl-clipboard listener
 		utils.HandleError(nohupCmdWL("image/png").Start())
 		utils.HandleError(nohupCmdWL("text").Start())
+
 	case "darwin":
 		// run optimized darwin cgo listener
 		cmd := exec.Command("nohup", os.Args[0], darwinListenCmd, ">/dev/null", "2>&1", "&")
 		utils.HandleError(cmd.Start())
-	default:
-		// run default poll listener
-		cmd := exec.Command("nohup", os.Args[0], listenShellCmd, ">/dev/null", "2>&1", "&")
+
+	case "x11":
+		// run optimized x11 cgo listener
+		cmd := exec.Command("nohup", os.Args[0], x11ListenCmd, ">/dev/null", "2>&1", "&")
 		utils.HandleError(cmd.Start())
+
+	default:
+		utils.LogERROR(fmt.Sprintf("failed to run background listener; unrecognized display server '%s'", displayServer))
+		return
 	}
 }
 

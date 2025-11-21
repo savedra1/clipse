@@ -9,37 +9,13 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
-var imgIsEnabledCmd = map[string]string{
-	"wayland": wlVersionCmd,
-	"x11":     xVersionCmd,
-}
-
 var copyImgCmds = map[string]string{
 	"darwin":  darwinCopyImgCmd,
 	"wayland": wlCopyImgCmd,
-	"x11":     xCopyImgCmd,
 }
 
 var pasteImgCmds = map[string]string{
 	"wayland": wlPasteImgCmd,
-	"x11":     xPasteImgCmd,
-}
-
-func ImagesEnabled(displayServer string) bool {
-	if displayServer == "darwin" {
-		return true
-	}
-	cmd, ok := imgIsEnabledCmd[displayServer]
-	if !ok {
-		utils.LogWARN(fmt.Sprintf("unknown display server: %s", displayServer))
-		return false
-	}
-	execCmd := exec.Command("sh", "-c", cmd)
-	if err := execCmd.Run(); err != nil {
-		utils.LogERROR(fmt.Sprintf("%s system is missing image dependency", displayServer))
-		return false
-	}
-	return true
 }
 
 func CopyImage(imagePath, displayServer string) error {

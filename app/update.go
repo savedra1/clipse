@@ -5,13 +5,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/handlers"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
@@ -58,9 +58,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.list.SettingFilter() && key.Matches(msg, m.keys.yankFilter) {
 			filterMatches := m.filterMatches()
 			if len(filterMatches) >= 1 {
-				if err := clipboard.WriteAll(strings.Join(filterMatches, "\n")); err == nil {
-					return m, tea.Quit
-				}
+				handlers.CopyText(strings.Join(filterMatches, "\n"), m.displayServer)
 				cmds = append(
 					cmds,
 					m.list.NewStatusMessage(statusMessageStyle("Failed to copy all selected items.")),
@@ -128,14 +126,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.setPreviewKeys(false)
 				m.enableConfirmationKeys(false)
 				m.setConfirmationKeys(false)
-				currentContent, _ := clipboard.ReadAll()
+				currentContent := handlers.ReadClipboard(m.displayServer)
 				timeStamps := []string{}
 				for _, item := range m.itemCache {
 					if item.Value == currentContent {
-						if err := clipboard.WriteAll(""); err != nil {
-							utils.LogERROR(fmt.Sprintf("could not delete all items from history: %s", err))
-
-						}
+						handlers.CopyText("", m.displayServer)
 					}
 					timeStamps = append(timeStamps, item.TimeStamp)
 					m.removeCachedItem(item.TimeStamp)
@@ -168,16 +163,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(selectedItems) < 1 {
 				switch {
 				case fp != "null":
-					ds := config.DisplayServer() // eg "wayland"
-					utils.HandleError(shell.CopyImage(fp, ds))
+					if m.displayServer == "x11" {
+						imgData, err := os.ReadFile(fp)
+						utils.HandleError(err)
+						utils.HandleError(handlers.X11SetClipboardImage(imgData, "image/png"))
+					} else {
+						utils.HandleError(shell.CopyImage(fp, m.displayServer))
+					}
+					if keepEnabled() {
+						cmds = append(
+							cmds,
+							m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+title)),
+						)
+						return m, tea.Batch(cmds...)
+					}
 					return m, tea.Quit
 
 				case len(os.Args) > 2 && utils.IsInt(os.Args[2]):
 					shell.KillProcess(os.Args[2])
 					return m, tea.Quit
 
-				case len(os.Args) > 1 && os.Args[1] == "keep":
-					utils.HandleError(clipboard.WriteAll(fullValue))
+				case keepEnabled():
+					handlers.CopyText(fullValue, m.displayServer)
 					cmds = append(
 						cmds,
 						m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+title)),
@@ -185,7 +192,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Batch(cmds...)
 
 				default:
-					utils.HandleError(clipboard.WriteAll(fullValue))
+					handlers.CopyText(fullValue, m.displayServer)
 					return m, tea.Quit
 				}
 			}
@@ -200,15 +207,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch {
 
 			case len(os.Args) > 2 && utils.IsInt(os.Args[2]):
-				utils.HandleError(clipboard.WriteAll(yank))
+				handlers.CopyText(yank, m.displayServer)
 				shell.KillProcess(os.Args[2])
 				return m, tea.Quit
 
-			case len(os.Args) > 1 && os.Args[1] == "keep":
+			case keepEnabled():
 				statusMsg := "Copied to clipboard: *selected items*"
-				if err := clipboard.WriteAll(yank); err != nil {
-					statusMsg = "Could not copy all selected items."
-				}
+				handlers.CopyText(yank, m.displayServer)
 				cmds = append(
 					cmds,
 					m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
@@ -216,13 +221,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Batch(cmds...)
 
 			default:
-				if err := clipboard.WriteAll(yank); err == nil {
-					return m, tea.Quit
-				}
-				cmds = append(
-					cmds,
-					m.list.NewStatusMessage(statusMessageStyle("Could not copy all selected items.")),
-				)
+				handlers.CopyText(yank, m.displayServer)
+				return m, tea.Quit
 			}
 
 		case key.Matches(msg, m.keys.remove):
@@ -262,15 +262,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			currentIndex := m.list.Index()
-			currentContent, _ := clipboard.ReadAll()
+			currentContent := handlers.ReadClipboard(m.displayServer)
 			statusMsg := "Deleted: "
 
 			if len(selectedItems) >= 1 {
 				for _, item := range selectedItems {
 					if item.Value == currentContent {
-						if err := clipboard.WriteAll(""); err != nil {
-							utils.LogERROR(fmt.Sprintf("failed to reset clipboard buffer value: %s", err))
-						}
+						handlers.CopyText("", m.displayServer)
 					}
 				}
 				timeStamps := []string{}
@@ -666,4 +664,11 @@ func (m *Model) enableConfirmationKeys(v bool) {
 
 func (m *Model) setQuitEnabled(v bool) {
 	m.list.KeyMap.Quit.SetEnabled(v)
+}
+
+func keepEnabled() bool {
+	if len(os.Args) > 1 && os.Args[1] == "keep" {
+		return true
+	}
+	return false
 }
