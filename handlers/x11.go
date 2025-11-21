@@ -375,14 +375,14 @@ func RunX11Listner() {
 
 			if imgContents != nil {
 				if err := saveX11Image(imgContents); err != nil {
-					utils.LogERROR(err)
+					utils.HandleError(err)
 				}
 				return
 			}
 
 			textContents := X11GetClipboardText()
 			if err := saveX11Text(textContents); err != nil {
-				utils.LogERROR(err)
+				utils.HandleError(err)
 			}
 			return
 		}
@@ -439,7 +439,7 @@ func X11SetClipboardText(text string) {
 	if C.setClipboardTextX11(cstr) == 0 {
 		utils.HandleError(fmt.Errorf("failed to set clipboard text"))
 	}
-	return nil
+	return
 }
 
 func X11Paste() {
