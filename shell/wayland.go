@@ -20,3 +20,11 @@ func UpdateWLClipboard(s string) error {
 	}
 	return nil
 }
+
+func WLDepencencyCheck() error {
+	cmd := exec.Command("which", wlCopyHandler)
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+	return nil
+}

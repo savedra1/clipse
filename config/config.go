@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
 
@@ -104,6 +105,9 @@ func DisplayServer() string {
 	case "linux":
 		waylandDisplay := os.Getenv("WAYLAND_DISPLAY")
 		if waylandDisplay != "" {
+			if err := shell.WLDepencencyCheck(); err != nil {
+				fmt.Println("Wayland systems require the wl-clipboard dependency: https://github.com/bugaevc/wl-clipboard")
+			}
 			return "wayland"
 		}
 		return "x11"

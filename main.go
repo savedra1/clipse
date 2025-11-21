@@ -46,8 +46,6 @@ func main() {
 	utils.HandleError(err)
 	utils.SetUpLogger(logPath)
 
-	imgEnabled := shell.ImagesEnabled(displayServer)
-
 	switch {
 
 	case flag.NFlag() == 0:
@@ -80,7 +78,7 @@ func main() {
 		handleListen(displayServer)
 
 	case *listenShell:
-		handleListenShell(displayServer, imgEnabled)
+		handlers.RunListener(displayServer)
 
 	case *listenDarwin:
 		handlers.RunDarwinListener()
@@ -179,10 +177,6 @@ func handleListen(displayServer string) {
 		utils.LogERROR(fmt.Sprintf("failed to kill existing listener process: %s", err))
 	}
 	shell.RunNohupListener(displayServer)
-}
-
-func handleListenShell(displayServer string, imgEnabled bool) {
-	utils.HandleError(handlers.RunListener(displayServer, imgEnabled))
 }
 
 func handleKill() {
