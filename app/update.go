@@ -167,9 +167,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						imgData, err := os.ReadFile(fp)
 						utils.HandleError(err)
 						utils.HandleError(handlers.X11SetClipboardImage(imgData, "image/png"))
-						return m, tea.Quit
+					} else {
+						utils.HandleError(shell.CopyImage(fp, m.displayServer))
 					}
-					utils.HandleError(shell.CopyImage(fp, m.displayServer))
 					if len(os.Args) > 1 && os.Args[1] == "keep" {
 						cmds = append(
 							cmds,
