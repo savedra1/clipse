@@ -302,12 +302,12 @@ func X11Paste() error {
 	return nil
 }
 
-func X11CopyText(s string) error {
-	cstr := C.CString(s)
-	defer C.free(unsafe.Pointer(cstr))
+// func X11CopyText(s string) error {
+// 	cstr := C.CString(s)
+// 	defer C.free(unsafe.Pointer(cstr))
 
-	if C.setClipboardTextX11(cstr) == 0 {
-		return fmt.Errorf("failed to set clipboard text")
-	}
-	return nil
-}
+// 	if C.setClipboardTextX11(cstr) == 0 {
+// 		return fmt.Errorf("failed to set clipboard text")
+// 	}
+// 	return nil
+// }
