@@ -5,12 +5,14 @@ package handlers
 
 /*
 #cgo pkg-config: x11 xfixes
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/Xfixes.h>
-#include <stdlib.h>
-#include <string.h>
 
 static Display *dpy = NULL;
 static Window win;
@@ -18,9 +20,8 @@ static Atom XA_CLIPBOARD;
 static Atom XA_UTF8_STRING;
 static long last_serial = -1;
 static int xfixes_event_base = 0;
-static unsigned char *clipboard_data = NULL;
 
-// Initialize X11 resources
+// Initialize X11 resources once
 static void init_x11() {
     if (dpy != NULL) return;
 
@@ -185,23 +186,118 @@ unsigned char* getClipboardImageX11(int *out_len) {
             continue;
         }
 
+        // XGetWindowProperty returns len in terms of format units, not bytes
+        // format is in bits (8, 16, or 32), so calculate actual byte length
+        int actual_len = len * (format / 8);
+
         // Copy result to malloc'd buffer (Go will free this)
-        unsigned char *copy = malloc(len);
-        memcpy(copy, data, len);
+        unsigned char *copy = malloc(actual_len);
+        memcpy(copy, data, actual_len);
         XFree(data);
 
-        *out_len = (int)len;
+        *out_len = actual_len;
         return copy;
     }
 
     return NULL; // neither PNG nor JPEG available
 }
+
+// Clipboard data holder
+static unsigned char *clipboard_data = NULL;
+static int clipboard_data_len = 0;
+static Atom clipboard_data_type;
+
+// Selection handler - responds to requests for our clipboard data
+static Bool handleSelectionRequest(XEvent *ev) {
+    XSelectionRequestEvent *req = &ev->xselectionrequest;
+    XSelectionEvent notify;
+
+    notify.type = SelectionNotify;
+    notify.requestor = req->requestor;
+    notify.selection = req->selection;
+    notify.target = req->target;
+    notify.time = req->time;
+    notify.property = None;
+
+    Atom TARGETS = XInternAtom(dpy, "TARGETS", False);
+
+    // Handle TARGETS request - tell what formats we support
+    if (req->target == TARGETS) {
+        Atom supported[] = { clipboard_data_type, TARGETS };
+        XChangeProperty(dpy, req->requestor, req->property,
+                       XA_ATOM, 32, PropModeReplace,
+                       (unsigned char*)supported, 2);
+        notify.property = req->property;
+    }
+    // Handle request for our actual data
+    else if (req->target == clipboard_data_type && clipboard_data != NULL) {
+        XChangeProperty(dpy, req->requestor, req->property,
+                       clipboard_data_type, 8, PropModeReplace,
+                       clipboard_data, clipboard_data_len);
+        notify.property = req->property;
+    }
+
+    XSendEvent(dpy, req->requestor, False, 0, (XEvent*)&notify);
+    XFlush(dpy);
+    return True;
+}
+
+// Set text to clipboard
+int setClipboardTextX11(const char *text) {
+    init_x11();
+    if (!dpy || !text) return 0;
+
+    // Free old data
+    if (clipboard_data) {
+        free(clipboard_data);
+        clipboard_data = NULL;
+    }
+
+    // Copy text data
+    clipboard_data_len = strlen(text);
+    clipboard_data = malloc(clipboard_data_len);
+    memcpy(clipboard_data, text, clipboard_data_len);
+    clipboard_data_type = XA_UTF8_STRING;
+
+    // Take ownership of clipboard
+    XSetSelectionOwner(dpy, XA_CLIPBOARD, win, CurrentTime);
+    XFlush(dpy);
+
+    // Verify we own it
+    if (XGetSelectionOwner(dpy, XA_CLIPBOARD) != win) {
+        free(clipboard_data);
+        clipboard_data = NULL;
+        return 0;
+    }
+
+    // Process selection requests for a bit to let other apps grab the data
+    // This is a simple approach - a proper implementation would do this in the background
+    time_t start = time(NULL);
+    while (time(NULL) - start < 1) {
+        while (XPending(dpy)) {
+            XEvent ev;
+            XNextEvent(dpy, &ev);
+            if (ev.type == SelectionRequest) {
+                handleSelectionRequest(&ev);
+            }
+        }
+        usleep(10000); // 10ms
+    }
+
+    return 1;
+}
 */
 import "C"
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
 	"time"
 	"unsafe"
+
+	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/utils"
 )
 
 var clipboardContents string
@@ -236,6 +332,7 @@ func RunX11Listner() {
 
 			if imgContents != nil {
 				fmt.Printf("Clipboard changed - Image detected (%d bytes)\n", len(imgContents))
+				saveX11Image(imgContents)
 			} else {
 				textContents := X11GetClipboardText()
 				fmt.Printf("Clipboard changed - Text: %s\n", textContents)
@@ -243,6 +340,7 @@ func RunX11Listner() {
 		} else if result == 0 {
 			// Timeout - no change, this is normal
 		} else {
+			// Error
 			fmt.Println("Error waiting for clipboard change")
 			time.Sleep(1 * time.Second)
 		}
@@ -250,27 +348,27 @@ func RunX11Listner() {
 }
 
 // Alternative: polling approach (less efficient but simpler)
-// func RunX11ListenerPolling() {
-// 	fmt.Println("Starting X11 clipboard monitor (polling)...")
+func RunX11ListenerPolling() {
+	fmt.Println("Starting X11 clipboard monitor (polling)...")
 
-// 	for {
-// 		if X11ClipboardChanged() {
-// 			imgContents, err := GetClipboardImage()
-// 			if err != nil {
-// 				fmt.Printf("Error getting clipboard image: %v\n", err)
-// 			}
+	for {
+		if X11ClipboardChanged() {
+			imgContents, err := GetClipboardImage()
+			if err != nil {
+				fmt.Printf("Error getting clipboard image: %v\n", err)
+			}
 
-// 			if imgContents != nil {
-// 				fmt.Printf("Clipboard changed - Image detected (%d bytes)\n", len(imgContents))
-// 			} else {
-// 				textContents := X11GetClipboardText()
-// 				fmt.Printf("Clipboard changed - Text: %s\n", textContents)
-// 			}
-// 		}
+			if imgContents != nil {
+				fmt.Printf("Clipboard changed - Image detected (%d bytes)\n", len(imgContents))
+			} else {
+				textContents := X11GetClipboardText()
+				fmt.Printf("Clipboard changed - Text: %s\n", textContents)
+			}
+		}
 
-// 		time.Sleep(100 * time.Millisecond)
-// 	}
-// }
+		time.Sleep(100 * time.Millisecond)
+	}
+}
 
 func GetClipboardImage() ([]byte, error) {
 	var outLen C.int
@@ -286,28 +384,35 @@ func GetClipboardImage() ([]byte, error) {
 	return buf, nil
 }
 
-func X11Paste() error {
-	imgContents, err := GetClipboardImage()
-	if err != nil {
+func saveX11Image(imgData []byte) error {
+	byteLength := strconv.Itoa(len(string(imgData)))
+	fileName := fmt.Sprintf("%s-%s.png", byteLength, utils.GetTimeStamp())
+	itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
+	filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
+
+	if err := os.WriteFile(filePath, imgData, 0644); err != nil {
 		return err
 	}
-	if imgContents != nil {
-		fmt.Println(string(imgContents))
-		return nil
+
+	if err := config.AddClipboardItem(itemTitle, filePath); err != nil {
+		return err
 	}
-
-	textContents := X11GetClipboardText()
-	fmt.Println(textContents)
-
 	return nil
 }
 
-// func X11CopyText(s string) error {
-// 	cstr := C.CString(s)
-// 	defer C.free(unsafe.Pointer(cstr))
+func saveX11Text(textData string) error {
+	if err := config.AddClipboardItem(textData, "null"); err != nil {
+		return err
+	}
+	return nil
+}
 
-// 	if C.setClipboardTextX11(cstr) == 0 {
-// 		return fmt.Errorf("failed to set clipboard text")
-// 	}
-// 	return nil
-// }
+func X11SetClipboardText(text string) error {
+	cstr := C.CString(text)
+	defer C.free(unsafe.Pointer(cstr))
+
+	if C.setClipboardTextX11(cstr) == 0 {
+		return fmt.Errorf("failed to set clipboard text")
+	}
+	return nil
+}
