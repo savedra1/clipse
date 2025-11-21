@@ -170,6 +170,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, tea.Quit
 					}
 					utils.HandleError(shell.CopyImage(fp, m.displayServer))
+					if len(os.Args) > 1 && os.Args[1] == "keep" {
+						cmds = append(
+							cmds,
+							m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+title)),
+						)
+						return m, tea.Batch(cmds...)
+					}
 					return m, tea.Quit
 
 				case len(os.Args) > 2 && utils.IsInt(os.Args[2]):
