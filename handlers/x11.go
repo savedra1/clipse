@@ -186,12 +186,16 @@ unsigned char* getClipboardImageX11(int *out_len) {
             continue;
         }
 
+        // XGetWindowProperty returns len in terms of format units, not bytes
+        // format is in bits (8, 16, or 32), so calculate actual byte length
+        int actual_len = len * (format / 8);
+
         // Copy result to malloc'd buffer (Go will free this)
-        unsigned char *copy = malloc(len);
-        memcpy(copy, data, len);
+        unsigned char *copy = malloc(actual_len);
+        memcpy(copy, data, actual_len);
         XFree(data);
 
-        *out_len = (int)len;
+        *out_len = actual_len;
         return copy;
     }
 
