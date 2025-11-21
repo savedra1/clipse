@@ -132,8 +132,6 @@ import (
 	"fmt"
 	"time"
 	"unsafe"
-
-	"github.com/savedra1/clipse/config"
 )
 
 var clipboardContents string
@@ -150,17 +148,22 @@ func X11GetClipboardText() string {
 func RunX11Listner() {
 	for {
 		//contents := X11GetClipboardText()
-		contents, err := GetClipboardImage()
+		imgContents, err := GetClipboardImage()
+		textContents := X11GetClipboardText()
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Println(contents)
+		if imgContents == nil {
+			fmt.Println(textContents)
+		} else {
+			fmt.Println("<img data>")
+		}
 		// if C.hasClipboardChangedX11() == 1 {
 		// 	fmt.Printf("Clipborad changed. New value: %s", X11GetClipboardText())
 		// } else {
 		// 	fmt.Printf("Cliboard contents: %s", X11GetClipboardText())
 		// }
-		time.Sleep(time.Duration(config.ClipseConfig.PollInterval) * time.Millisecond)
+		time.Sleep(time.Duration(2000) * time.Millisecond)
 	}
 }
 
