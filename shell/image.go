@@ -11,22 +11,19 @@ import (
 
 var imgIsEnabledCmd = map[string]string{
 	"wayland": wlVersionCmd,
-	"x11":     xVersionCmd,
 }
 
 var copyImgCmds = map[string]string{
 	"darwin":  darwinCopyImgCmd,
 	"wayland": wlCopyImgCmd,
-	"x11":     xCopyImgCmd,
 }
 
 var pasteImgCmds = map[string]string{
 	"wayland": wlPasteImgCmd,
-	"x11":     xPasteImgCmd,
 }
 
 func ImagesEnabled(displayServer string) bool {
-	if displayServer == "darwin" {
+	if displayServer == "darwin" || displayServer == "x11" {
 		return true
 	}
 	cmd, ok := imgIsEnabledCmd[displayServer]

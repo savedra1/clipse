@@ -17,8 +17,8 @@ import "errors"
 var darwinErrString = "macOS-only feature"
 var errUnsupported = errors.New(darwinErrString)
 
-func RunDarwinListener(_ string, _ bool) error { return errUnsupported }
-func DarwinCopyText(_ string)                  {}
-func DarwinPaste()                             {}
-func DarwinGetClipboardText() string           { return darwinErrString }
-func DarwinHasClipboardChanged() bool          { return false }
+func RunDarwinListener()              {}
+func DarwinCopyText(_ string)         {}
+func DarwinPaste()                    {}
+func DarwinGetClipboardText() string  { return darwinErrString }
+func DarwinHasClipboardChanged() bool { return false }

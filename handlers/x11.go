@@ -286,6 +286,51 @@ int setClipboardTextX11(const char *text) {
 
     return 1;
 }
+// Set image to clipboard
+int setClipboardImageX11(unsigned char *data, int len, const char *mime_type) {
+    init_x11();
+    if (!dpy || !data || len <= 0) return 0;
+
+    // Free old data
+    if (clipboard_data) {
+        free(clipboard_data);
+        clipboard_data = NULL;
+    }
+
+    // Copy image data
+    clipboard_data_len = len;
+    clipboard_data = malloc(len);
+    memcpy(clipboard_data, data, len);
+
+    // Set the MIME type atom
+    clipboard_data_type = XInternAtom(dpy, mime_type, False);
+
+    // Take ownership of clipboard
+    XSetSelectionOwner(dpy, XA_CLIPBOARD, win, CurrentTime);
+    XFlush(dpy);
+
+    // Verify we own it
+    if (XGetSelectionOwner(dpy, XA_CLIPBOARD) != win) {
+        free(clipboard_data);
+        clipboard_data = NULL;
+        return 0;
+    }
+
+    // Process selection requests for a bit
+    time_t start = time(NULL);
+    while (time(NULL) - start < 1) {
+        while (XPending(dpy)) {
+            XEvent ev;
+            XNextEvent(dpy, &ev);
+            if (ev.type == SelectionRequest) {
+                handleSelectionRequest(&ev);
+            }
+        }
+        usleep(10000); // 10ms
+    }
+
+    return 1;
+}
 */
 import "C"
 import (
@@ -299,8 +344,6 @@ import (
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/utils"
 )
-
-var clipboardContents string
 
 func X11GetClipboardText() string {
 	cstr := C.getClipboardTextX11()
@@ -327,50 +370,28 @@ func RunX11Listner() {
 			// Clipboard changed
 			imgContents, err := GetClipboardImage()
 			if err != nil {
-				fmt.Printf("Error getting clipboard image: %v\n", err)
+				utils.LogERROR(fmt.Sprintf("Error getting clipboard image: %v\n", err))
 			}
 
 			if imgContents != nil {
-				fmt.Printf("Clipboard changed - Image detected (%d bytes)\n", len(imgContents))
 				if err := saveX11Image(imgContents); err != nil {
-					fmt.Println(err)
+					utils.LogERROR(err)
 				}
 				return
 			}
 
 			textContents := X11GetClipboardText()
-			fmt.Printf("Clipboard changed - Text: %s\n", textContents)
+			if err := saveX11Text(textContents); err != nil {
+				utils.LogERROR(err)
+			}
 			return
 		}
 		if result == 0 {
 			continue // Timeout - no change, this is normal
 		}
-		// Error
-		fmt.Println("Error waiting for clipboard change")
+
+		utils.LogERROR("error waiting for clipboard change")
 		time.Sleep(1 * time.Second)
-	}
-}
-
-// Alternative: polling approach (less efficient but simpler)
-func RunX11ListenerPolling() {
-	fmt.Println("Starting X11 clipboard monitor (polling)...")
-
-	for {
-		if X11ClipboardChanged() {
-			imgContents, err := GetClipboardImage()
-			if err != nil {
-				fmt.Printf("Error getting clipboard image: %v\n", err)
-			}
-
-			if imgContents != nil {
-				fmt.Printf("Clipboard changed - Image detected (%d bytes)\n", len(imgContents))
-			} else {
-				textContents := X11GetClipboardText()
-				fmt.Printf("Clipboard changed - Text: %s\n", textContents)
-			}
-		}
-
-		time.Sleep(100 * time.Millisecond)
 	}
 }
 
@@ -394,8 +415,6 @@ func saveX11Image(imgData []byte) error {
 	itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
 	filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
 
-	fmt.Println(filePath)
-
 	if err := os.WriteFile(filePath, imgData, 0644); err != nil {
 		return err
 	}
@@ -413,12 +432,44 @@ func saveX11Text(textData string) error {
 	return nil
 }
 
-func X11SetClipboardText(text string) error {
+func X11SetClipboardText(text string) {
 	cstr := C.CString(text)
 	defer C.free(unsafe.Pointer(cstr))
 
 	if C.setClipboardTextX11(cstr) == 0 {
-		return fmt.Errorf("failed to set clipboard text")
+		utils.HandleError(fmt.Errorf("failed to set clipboard text"))
+	}
+	return nil
+}
+
+func X11Paste() {
+	imgContents, err := GetClipboardImage()
+	utils.HandleError(err)
+
+	if imgContents != nil {
+		fmt.Println(string(imgContents))
+		return
+	}
+
+	textContents := X11GetClipboardText()
+	fmt.Println(textContents)
+	return
+}
+
+func X11SetClipboardImage(imageData []byte, mimeType string) error {
+	if len(imageData) == 0 {
+		return fmt.Errorf("empty image data")
+	}
+
+	cmime := C.CString(mimeType)
+	defer C.free(unsafe.Pointer(cmime))
+
+	// Use C.CBytes to properly copy the data
+	cdata := C.CBytes(imageData)
+	defer C.free(cdata)
+
+	if C.setClipboardImageX11((*C.uchar)(cdata), C.int(len(imageData)), cmime) == 0 {
+		return fmt.Errorf("failed to set clipboard image")
 	}
 	return nil
 }

@@ -123,14 +123,20 @@ func RunNohupListener(displayServer string) {
 		// run optimized wl-clipboard listener
 		utils.HandleError(nohupCmdWL("image/png").Start())
 		utils.HandleError(nohupCmdWL("text").Start())
+
 	case "darwin":
 		// run optimized darwin cgo listener
 		cmd := exec.Command("nohup", os.Args[0], darwinListenCmd, ">/dev/null", "2>&1", "&")
 		utils.HandleError(cmd.Start())
-	default:
-		// run default poll listener
-		cmd := exec.Command("nohup", os.Args[0], listenShellCmd, ">/dev/null", "2>&1", "&")
+
+	case "x11":
+		// run optimized x11 cgo listner
+		cmd := exec.Command("nohup", os.Args[0], x11ListenCmd, ">/dev/null", "2>&1", "&")
 		utils.HandleError(cmd.Start())
+
+	default:
+		utils.LogERROR(fmt.Sprintf("failed to run background listner; unrecognized display server '%s'", displayServer))
+		return
 	}
 }
 

@@ -26,6 +26,7 @@ var (
 	listen        = flag.Bool("listen", false, "Start background process for monitoring clipboard activity on wayland/x11/macOS.")
 	listenShell   = flag.Bool("listen-shell", false, "Starts a clipboard monitor process in the current shell.")
 	listenDarwin  = flag.Bool("listen-darwin", false, "Starts a clipboard monitor process in the current shell for Darwin systems.")
+	listenX11     = flag.Bool("listen-x11", false, "Starts a clipboard monitor process in the current shell for X11 systems.")
 	kill          = flag.Bool("kill", false, "Kill any existing background processes.")
 	clearUnpinned = flag.Bool("clear", false, "Remove all contents from the clipboard history except for pinned items.")
 	clearAll      = flag.Bool("clear-all", false, "Remove all contents the clipboard history including pinned items.")
@@ -42,9 +43,7 @@ func main() {
 	flag.Parse()
 
 	logPath, displayServer, err := config.Init()
-	handlers.RunX11Listner()
 	utils.HandleError(err)
-	return
 	utils.SetUpLogger(logPath)
 
 	imgEnabled := shell.ImagesEnabled(displayServer)
@@ -84,7 +83,10 @@ func main() {
 		handleListenShell(displayServer, imgEnabled)
 
 	case *listenDarwin:
-		handleDarwinListener(displayServer, imgEnabled)
+		handlers.RunDarwinListener()
+
+	case *listenX11:
+		handlers.RunX11Listner()
 
 	case *kill:
 		handleKill()
@@ -176,20 +178,11 @@ func handleListen(displayServer string) {
 		fmt.Printf("ERROR: failed to kill existing listener process: %s", err)
 		utils.LogERROR(fmt.Sprintf("failed to kill existing listener process: %s", err))
 	}
-	// Clear the clipboard first to avoid capturing clipboard data before the user
-	// expresses their intent to start monitoring.
-	if err := clipboard.WriteAll(""); err != nil {
-		utils.LogERROR(fmt.Sprintf("failed to reset clipboard buffer value: %s", err))
-	}
 	shell.RunNohupListener(displayServer)
 }
 
 func handleListenShell(displayServer string, imgEnabled bool) {
 	utils.HandleError(handlers.RunListener(displayServer, imgEnabled))
-}
-
-func handleDarwinListener(displayServer string, imgEnabled bool) {
-	utils.HandleError(handlers.RunDarwinListener(displayServer, imgEnabled))
 }
 
 func handleKill() {
@@ -228,8 +221,12 @@ func handleCopy(ds string) {
 	switch ds {
 	case "darwin":
 		handlers.DarwinCopyText(input)
+	case "x11":
+		handlers.X11SetClipboardText(input)
+	case "wayland":
+		handlers.WaylandCopy(input)
 	default:
-		utils.HandleError(clipboard.WriteAll(input))
+		utils.LogERROR(fmt.Sprintf("failed to copy text; unknown display server: %s", ds))
 	}
 }
 
@@ -239,12 +236,12 @@ func handlePaste(ds string) {
 		handlers.DarwinPaste()
 	case "wayland":
 		handlers.WaylandPaste()
-	default:
-		currentItem, err := clipboard.ReadAll()
-		utils.HandleError(err)
-		if currentItem != "" {
-			fmt.Println(currentItem)
+	case "x11":
+		if err := handlers.X11Paste(); err != nil {
+			utils.LogERROR(err)
 		}
+	default:
+		utils.LogERROR(fmt.Sprintf("failed to paste content; unknown display server: %s", ds))
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/handlers"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
@@ -169,6 +170,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch {
 				case fp != "null":
 					ds := config.DisplayServer() // eg "wayland"
+					if ds == "x11" {
+						imgData, err := os.ReadFile(fp)
+						utils.HandleError(err)
+						utils.HandleError(handlers.X11SetClipboardImage(imgData, "image/png"))
+						return m, tea.Quit
+					}
 					utils.HandleError(shell.CopyImage(fp, ds))
 					return m, tea.Quit
 
