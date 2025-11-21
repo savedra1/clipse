@@ -17,6 +17,7 @@ static Window win;
 static Atom XA_CLIPBOARD;
 static Atom XA_UTF8_STRING;
 static long last_serial = -1;
+static int xfixes_event_base = 0;
 
 // Initialize X11 resources once
 static void init_x11() {
@@ -25,12 +26,29 @@ static void init_x11() {
     dpy = XOpenDisplay(NULL);
     if (!dpy) return;
 
+    int xfixes_error_base;
+    if (!XFixesQueryExtension(dpy, &xfixes_event_base, &xfixes_error_base)) {
+        XCloseDisplay(dpy);
+        dpy = NULL;
+        return;
+    }
+
     win = XCreateSimpleWindow(dpy, DefaultRootWindow(dpy), 0, 0, 1, 1, 0, 0, 0);
 
     XA_CLIPBOARD = XInternAtom(dpy, "CLIPBOARD", False);
     XA_UTF8_STRING = XInternAtom(dpy, "UTF8_STRING", False);
 
     XFixesSelectSelectionInput(dpy, win, XA_CLIPBOARD, XFixesSetSelectionOwnerNotifyMask);
+
+    // Flush to ensure the request is sent
+    XFlush(dpy);
+}
+
+// Returns the X11 connection file descriptor for select/poll
+int getX11ConnectionFd() {
+    init_x11();
+    if (!dpy) return -1;
+    return ConnectionNumber(dpy);
 }
 
 // Returns 1 if clipboard has changed since last check, 0 otherwise
@@ -41,20 +59,48 @@ int hasClipboardChangedX11() {
     XEvent ev;
     int changed = 0;
 
+    // Process all pending events
     while (XPending(dpy)) {
         XNextEvent(dpy, &ev);
 
-        if (ev.type == XFixesSelectionNotify) {
+        // XFixes events start at xfixes_event_base
+        if (ev.type == xfixes_event_base + XFixesSelectionNotify) {
             XFixesSelectionNotifyEvent *xfe = (XFixesSelectionNotifyEvent *)&ev;
-            long serial = xfe->selection_timestamp;
-            if (serial != last_serial) {
-                last_serial = serial;
-                changed = 1;
+            if (xfe->selection == XA_CLIPBOARD) {
+                long serial = xfe->selection_timestamp;
+                if (serial != last_serial) {
+                    last_serial = serial;
+                    changed = 1;
+                }
             }
         }
     }
 
     return changed;
+}
+
+// Blocking wait for clipboard change (with timeout in milliseconds)
+// Returns 1 if changed, 0 if timeout, -1 on error
+int waitForClipboardChange(int timeout_ms) {
+    init_x11();
+    if (!dpy) return -1;
+
+    int fd = ConnectionNumber(dpy);
+    fd_set fds;
+    struct timeval tv;
+
+    tv.tv_sec = timeout_ms / 1000;
+    tv.tv_usec = (timeout_ms % 1000) * 1000;
+
+    FD_ZERO(&fds);
+    FD_SET(fd, &fds);
+
+    int ret = select(fd + 1, &fds, NULL, NULL, &tv);
+    if (ret > 0) {
+        return hasClipboardChangedX11();
+    }
+
+    return ret; // 0 = timeout, -1 = error
 }
 
 // Returns clipboard text (UTF-8) or NULL
@@ -172,53 +218,70 @@ func X11ClipboardChanged() bool {
 	return C.hasClipboardChangedX11() != 0
 }
 
+// Efficient listener using blocking waits
 func RunX11Listner() {
+	fmt.Println("Starting X11 clipboard monitor...")
+
 	for {
-		fmt.Println(C.hasClipboardChangedX11())
-		// imgContents, err := GetClipboardImage()
-		// textContents := X11GetClipboardText()
-		// if err != nil {
-		// 	fmt.Println(err)
-		// }
-		// if imgContents == nil {
-		// 	fmt.Println(textContents)
-		// } else {
-		// 	fmt.Println("<img data>")
-		// }
-		// if C.hasClipboardChangedX11() == 1 {
-		// 	fmt.Printf("Clipborad changed. New value: %s", X11GetClipboardText())
-		// } else {
-		// 	fmt.Printf("Cliboard contents: %s", X11GetClipboardText())
-		// }
-		time.Sleep(time.Duration(50) * time.Millisecond)
+		// Wait up to 1 second for clipboard change
+		result := int(C.waitForClipboardChange(1000))
+
+		if result > 0 {
+			// Clipboard changed
+			imgContents, err := GetClipboardImage()
+			if err != nil {
+				fmt.Printf("Error getting clipboard image: %v\n", err)
+			}
+
+			if imgContents != nil {
+				fmt.Printf("Clipboard changed - Image detected (%d bytes)\n", len(imgContents))
+			} else {
+				textContents := X11GetClipboardText()
+				fmt.Printf("Clipboard changed - Text: %s\n", textContents)
+			}
+		} else if result == 0 {
+			// Timeout - no change, this is normal
+		} else {
+			// Error
+			fmt.Println("Error waiting for clipboard change")
+			time.Sleep(1 * time.Second)
+		}
+	}
+}
+
+// Alternative: polling approach (less efficient but simpler)
+func RunX11ListenerPolling() {
+	fmt.Println("Starting X11 clipboard monitor (polling)...")
+
+	for {
+		if X11ClipboardChanged() {
+			imgContents, err := GetClipboardImage()
+			if err != nil {
+				fmt.Printf("Error getting clipboard image: %v\n", err)
+			}
+
+			if imgContents != nil {
+				fmt.Printf("Clipboard changed - Image detected (%d bytes)\n", len(imgContents))
+			} else {
+				textContents := X11GetClipboardText()
+				fmt.Printf("Clipboard changed - Text: %s\n", textContents)
+			}
+		}
+
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
 func GetClipboardImage() ([]byte, error) {
 	var outLen C.int
 
-	// Call your C function
 	ptr := C.getClipboardImageX11(&outLen)
 	if ptr == nil || outLen == 0 {
-		return nil, nil // no image
+		return nil, nil
 	}
 
-	// Copy into Go memory
 	buf := C.GoBytes(unsafe.Pointer(ptr), outLen)
-
-	// Free C memory
 	C.free(unsafe.Pointer(ptr))
 
 	return buf, nil
 }
-
-// Optional functions
-// func XDarwinHasClipboardChanged() bool {
-// 	return C.hasClipboardChangedX11() == 1
-// }
-
-// func XSetClipboardText(s string) {
-// 	cs := C.CString(s)
-// 	defer C.free(unsafe.Pointer(cs))
-// 	C.setClipboardTextX11(cs)
-// }
