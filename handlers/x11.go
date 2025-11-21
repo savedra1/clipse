@@ -332,18 +332,22 @@ func RunX11Listner() {
 
 			if imgContents != nil {
 				fmt.Printf("Clipboard changed - Image detected (%d bytes)\n", len(imgContents))
-				saveX11Image(imgContents)
-			} else {
-				textContents := X11GetClipboardText()
-				fmt.Printf("Clipboard changed - Text: %s\n", textContents)
+				if err := saveX11Image(imgContents); err != nil {
+					fmt.Println(err)
+				}
+				return
 			}
-		} else if result == 0 {
-			// Timeout - no change, this is normal
-		} else {
-			// Error
-			fmt.Println("Error waiting for clipboard change")
-			time.Sleep(1 * time.Second)
+
+			textContents := X11GetClipboardText()
+			fmt.Printf("Clipboard changed - Text: %s\n", textContents)
+			return
 		}
+		if result == 0 {
+			continue // Timeout - no change, this is normal
+		}
+		// Error
+		fmt.Println("Error waiting for clipboard change")
+		time.Sleep(1 * time.Second)
 	}
 }
 
