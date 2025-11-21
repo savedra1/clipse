@@ -19,7 +19,7 @@ var errX11Unsupported = errors.New(x11ErrString)
 
 func X11GetClipboardText() string               { return x11ErrString }
 func X11ClipboardChanged() bool                 { return false }
-func RunX11Listner()                            {}
+func RunX11Listener()                           {}
 func GetClipboardImage() ([]byte, error)        { return []byte{}, errX11Unsupported }
 func X11Paste()                                 {}
 func X11SetClipboardText(_ string) error        { return errX11Unsupported }
