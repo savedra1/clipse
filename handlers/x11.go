@@ -190,7 +190,7 @@ func RunX11Listner() {
 		// } else {
 		// 	fmt.Printf("Cliboard contents: %s", X11GetClipboardText())
 		// }
-		time.Sleep(time.Duration(100) * time.Millisecond)
+		time.Sleep(time.Duration(50) * time.Millisecond)
 	}
 }
 
