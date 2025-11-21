@@ -394,6 +394,8 @@ func saveX11Image(imgData []byte) error {
 	itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
 	filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
 
+	fmt.Println(filePath)
+
 	if err := os.WriteFile(filePath, imgData, 0644); err != nil {
 		return err
 	}
