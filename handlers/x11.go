@@ -374,7 +374,6 @@ func RunX11Listner() {
 				if err := saveImage(imgContents); err != nil {
 					utils.HandleError(err)
 				}
-				return
 			}
 
 			textContents := X11GetClipboardText()
@@ -384,7 +383,6 @@ func RunX11Listner() {
 				utils.LogERROR("FAILING HERE (RunX11Listner)")
 				utils.HandleError(err)
 			}
-			return
 		}
 		if result == 0 {
 			continue // Timeout - no change, this is normal
