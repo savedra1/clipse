@@ -382,6 +382,7 @@ func RunX11Listner() {
 
 			textContents := X11GetClipboardText()
 			if err := saveX11Text(textContents); err != nil {
+				utils.LogERROR("FAILING HERE (RunX11Listner)")
 				utils.HandleError(err)
 			}
 			return
