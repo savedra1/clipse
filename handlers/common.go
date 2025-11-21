@@ -1,3 +1,4 @@
+// handlers/common.go
 package handlers
 
 import (
@@ -36,7 +37,7 @@ func ReadClipboard(ds string) string {
 	return ""
 }
 
-func saveImage(imgData []byte) error {
+func SaveImageCommon(imgData []byte) error {
 	byteLength := strconv.Itoa(len(string(imgData)))
 	fileName := fmt.Sprintf("%s-%s.png", byteLength, utils.GetTimeStamp())
 	itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
@@ -52,7 +53,7 @@ func saveImage(imgData []byte) error {
 	return nil
 }
 
-func saveText(textData string) error {
+func SaveTextCommon(textData string) error {
 	if err := config.AddClipboardItem(textData, "null"); err != nil {
 		return err
 	}

@@ -22,5 +22,5 @@ func X11ClipboardChanged() bool                 { return false }
 func RunX11Listener()                           {}
 func GetClipboardImage() ([]byte, error)        { return []byte{}, errX11Unsupported }
 func X11Paste()                                 {}
-func X11SetClipboardText(_ string) error        { return errX11Unsupported }
+func X11SetClipboardText(_ string)              {}
 func X11SetClipboardImage([]byte, string) error { return errX11Unsupported }

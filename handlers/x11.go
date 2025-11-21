@@ -1,6 +1,5 @@
 //handlers/x11.go
 //go:build (linux && !wayland) || !cgo
-// +build linux,!wayland !cgo
 
 package handlers
 
@@ -369,12 +368,12 @@ func RunX11Listener() {
 			}
 
 			if imgContents != nil {
-				utils.HandleError(saveImage(imgContents))
+				utils.HandleError(SaveImageCommon(imgContents))
 			}
 
 			textContents := X11GetClipboardText()
 			if textContents != "" {
-				utils.HandleError(saveText(textContents))
+				utils.HandleError(SaveTextCommon(textContents))
 			}
 		}
 		if result == 0 {
@@ -407,7 +406,6 @@ func X11SetClipboardText(text string) {
 	if C.setClipboardTextX11(cstr) == 0 {
 		utils.HandleError(fmt.Errorf("failed to set clipboard text"))
 	}
-	return
 }
 
 func X11Paste() {
