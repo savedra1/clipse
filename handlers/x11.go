@@ -356,7 +356,7 @@ func X11ClipboardChanged() bool {
 }
 
 // Efficient listener using blocking waits
-func RunX11Listner() {
+func RunX11Listener() {
 	for {
 		// Wait up to 1 second for clipboard change
 		result := int(C.waitForClipboardChange(1000))

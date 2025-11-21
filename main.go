@@ -84,7 +84,7 @@ func main() {
 		handlers.RunDarwinListener()
 
 	case *listenX11:
-		handlers.RunX11Listner()
+		handlers.RunX11Listener()
 
 	case *kill:
 		handleKill()

@@ -133,12 +133,12 @@ func RunNohupListener(displayServer string) {
 		utils.HandleError(cmd.Start())
 
 	case "x11":
-		// run optimized x11 cgo listner
+		// run optimized x11 cgo listener
 		cmd := exec.Command("nohup", os.Args[0], x11ListenCmd, ">/dev/null", "2>&1", "&")
 		utils.HandleError(cmd.Start())
 
 	default:
-		utils.LogERROR(fmt.Sprintf("failed to run background listner; unrecognized display server '%s'", displayServer))
+		utils.LogERROR(fmt.Sprintf("failed to run background listener; unrecognized display server '%s'", displayServer))
 		return
 	}
 }

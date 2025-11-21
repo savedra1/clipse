@@ -59,7 +59,7 @@ func saveText(textData string) error {
 	return nil
 }
 
-// run the listner is the current shell
+// run the listener is the current shell
 func RunListener(displayServer string) {
 	switch displayServer {
 	case "darwin":
@@ -67,6 +67,6 @@ func RunListener(displayServer string) {
 	case "wayland":
 		fmt.Println("Wayland systems use the wl-paste --watch util. See https://github.com/bugaevc/wl-clipboard")
 	case "x11":
-		RunX11Listner()
+		RunX11Listener()
 	}
 }
