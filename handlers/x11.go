@@ -150,7 +150,10 @@ func X11GetClipboardText() string {
 func RunX11Listner() {
 	for {
 		//contents := X11GetClipboardText()
-		contents := GetClipboardImage()
+		contents, err := GetClipboardImage()
+		if err != nil {
+			fmt.Println(err)
+		}
 		fmt.Println(contents)
 		// if C.hasClipboardChangedX11() == 1 {
 		// 	fmt.Printf("Clipborad changed. New value: %s", X11GetClipboardText())
