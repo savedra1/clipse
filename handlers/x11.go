@@ -356,8 +356,6 @@ func X11ClipboardChanged() bool {
 
 // Efficient listener using blocking waits
 func RunX11Listner() {
-	fmt.Println("Starting X11 clipboard monitor...")
-	utils.LogINFO("DEBUG (RunX11Listner) START")
 	for {
 		// Wait up to 1 second for clipboard change
 		result := int(C.waitForClipboardChange(1000))
@@ -370,18 +368,12 @@ func RunX11Listner() {
 			}
 
 			if imgContents != nil {
-				utils.LogINFO("DEBUG (RunX11Listner) img contents is not nil")
-				if err := saveImage(imgContents); err != nil {
-					utils.HandleError(err)
-				}
+				utils.HandleError(saveImage(imgContents))
 			}
 
 			textContents := X11GetClipboardText()
-			utils.LogINFO("DEBUG (RunX11Listner) saving some text")
-
-			if err := saveText(textContents); err != nil {
-				utils.LogERROR("FAILING HERE (RunX11Listner)")
-				utils.HandleError(err)
+			if textContents != "" {
+				utils.HandleError(saveText(textContents))
 			}
 		}
 		if result == 0 {
