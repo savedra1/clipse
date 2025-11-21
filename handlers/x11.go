@@ -38,22 +38,23 @@ int hasClipboardChangedX11() {
     if (!dpy) return 0;
 
     XEvent ev;
-    int changed = 0;
 
-    while (XPending(dpy)) {
-        XNextEvent(dpy, &ev);
+    while (1) {
+        XNextEvent(dpy, &ev); // blocks until an event arrives
 
         if (ev.type == XFixesSelectionNotify) {
             XFixesSelectionNotifyEvent *xfe = (XFixesSelectionNotifyEvent *)&ev;
             long serial = xfe->selection_timestamp;
+
             if (serial != last_serial) {
                 last_serial = serial;
-                changed = 1;
+                return 1; // clipboard changed
             }
         }
+        // ignore other events
     }
 
-    return changed;
+    return 0; // never reached
 }
 
 // Returns clipboard text (UTF-8) or NULL
