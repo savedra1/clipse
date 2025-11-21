@@ -170,7 +170,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						utils.HandleError(shell.CopyImage(fp, m.displayServer))
 					}
-					if len(os.Args) > 1 && os.Args[1] == "keep" {
+					if keepEnabled() {
 						cmds = append(
 							cmds,
 							m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+title)),
@@ -183,7 +183,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					shell.KillProcess(os.Args[2])
 					return m, tea.Quit
 
-				case len(os.Args) > 1 && os.Args[1] == "keep":
+				case keepEnabled():
 					handlers.CopyText(fullValue, m.displayServer)
 					cmds = append(
 						cmds,
@@ -211,7 +211,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				shell.KillProcess(os.Args[2])
 				return m, tea.Quit
 
-			case len(os.Args) > 1 && os.Args[1] == "keep":
+			case keepEnabled():
 				statusMsg := "Copied to clipboard: *selected items*"
 				handlers.CopyText(yank, m.displayServer)
 				cmds = append(
@@ -664,4 +664,11 @@ func (m *Model) enableConfirmationKeys(v bool) {
 
 func (m *Model) setQuitEnabled(v bool) {
 	m.list.KeyMap.Quit.SetEnabled(v)
+}
+
+func keepEnabled() bool {
+	if len(os.Args) > 1 && os.Args[1] == "keep" {
+		return true
+	}
+	return false
 }
