@@ -33,7 +33,6 @@ static void init_x11() {
     XFixesSelectSelectionInput(dpy, win, XA_CLIPBOARD, XFixesSetSelectionOwnerNotifyMask);
 }
 
-// Returns 1 if clipboard has changed since last check, 0 otherwise
 int hasClipboardChangedX11() {
     init_x11();
     if (!dpy) return 0;
@@ -41,7 +40,6 @@ int hasClipboardChangedX11() {
     XEvent ev;
     int changed = 0;
 
-    // Process all pending X events
     while (XPending(dpy)) {
         XNextEvent(dpy, &ev);
 
