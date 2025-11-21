@@ -33,28 +33,28 @@ static void init_x11() {
     XFixesSelectSelectionInput(dpy, win, XA_CLIPBOARD, XFixesSetSelectionOwnerNotifyMask);
 }
 
+// Returns 1 if clipboard has changed since last check, 0 otherwise
 int hasClipboardChangedX11() {
     init_x11();
     if (!dpy) return 0;
 
     XEvent ev;
+    int changed = 0;
 
-    while (1) {
-        XNextEvent(dpy, &ev); // blocks until an event arrives
+    while (XPending(dpy)) {
+        XNextEvent(dpy, &ev);
 
         if (ev.type == XFixesSelectionNotify) {
             XFixesSelectionNotifyEvent *xfe = (XFixesSelectionNotifyEvent *)&ev;
             long serial = xfe->selection_timestamp;
-
             if (serial != last_serial) {
                 last_serial = serial;
-                return 1; // clipboard changed
+                changed = 1;
             }
         }
-        // ignore other events
     }
 
-    return 0; // never reached
+    return changed;
 }
 
 // Returns clipboard text (UTF-8) or NULL
@@ -190,7 +190,7 @@ func RunX11Listner() {
 		// } else {
 		// 	fmt.Printf("Cliboard contents: %s", X11GetClipboardText())
 		// }
-		time.Sleep(time.Duration(2000) * time.Millisecond)
+		time.Sleep(time.Duration(100) * time.Millisecond)
 	}
 }
 
