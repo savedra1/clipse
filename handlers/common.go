@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
+	"github.com/go-vgo/robotgo"
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
@@ -69,5 +71,15 @@ func RunListener(displayServer string) {
 		fmt.Println("Wayland systems use the wl-paste --watch util. See https://github.com/bugaevc/wl-clipboard")
 	case "x11":
 		RunX11Listener()
+	}
+}
+
+func SendPaste(keybind, displayServer string) {
+	switch displayServer {
+	case "wayland":
+		utils.LogERROR("auto paste is not yet available for wayland")
+	default:
+		parts := strings.Split(keybind, "+")
+		utils.HandleError(robotgo.KeyTap(parts[1], parts[0]))
 	}
 }

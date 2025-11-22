@@ -107,35 +107,23 @@ func RunListenerAfterDelay(delay *time.Duration) {
 		return
 	}
 
-	cmd := exec.Command(
-		"sh",
-		"-c",
-		fmt.Sprintf(
-			"sleep %d && nohup %s %s >/dev/null 2>&1 &",
-			int(delay.Seconds()),
-			os.Args[0],
-			listenCmd,
-		),
-	)
-	utils.HandleError(cmd.Start())
+	runDetachedCmd(listenCmd, delay, false)
 }
 
 func RunNohupListener(displayServer string) {
 	switch displayServer {
 	case "wayland":
-		// run optimized wl-clipboard listener
-		utils.HandleError(nohupCmdWL("image/png").Start())
-		utils.HandleError(nohupCmdWL("text").Start())
+		// run the wl-clipboard --watch binaries
+		runDetachedCmd("image/png", nil, true)
+		runDetachedCmd("text", nil, true)
 
 	case "darwin":
 		// run optimized darwin cgo listener
-		cmd := exec.Command("nohup", os.Args[0], darwinListenCmd, ">/dev/null", "2>&1", "&")
-		utils.HandleError(cmd.Start())
+		runDetachedCmd(darwinListenCmd, nil, false)
 
 	case "x11":
 		// run optimized x11 cgo listener
-		cmd := exec.Command("nohup", os.Args[0], x11ListenCmd, ">/dev/null", "2>&1", "&")
-		utils.HandleError(cmd.Start())
+		runDetachedCmd(x11ListenCmd, nil, false)
 
 	default:
 		utils.LogERROR(fmt.Sprintf("failed to run background listener; unrecognized display server '%s'", displayServer))
@@ -143,20 +131,37 @@ func RunNohupListener(displayServer string) {
 	}
 }
 
-func nohupCmdWL(dataType string) *exec.Cmd {
-	cmd := exec.Command(
-		"nohup",
-		wlPasteHandler,
-		wlTypeSpec,
-		dataType,
-		wlPasteWatcher,
-		os.Args[0],
-		wlStoreCmd,
-		">/dev/null",
-		"2>&1",
-		"&",
-	)
-	return cmd
+func RunAutoPaste(delay *time.Duration) {
+	runDetachedCmd("--auto-paste", nil, false)
+}
+
+func runDetachedCmd(flag string, delay *time.Duration, isWaylandListener bool) {
+	exe, err := os.Executable()
+	if err != nil {
+		return
+	}
+
+	cmd := exec.Command(exe, flag)
+
+	if delay != nil {
+		cmd = exec.Command("sleep", strconv.Itoa(int(delay.Seconds())), "&&", exe, flag)
+	}
+
+	if isWaylandListener { // override any dely for specific use
+		cmd = exec.Command(wlPasteHandler, wlTypeSpec, flag, wlPasteWatcher, exe, wlStoreCmd)
+	}
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+		Pgid:    0,
+	}
+
+	devNull, _ := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
+	cmd.Stdout = devNull
+	cmd.Stderr = devNull
+	cmd.Stdin = nil
+
+	utils.HandleError(cmd.Start())
 }
 
 func KillProcess(ppid string) {

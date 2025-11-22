@@ -4,9 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"time"
 
-	"github.com/atotto/clipboard"
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/savedra1/clipse/app"
@@ -36,7 +34,8 @@ var (
 	wlStore       = flag.Bool("wl-store", false, "Store data from the stdin directly using the wl-clipboard API.")
 	realTime      = flag.Bool("enable-real-time", false, "Enable real time updates to the TUI")
 	outputAll     = flag.String("output-all", "", "Print clipboard text content to stdout, each entry separated by a newline, possible values: (raw, unescaped)")
-	pause         = flag.String("pause", "0", "Pause clipboard monitoring for a specified duration. Example: `clipse -pause 5m` pauses for 5 minutes.")
+	autoPaste     = flag.Bool("auto-paste", false, "send key event to paste")
+	pause         = flag.String("pause", "", "Pause clipboard monitoring for a specified duration. Example: `clipse -pause 5m` pauses for 5 minutes.")
 )
 
 func main() {
@@ -107,6 +106,9 @@ func main() {
 	case *pause != "":
 		handlePause(*pause)
 
+	case *autoPaste:
+		handlers.SendPaste("cmd+v", displayServer)
+
 	default:
 		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])
 	}
@@ -128,7 +130,7 @@ func handlePause(s string) {
 		fmt.Println(usageMsg)
 		return
 	}
-	duration, err := time.ParseDuration(s)
+	duration, err := utils.ParseDuration(s)
 	if err != nil {
 		fmt.Printf("Invalid duration format: %s\n", err)
 		fmt.Println(usageMsg)
@@ -140,7 +142,7 @@ func handlePause(s string) {
 		return
 	}
 	fmt.Printf("Pausing clipboard monitoring for %s...\n", duration)
-	shell.RunListenerAfterDelay(&duration)
+	shell.RunListenerAfterDelay(duration)
 }
 
 func launchTUI(ds string) {
@@ -157,6 +159,12 @@ func launchTUI(ds string) {
 		if m.ExitCode != 0 {
 			os.Exit(m.ExitCode)
 		}
+
+		duration, err := utils.ParseDuration("0") // to supply in config
+		if err != nil {
+			utils.LogERROR("could not parse duration specified in config file")
+		}
+		shell.RunAutoPaste(duration)
 	}
 }
 
@@ -184,10 +192,6 @@ func handleKill() {
 }
 
 func handleClear() {
-	if err := clipboard.WriteAll(""); err != nil {
-		utils.LogERROR(fmt.Sprintf("failed to reset clipboard buffer value: %s", err))
-	}
-
 	var clearType string
 
 	switch {
