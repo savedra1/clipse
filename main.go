@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 
@@ -107,7 +108,7 @@ func main() {
 		handlePause(*pause)
 
 	case *autoPaste:
-		handlers.SendPaste("cmd+v", displayServer)
+		handleAutoPaste(displayServer)
 
 	default:
 		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])
@@ -159,12 +160,10 @@ func launchTUI(ds string) {
 		if m.ExitCode != 0 {
 			os.Exit(m.ExitCode)
 		}
-
-		duration, err := utils.ParseDuration("0") // to supply in config
-		if err != nil {
-			utils.LogERROR("could not parse duration specified in config file")
+		if config.ClipseConfig.AutoPaste.Enabled {
+			shell.RunAutoPaste()
 		}
-		shell.RunAutoPaste(duration)
+
 	}
 }
 
@@ -275,4 +274,9 @@ func handleOutputAll(format string) {
 	default:
 		fmt.Printf("Invalid argument to -output-all\nSee %s --help for usage", os.Args[0])
 	}
+}
+
+func handleAutoPaste(ds string) {
+	time.Sleep(time.Duration(config.ClipseConfig.AutoPaste.Buffer) * time.Microsecond)
+	handlers.SendPaste(config.ClipseConfig.AutoPaste.Keybind, ds)
 }

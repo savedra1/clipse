@@ -131,7 +131,7 @@ func RunNohupListener(displayServer string) {
 	}
 }
 
-func RunAutoPaste(delay *time.Duration) {
+func RunAutoPaste() {
 	runDetachedCmd("--auto-paste", nil, false)
 }
 

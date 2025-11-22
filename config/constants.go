@@ -1,17 +1,19 @@
 package config
 
 const (
-	configFile             = "config.json"
-	clipseDir              = "clipse"
-	defaultAllowDuplicates = false
-	defaultHistoryFile     = "clipboard_history.json"
-	defaultMaxHist         = 100
-	defaultDeleteAfter     = 0
-	defaultLogFile         = "clipse.log"
-	defaultPollInterval    = 50
-	defaultTempDir         = "tmp_files"
-	defaultThemeFile       = "custom_theme.json"
-	maxChar                = 65
+	configFile              = "config.json"
+	clipseDir               = "clipse"
+	defaultAllowDuplicates  = false
+	defaultHistoryFile      = "clipboard_history.json"
+	defaultMaxHist          = 100
+	defaultDeleteAfter      = 0
+	defaultLogFile          = "clipse.log"
+	defaultPollInterval     = 50
+	defaultTempDir          = "tmp_files"
+	defaultThemeFile        = "custom_theme.json"
+	maxChar                 = 65
+	defaultEnableAutoPaste  = false
+	defaultAutoPasteKeyBind = "ctrl+v"
 )
 
 // Initialize default key bindings
@@ -57,6 +59,11 @@ func defaultConfig() Config {
 			ScaleX:    9,
 			ScaleY:    9,
 			HeightCut: 2,
+		},
+		AutoPaste: AutoPaste{
+			Enabled: false,
+			Keybind: "ctrl+v",
+			Buffer:  5,
 		},
 	}
 }

@@ -17,12 +17,20 @@ type Config struct {
 	MaxHistory      int               `json:"maxHistory"`
 	DeleteAfter     int               `json:"deleteAfter"`
 	LogFilePath     string            `json:"logFile"`
-	PollInterval    int               `json:"PollInterval"`
+	PollInterval    int               `json:"pollInterval"`
 	ThemeFilePath   string            `json:"themeFile"`
 	TempDirPath     string            `json:"tempDir"`
 	KeyBindings     map[string]string `json:"keyBindings"`
 	ImageDisplay    ImageDisplay      `json:"imageDisplay"`
+	AutoPaste       AutoPaste         `json:"autoPaste"`
 }
+
+type AutoPaste struct {
+	Enabled bool   `json:"enabled"`
+	Keybind string `json:"keybind"`
+	Buffer  int    `json:"buffer"`
+}
+
 type ImageDisplay struct {
 	Type      string `json:"type"`
 	ScaleX    int    `json:"scaleX"`
