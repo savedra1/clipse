@@ -79,7 +79,7 @@ func SendPaste(keybind, displayServer string) {
 	case "wayland":
 		utils.LogERROR("auto paste is not yet available for wayland")
 	default:
-		parts := strings.Split(keybind, "+")
+		parts := strings.Split(keybind, "+") // need to make this more durable
 		utils.HandleError(robotgo.KeyTap(parts[1], parts[0]))
 	}
 }
