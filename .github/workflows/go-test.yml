@@ -24,7 +24,7 @@ jobs:
 
       - name: Run go test (syntax check)
         id: test-syntax
-        run: go test -v ./...
+        run: go test -tags ci -v ./...
 
   golangci-all-codebase:
     runs-on: ubuntu-latest
@@ -42,6 +42,7 @@ jobs:
         uses: golangci/golangci-lint-action@v8
         with:
           version: latest
+          args: --build-tags ci
 
   golangci-updated-code:
     runs-on: ubuntu-latest
@@ -59,3 +60,4 @@ jobs:
         with:
           version: latest
           only-new-issues: true
+          args: --build-tags ci

@@ -66,8 +66,18 @@ func RunListener(displayServer string) {
 	case "darwin":
 		RunDarwinListener()
 	case "wayland":
-		fmt.Println("Wayland systems use the wl-paste --watch util. See https://github.com/bugaevc/wl-clipboard")
+		fmt.Println("Wayland systems use the `wl-paste --watch` util. See https://github.com/bugaevc/wl-clipboard")
 	case "x11":
 		RunX11Listener()
+	}
+}
+
+func SendPaste(keybind, displayServer string) {
+	switch displayServer {
+	case "wayland":
+		//utils.LogERROR("auto paste is not yet available for wayland")
+		UinputPaste(keybind)
+	default:
+		RobotPaste(keybind)
 	}
 }
