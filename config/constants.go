@@ -14,6 +14,7 @@ const (
 	maxChar                 = 65
 	defaultEnableAutoPaste  = false
 	defaultAutoPasteKeyBind = "ctrl+v"
+	defaultAutoPasteBuffer  = 10
 )
 
 // Initialize default key bindings
@@ -61,9 +62,9 @@ func defaultConfig() Config {
 			HeightCut: 2,
 		},
 		AutoPaste: AutoPaste{
-			Enabled: false,
-			Keybind: "ctrl+v",
-			Buffer:  5,
+			Enabled: defaultEnableAutoPaste,
+			Keybind: defaultAutoPasteKeyBind,
+			Buffer:  defaultAutoPasteBuffer,
 		},
 	}
 }

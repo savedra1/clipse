@@ -1,5 +1,5 @@
 //handlers/robotgo.go
-//go:build !wayland
+//go:build !wayland && !ci
 
 package handlers
 

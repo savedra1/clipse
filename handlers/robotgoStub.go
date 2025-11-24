@@ -1,5 +1,5 @@
 //handlers/robotgoStub.go
-//go:build wayland
+//go:build wayland || ci
 
 /* Ignore robotgo import when building on Wayland; uinput
 to be used instead. */
