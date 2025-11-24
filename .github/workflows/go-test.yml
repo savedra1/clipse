@@ -39,7 +39,7 @@ jobs:
           go-version: "stable"
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
           args: --build-tags ci
@@ -56,7 +56,7 @@ jobs:
           go-version: "stable"
 
       - name: golangci-lint-updated-code
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
           only-new-issues: true
