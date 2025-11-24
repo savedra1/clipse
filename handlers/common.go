@@ -6,9 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 
-	"github.com/go-vgo/robotgo"
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
@@ -68,7 +66,7 @@ func RunListener(displayServer string) {
 	case "darwin":
 		RunDarwinListener()
 	case "wayland":
-		fmt.Println("Wayland systems use the wl-paste --watch util. See https://github.com/bugaevc/wl-clipboard")
+		fmt.Println("Wayland systems use the `wl-paste --watch` util. See https://github.com/bugaevc/wl-clipboard")
 	case "x11":
 		RunX11Listener()
 	}
@@ -77,19 +75,9 @@ func RunListener(displayServer string) {
 func SendPaste(keybind, displayServer string) {
 	switch displayServer {
 	case "wayland":
-		utils.LogERROR("auto paste is not yet available for wayland")
+		//utils.LogERROR("auto paste is not yet available for wayland")
+		UinputPaste(keybind)
 	default:
-		parts := strings.Split(keybind, "+")
-
-		if len(parts) == 0 {
-			utils.LogERROR(fmt.Sprintf("invalid keybind: %s", keybind))
-			return
-		}
-
-		// Last element is the key, everything else is modifiers
-		key := parts[len(parts)-1]
-		mods := parts[:len(parts)-1]
-
-		utils.HandleError(robotgo.KeyTap(key, mods))
+		RobotPaste(keybind)
 	}
 }
