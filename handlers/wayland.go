@@ -1,3 +1,10 @@
+/* Use tag `wayland` when building on wayland systems. E.g:
+go build -tags wayland -o clipse
+
+This will include the uinput lib instead of robotgo to enable
+auto-paste functionality.
+*/
+
 package handlers
 
 import (
@@ -155,4 +162,15 @@ func renameImgFile(filePath, fileName, dt string) (string, string, error) {
 	}
 
 	return updatedFileName, updatedFilePath, nil
+}
+
+func WaylandPaste() {
+	clipboardContent, err := shell.GetWLClipBoard()
+	utils.HandleError(err)
+	fmt.Print(clipboardContent)
+}
+
+func WaylandCopy(s string) {
+	err := shell.UpdateWLClipboard(s)
+	utils.HandleError(err)
 }

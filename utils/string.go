@@ -111,6 +111,14 @@ func CleanPath(fp string) string {
 	return fp
 }
 
+func ParseDuration(s string) (*time.Duration, error) {
+	duration, err := time.ParseDuration(s)
+	if err != nil {
+		return nil, err
+	}
+	return &duration, nil
+}
+
 /* NOT IN USE - Remove bad chars - can cause issues with fuzzy finder
 func cleanString(s string) string {
 	regex := regexp.MustCompile("[^a-zA-Z0-9 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~]+")

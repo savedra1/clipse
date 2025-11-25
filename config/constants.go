@@ -1,17 +1,20 @@
 package config
 
 const (
-	configFile             = "config.json"
-	clipseDir              = "clipse"
-	defaultAllowDuplicates = false
-	defaultHistoryFile     = "clipboard_history.json"
-	defaultMaxHist         = 100
-	defaultDeleteAfter     = 0
-	defaultLogFile         = "clipse.log"
-	defaultPollInterval    = 50
-	defaultTempDir         = "tmp_files"
-	defaultThemeFile       = "custom_theme.json"
-	maxChar                = 65
+	configFile              = "config.json"
+	clipseDir               = "clipse"
+	defaultAllowDuplicates  = false
+	defaultHistoryFile      = "clipboard_history.json"
+	defaultMaxHist          = 100
+	defaultDeleteAfter      = 0
+	defaultLogFile          = "clipse.log"
+	defaultPollInterval     = 50
+	defaultTempDir          = "tmp_files"
+	defaultThemeFile        = "custom_theme.json"
+	maxChar                 = 65
+	defaultEnableAutoPaste  = false
+	defaultAutoPasteKeyBind = "ctrl+v"
+	defaultAutoPasteBuffer  = 10
 )
 
 // Initialize default key bindings
@@ -19,6 +22,7 @@ func defaultKeyBindings() map[string]string {
 	return map[string]string{
 		"filter":        "/",
 		"quit":          "esc",
+		"forceQuit":     "Q",
 		"more":          "?",
 		"choose":        "enter",
 		"remove":        "backspace",
@@ -70,6 +74,11 @@ func defaultConfig() Config {
 			ScaleX:    9,
 			ScaleY:    9,
 			HeightCut: 2,
+		},
+		AutoPaste: AutoPaste{
+			Enabled: defaultEnableAutoPaste,
+			Keybind: defaultAutoPasteKeyBind,
+			Buffer:  defaultAutoPasteBuffer,
 		},
 	}
 }

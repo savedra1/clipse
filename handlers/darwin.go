@@ -83,9 +83,6 @@ void setClipboardText(const char* text) {
 import "C"
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"strconv"
 	"time"
 	"unsafe"
 
@@ -93,7 +90,7 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
-func GetClipboardText() string {
+func DarwinGetClipboardText() string {
 	cstr := C.getClipboardText()
 	if cstr == nil {
 		return ""
@@ -101,7 +98,7 @@ func GetClipboardText() string {
 	return C.GoString(cstr)
 }
 
-func HasClipboardChanged() bool {
+func DarwinHasClipboardChanged() bool {
 	return C.hasClipboardChanged() == 1
 }
 
@@ -115,34 +112,11 @@ func readClipboardImage() []byte {
 	return C.GoBytes(unsafe.Pointer(data), length)
 }
 
-func saveDarwinImage(imgData []byte) error {
-	byteLength := strconv.Itoa(len(string(imgData)))
-	fileName := fmt.Sprintf("%s-%s.png", byteLength, utils.GetTimeStamp())
-	itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
-	filePath := filepath.Join(config.ClipseConfig.TempDirPath, fileName)
-
-	if err := os.WriteFile(filePath, imgData, 0644); err != nil {
-		return err
-	}
-
-	if err := config.AddClipboardItem(itemTitle, filePath); err != nil {
-		return err
-	}
-	return nil
-}
-
-func saveDarwinText(textData string) error {
-	if err := config.AddClipboardItem(textData, "null"); err != nil {
-		return err
-	}
-	return nil
-}
-
-func RunDarwinListener(displayServer string, imgEnabled bool) error {
+func RunDarwinListener() {
 	var prevText string
 	var prevImg []byte
 	for {
-		if HasClipboardChanged() {
+		if DarwinHasClipboardChanged() {
 			// Check if the clipboard content should be excluded based on source application
 			activeWindow := utils.GetActiveWindowTitle()
 			if utils.IsAppExcluded(activeWindow, config.ClipseConfig.ExcludedApps) {
@@ -154,12 +128,12 @@ func RunDarwinListener(displayServer string, imgEnabled bool) error {
 
 			switch clipboardType {
 			case 1: // text
-				text := GetClipboardText()
+				text := DarwinGetClipboardText()
 				if text == prevText {
 					break
 				}
 				prevText = text
-				if err := saveDarwinText(text); err != nil {
+				if err := SaveTextCommon(text); err != nil {
 					utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", text, err))
 				}
 
@@ -169,7 +143,7 @@ func RunDarwinListener(displayServer string, imgEnabled bool) error {
 					break
 				}
 				prevImg = img
-				if err := saveDarwinImage(img); err != nil {
+				if err := SaveImageCommon(img); err != nil {
 					utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
 				}
 
@@ -181,12 +155,12 @@ func RunDarwinListener(displayServer string, imgEnabled bool) error {
 	}
 }
 
-func DarwinPaste() error {
+func DarwinPaste() {
 	clipboardType := C.getClipboardType()
 
 	switch clipboardType {
 	case 1: // text
-		_, err := fmt.Println(GetClipboardText())
+		_, err := fmt.Println(DarwinGetClipboardText())
 		utils.HandleError(err)
 
 	case 2: // image
@@ -194,8 +168,6 @@ func DarwinPaste() error {
 		_, err := fmt.Println(string(img))
 		utils.HandleError(err)
 	}
-
-	return nil
 }
 
 func DarwinCopyText(s string) {
