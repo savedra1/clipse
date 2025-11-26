@@ -110,8 +110,8 @@ func RunListenerAfterDelay(delay *time.Duration) {
 	runDetachedCmd(listenCmd, delay, false)
 }
 
-func RunNohupListener(displayServer string) {
-	switch displayServer {
+func RunNohupListener(runtime string) {
+	switch runtime {
 	case "wayland":
 		// run the wl-clipboard --watch binaries
 		runDetachedCmd("image/png", nil, true)
@@ -126,8 +126,8 @@ func RunNohupListener(displayServer string) {
 		runDetachedCmd(x11ListenCmd, nil, false)
 
 	default:
-		utils.LogERROR(fmt.Sprintf("failed to run background listener; unrecognized display server '%s'", displayServer))
-		return
+		utils.LogERROR(fmt.Sprintf("failed to run background listener; unrecognized display server '%s'", runtime))
+		os.Exit(1)
 	}
 }
 

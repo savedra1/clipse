@@ -10,6 +10,7 @@ import (
 
 	"github.com/savedra1/clipse/app"
 	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/display"
 	"github.com/savedra1/clipse/handlers"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
@@ -42,9 +43,8 @@ var (
 func Main() int {
 	flag.Parse()
 
-	logPath, displayServer, err := config.Init()
-	utils.HandleError(err)
-	utils.SetUpLogger(logPath)
+	utils.HandleError(config.Init())
+	utils.SetUpLogger(config.ClipseConfig.LogFilePath)
 
 	switch {
 
@@ -54,7 +54,7 @@ func Main() int {
 			flag.PrintDefaults()
 			return 1
 		}
-		launchTUI(displayServer)
+		launchTUI()
 
 	case flag.NFlag() > 1:
 		fmt.Printf("Too many flags provided. Use %s --help for more info.", os.Args[0])
@@ -70,16 +70,16 @@ func Main() int {
 		handleAdd()
 
 	case *paste:
-		handlePaste(displayServer)
+		display.DisplayServer.Paste()
 
 	case *copyInput:
-		handleCopy(displayServer)
+		handleCopy()
 
 	case *listen:
-		handleListen(displayServer)
+		handleListen()
 
 	case *listenShell:
-		handlers.RunListener(displayServer)
+		display.DisplayServer.RunListener()
 
 	case *listenDarwin:
 		handlers.RunDarwinListener()
@@ -94,13 +94,13 @@ func Main() int {
 		handleClear()
 
 	case *forceClose:
-		handleForceClose(displayServer)
+		handleForceClose()
 
 	case *wlStore:
 		handlers.StoreWLData()
 
 	case *realTime:
-		launchTUI(displayServer)
+		launchTUI()
 
 	case *outputAll != "":
 		handleOutputAll(*outputAll)
@@ -109,7 +109,7 @@ func Main() int {
 		handlePause(*pause)
 
 	case *autoPaste:
-		handleAutoPaste(displayServer)
+		handleAutoPaste()
 
 	default:
 		fmt.Printf("Command not recognized. See %s --help for usage instructions.", os.Args[0])
@@ -149,9 +149,9 @@ func handlePause(s string) {
 	shell.RunListenerAfterDelay(duration)
 }
 
-func launchTUI(ds string) {
+func launchTUI() {
 	shell.KillExistingFG()
-	newModel := app.NewModel(ds)
+	newModel := app.NewModel()
 	p := tea.NewProgram(newModel)
 	if *realTime {
 		go newModel.ListenRealTime(p)
@@ -180,13 +180,13 @@ func handleAdd() {
 	utils.HandleError(config.AddClipboardItem(input, "null"))
 }
 
-func handleListen(displayServer string) {
+func handleListen() {
 	if err := shell.KillExisting(); err != nil {
 		fmt.Printf("ERROR: failed to kill existing listener process: %s", err)
 		utils.LogERROR(fmt.Sprintf("failed to kill existing listener process: %s", err))
 		os.Exit(1)
 	}
-	shell.RunNohupListener(displayServer)
+	shell.RunNohupListener(display.DisplayServer.Runtime())
 }
 
 func handleKill() {
@@ -210,7 +210,7 @@ func handleClear() {
 	utils.HandleError(config.ClearHistory(clearType))
 }
 
-func handleCopy(ds string) {
+func handleCopy() {
 	var input string
 	switch {
 	case len(os.Args) < 3:
@@ -218,34 +218,10 @@ func handleCopy(ds string) {
 	default:
 		input = os.Args[2]
 	}
-	switch ds {
-	case "darwin":
-		handlers.DarwinCopyText(input)
-	case "x11":
-		handlers.X11SetClipboardText(input)
-	case "wayland":
-		handlers.WaylandCopy(input)
-	default:
-		utils.LogERROR(fmt.Sprintf("failed to copy text; unknown display server: %s", ds))
-		os.Exit(1)
-	}
+	display.DisplayServer.CopyText(input)
 }
 
-func handlePaste(ds string) {
-	switch ds {
-	case "darwin":
-		handlers.DarwinPaste()
-	case "wayland":
-		handlers.WaylandPaste()
-	case "x11":
-		handlers.X11Paste()
-	default:
-		utils.LogERROR(fmt.Sprintf("failed to paste content; unknown display server: %s", ds))
-		os.Exit(1)
-	}
-}
-
-func handleForceClose(ds string) {
+func handleForceClose() {
 	if len(os.Args) < 3 {
 		fmt.Printf("No PPID provided. Usage: %s' -fc $PPID'", os.Args[0])
 		os.Exit(1)
@@ -261,7 +237,7 @@ func handleForceClose(ds string) {
 		os.Exit(1)
 	}
 
-	launchTUI(ds)
+	launchTUI()
 }
 
 func handleOutputAll(format string) {
@@ -282,7 +258,7 @@ func handleOutputAll(format string) {
 	}
 }
 
-func handleAutoPaste(ds string) {
+func handleAutoPaste() {
 	time.Sleep(time.Duration(config.ClipseConfig.AutoPaste.Buffer) * time.Microsecond)
-	handlers.SendPaste(config.ClipseConfig.AutoPaste.Keybind, ds)
+	display.DisplayServer.SendPasteKey(config.ClipseConfig.AutoPaste.Keybind)
 }

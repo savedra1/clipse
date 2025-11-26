@@ -8,34 +8,8 @@ import (
 	"strconv"
 
 	"github.com/savedra1/clipse/config"
-	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
-
-func CopyText(text, ds string) {
-	switch ds {
-	case "darwin":
-		DarwinCopyText(text)
-	case "wayland":
-		WaylandCopy(text)
-	case "x11":
-		X11SetClipboardText(text)
-	}
-}
-
-func ReadClipboard(ds string) string {
-	switch ds {
-	case "darwin":
-		return DarwinGetClipboardText()
-	case "wayland":
-		wlContent, err := shell.GetWLClipBoard()
-		utils.HandleError(err)
-		return wlContent
-	case "x11":
-		return X11GetClipboardText()
-	}
-	return ""
-}
 
 func SaveImageCommon(imgData []byte) error {
 	byteLength := strconv.Itoa(len(string(imgData)))
@@ -58,26 +32,4 @@ func SaveTextCommon(textData string) error {
 		return err
 	}
 	return nil
-}
-
-// run the listener is the current shell
-func RunListener(displayServer string) {
-	switch displayServer {
-	case "darwin":
-		RunDarwinListener()
-	case "wayland":
-		fmt.Println("Wayland systems use the `wl-paste --watch` util. See https://github.com/bugaevc/wl-clipboard")
-	case "x11":
-		RunX11Listener()
-	}
-}
-
-func SendPaste(keybind, displayServer string) {
-	switch displayServer {
-	case "wayland":
-		//utils.LogERROR("auto paste is not yet available for wayland")
-		UinputPaste(keybind)
-	default:
-		RobotPaste(keybind)
-	}
 }

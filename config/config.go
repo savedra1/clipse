@@ -40,7 +40,7 @@ type ImageDisplay struct {
 // Global config object, accessed and used when any configuration is needed.
 var ClipseConfig = defaultConfig()
 
-func Init() (string, string, error) {
+func Init() error {
 	/* Ensure $HOME/.config/clipse/clipboard_history.json OR $XDG_CONFIG_HOME
 	exists and create the path if not.
 	*/
@@ -48,7 +48,7 @@ func Init() (string, string, error) {
 	// returns $HOME/.config || $XDG_CONFIG_HOME
 	userHome, err := os.UserConfigDir()
 	if err != nil {
-		return "", "", fmt.Errorf("failed to read home dir.\nerror: %s", err)
+		return fmt.Errorf("failed to read home dir.\nerror: %s", err)
 	}
 
 	// Construct the path to the config directory
@@ -73,7 +73,7 @@ func Init() (string, string, error) {
 		utils.HandleError(os.MkdirAll(ClipseConfig.TempDirPath, 0755))
 	}
 
-	return ClipseConfig.LogFilePath, utils.DisplayServer(), nil
+	return nil
 }
 
 func loadConfig(configPath string) {

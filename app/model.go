@@ -66,7 +66,7 @@ func (m Model) Init() tea.Cmd {
 	return tea.EnterAltScreen
 }
 
-func NewModel(displayServer string) Model {
+func NewModel() Model {
 	var (
 		keyConfig        = config.ClipseConfig.KeyBindings
 		listKeys         = newKeyMap(keyConfig)
@@ -91,7 +91,6 @@ func NewModel(displayServer string) Model {
 		showPreview:      false,
 		previewKeys:      newPreviewKeyMap(keyConfig),
 		ExitCode:         0,
-		displayServer:    displayServer,
 	}
 
 	entryItems := filterItems(clipboardItems, false, m.theme)

@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/display"
 	"github.com/savedra1/clipse/handlers"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
@@ -58,7 +59,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.list.SettingFilter() && key.Matches(msg, m.keys.yankFilter) {
 			filterMatches := m.filterMatches()
 			if len(filterMatches) >= 1 {
-				handlers.CopyText(strings.Join(filterMatches, "\n"), m.displayServer)
+				display.DisplayServer.CopyText(strings.Join(filterMatches, "\n"))
 				cmds = append(
 					cmds,
 					m.list.NewStatusMessage(statusMessageStyle("Failed to copy all selected items.")),
@@ -126,12 +127,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.setPreviewKeys(false)
 				m.enableConfirmationKeys(false)
 				m.setConfirmationKeys(false)
-				currentContent := handlers.ReadClipboard(m.displayServer)
 				timeStamps := []string{}
 				for _, item := range m.itemCache {
-					if item.Value == currentContent {
-						handlers.CopyText("", m.displayServer)
-					}
 					timeStamps = append(timeStamps, item.TimeStamp)
 					m.removeCachedItem(item.TimeStamp)
 				}
@@ -184,7 +181,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Quit
 
 				case keepEnabled():
-					handlers.CopyText(fullValue, m.displayServer)
+					display.DisplayServer.CopyText(fullValue)
 					cmds = append(
 						cmds,
 						m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+title)),
@@ -192,7 +189,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Batch(cmds...)
 
 				default:
-					handlers.CopyText(fullValue, m.displayServer)
+					display.DisplayServer.CopyText(fullValue)
 					return m, tea.Quit
 				}
 			}
@@ -207,13 +204,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch {
 
 			case len(os.Args) > 2 && utils.IsInt(os.Args[2]):
-				handlers.CopyText(yank, m.displayServer)
+				display.DisplayServer.CopyText(yank)
 				shell.KillProcess(os.Args[2])
 				return m, tea.Quit
 
 			case keepEnabled():
 				statusMsg := "Copied to clipboard: *selected items*"
-				handlers.CopyText(yank, m.displayServer)
+				display.DisplayServer.CopyText(yank)
 				cmds = append(
 					cmds,
 					m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
@@ -221,7 +218,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Batch(cmds...)
 
 			default:
-				handlers.CopyText(yank, m.displayServer)
+				display.DisplayServer.CopyText(yank)
 				return m, tea.Quit
 			}
 
@@ -262,15 +259,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			currentIndex := m.list.Index()
-			currentContent := handlers.ReadClipboard(m.displayServer)
 			statusMsg := "Deleted: "
 
 			if len(selectedItems) >= 1 {
-				for _, item := range selectedItems {
-					if item.Value == currentContent {
-						handlers.CopyText("", m.displayServer)
-					}
-				}
 				timeStamps := []string{}
 				m.list.RemoveItem(currentIndex)
 				m.removeMultiSelected()
