@@ -6,15 +6,16 @@ toolchain go1.24.7
 
 require (
 	github.com/BourgeoisBear/rasterm v1.1.1
-	github.com/atotto/clipboard v0.1.4
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/go-vgo/robotgo v0.110.8
 	github.com/mitchellh/go-ps v1.0.0
+	gopkg.in/bendahl/uinput.v1 v1.2.0
 )
 
 require (
+	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
 	github.com/dblohm7/wingoes v0.0.0-20240820181039-f2b84150679e // indirect
@@ -44,7 +45,6 @@ require (
 	golang.org/x/image v0.27.0 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/term v0.37.0 // indirect
-	gopkg.in/bendahl/uinput.v1 v1.2.0 // indirect
 )
 
 require (

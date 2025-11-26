@@ -21,7 +21,7 @@ type Model struct {
 	confirmationKeys *confirmationKeyMap // keybindings for the confirmation view
 	help             help.Model          // custom help menu
 	togglePinned     bool                // pinned view indicator
-	theme            config.CustomTheme  // colors scheme to uses
+	theme            config.CustomTheme  // colors scheme to use
 	prevDirection    string              // prev direction used to track selections
 	confirmationList list.Model          // secondary list Model used for confirmation screen
 	showConfirmation bool                // whether to show confirmation screen
