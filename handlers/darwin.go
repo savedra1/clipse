@@ -87,6 +87,7 @@ import (
 	"unsafe"
 
 	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
 
@@ -118,8 +119,8 @@ func RunDarwinListener() {
 	for {
 		if DarwinHasClipboardChanged() {
 			// Check if the clipboard content should be excluded based on source application
-			activeWindow := utils.GetActiveWindowTitle()
-			if utils.IsAppExcluded(activeWindow, config.ClipseConfig.ExcludedApps) {
+			activeWindow := shell.DarwinActiveWindowTitle()
+			if isAppExcluded(activeWindow, config.ClipseConfig.ExcludedApps) {
 				utils.LogINFO(fmt.Sprintf("Skipping clipboard content from excluded app: %s", activeWindow))
 				continue
 			}

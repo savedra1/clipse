@@ -21,7 +21,7 @@ type Model struct {
 	confirmationKeys *confirmationKeyMap // keybindings for the confirmation view
 	help             help.Model          // custom help menu
 	togglePinned     bool                // pinned view indicator
-	theme            config.CustomTheme  // colors scheme to uses
+	theme            config.CustomTheme  // colors scheme to use
 	prevDirection    string              // prev direction used to track selections
 	confirmationList list.Model          // secondary list Model used for confirmation screen
 	showConfirmation bool                // whether to show confirmation screen
@@ -33,7 +33,6 @@ type Model struct {
 	previewKeys      *previewKeymap      // keybindings for the viewport model
 	lastUpdated      time.Time
 	ExitCode         int
-	displayServer    string
 }
 
 type item struct {
@@ -66,7 +65,7 @@ func (m Model) Init() tea.Cmd {
 	return tea.EnterAltScreen
 }
 
-func NewModel(displayServer string) Model {
+func NewModel() Model {
 	var (
 		keyConfig        = config.ClipseConfig.KeyBindings
 		listKeys         = newKeyMap(keyConfig)
@@ -91,7 +90,6 @@ func NewModel(displayServer string) Model {
 		showPreview:      false,
 		previewKeys:      newPreviewKeyMap(keyConfig),
 		ExitCode:         0,
-		displayServer:    displayServer,
 	}
 
 	entryItems := filterItems(clipboardItems, false, m.theme)

@@ -17,10 +17,10 @@ import "errors"
 var x11ErrString = "X11-only feature"
 var errX11Unsupported = errors.New(x11ErrString)
 
-func X11GetClipboardText() string               { return x11ErrString }
-func X11ClipboardChanged() bool                 { return false }
-func RunX11Listener()                           {}
-func GetClipboardImage() ([]byte, error)        { return []byte{}, errX11Unsupported }
-func X11Paste()                                 {}
-func X11SetClipboardText(_ string)              {}
-func X11SetClipboardImage([]byte, string) error { return errX11Unsupported }
+func X11GetClipboardText() string        { return x11ErrString }
+func X11ClipboardChanged() bool          { return false }
+func RunX11Listener()                    {}
+func GetClipboardImage() ([]byte, error) { return []byte{}, errX11Unsupported }
+func X11Paste()                          {}
+func X11SetClipboardText(_ string)       {}
+func X11SetClipboardImage(string)        {}

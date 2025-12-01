@@ -31,8 +31,8 @@ func StoreWLData() {
 	}
 
 	// Check if the clipboard content should be excluded based on source application
-	activeWindow := utils.GetActiveWindowTitle()
-	if utils.IsAppExcluded(activeWindow, config.ClipseConfig.ExcludedApps) {
+	activeWindow := shell.WLActiveWindowTitle()
+	if isAppExcluded(activeWindow, config.ClipseConfig.ExcludedApps) {
 		utils.LogINFO(fmt.Sprintf("Skipping clipboard content from excluded app: %s", activeWindow))
 		return
 	}
@@ -84,7 +84,7 @@ func StoreWLData() {
 				the image is then created using `wl-paste -t image/png <path>`
 			*/
 
-			if err = shell.SaveImage(filePath, "wayland"); err != nil {
+			if err = shell.WLSaveImage(filePath); err != nil {
 				utils.LogERROR(fmt.Sprintf("failed to save new image: %s", err))
 				return
 			}

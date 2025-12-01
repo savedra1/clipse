@@ -60,8 +60,10 @@ func GetTheme() CustomTheme {
 				err,
 			),
 		)
+		return defaultTheme()
 	}
 	if !theme.UseCustom {
+		utils.LogINFO("CUSTOM THEME DISABLED") // DEBUG !!
 		return defaultTheme()
 	}
 	return theme
