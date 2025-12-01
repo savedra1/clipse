@@ -14,6 +14,8 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
+var ExeName = exeName()
+
 func IsListenerRunning() (bool, error) {
 	/*
 		Check if clipse is running by checking if the process is in the process list.
@@ -107,50 +109,22 @@ func RunListenerAfterDelay(delay *time.Duration) {
 		return
 	}
 
-	runDetachedCmd(listenCmd, delay, false)
-}
-
-func RunNohupListener(runtime string) {
-	switch runtime {
-	case "wayland":
-		// run the wl-clipboard --watch binaries
-		runDetachedCmd("image/png", nil, true)
-		runDetachedCmd("text", nil, true)
-
-	case "darwin":
-		// run optimized darwin cgo listener
-		runDetachedCmd(darwinListenCmd, nil, false)
-
-	case "x11":
-		// run optimized x11 cgo listener
-		runDetachedCmd(x11ListenCmd, nil, false)
-
-	default:
-		utils.LogERROR(fmt.Sprintf("failed to run background listener; unrecognized display server '%s'", runtime))
-		os.Exit(1)
-	}
+	cmd := exec.Command("sleep", strconv.Itoa(int(delay.Seconds())), "&&", ExeName, listenCmd)
+	runDetachedCmd(cmd)
 }
 
 func RunAutoPaste() {
-	runDetachedCmd("--auto-paste", nil, false)
+	cmd := exec.Command(ExeName, "--auto-paste")
+	runDetachedCmd(cmd)
 }
 
-func runDetachedCmd(flag string, delay *time.Duration, isWaylandListener bool) {
+func exeName() string {
 	exe, err := os.Executable()
-	if err != nil {
-		return
-	}
+	utils.HandleError(err)
+	return exe
+}
 
-	cmd := exec.Command(exe, flag)
-
-	if delay != nil {
-		cmd = exec.Command("sleep", strconv.Itoa(int(delay.Seconds())), "&&", exe, flag)
-	}
-
-	if isWaylandListener { // override any dely for specific use
-		cmd = exec.Command(wlPasteHandler, wlTypeSpec, flag, wlPasteWatcher, exe, wlStoreCmd)
-	}
-
+func runDetachedCmd(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
 		Pgid:    0,
@@ -169,4 +143,18 @@ func KillProcess(ppid string) {
 	if err := cmd.Run(); err != nil {
 		utils.LogERROR(fmt.Sprintf("failed to kill process: %s", err))
 	}
+}
+
+func execOutput(name string, args ...string) string {
+	if _, err := exec.LookPath(name); err != nil {
+		return ""
+	}
+
+	cmd := exec.Command(name, args...)
+	output, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+
+	return strings.TrimSpace(string(output))
 }

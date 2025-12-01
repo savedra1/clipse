@@ -335,9 +335,12 @@ int setClipboardImageX11(unsigned char *data, int len, const char *mime_type) {
 import "C"
 import (
 	"fmt"
+	"os"
 	"time"
 	"unsafe"
 
+	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
 
@@ -369,6 +372,13 @@ func RunX11Listener() {
 
 			if imgContents != nil {
 				utils.HandleError(SaveImageCommon(imgContents))
+			}
+
+			// Check if the clipboard content should be excluded based on source application
+			activeWindow := shell.X11ActiveWindowTitle()
+			if isAppExcluded(activeWindow, config.ClipseConfig.ExcludedApps) {
+				utils.LogINFO(fmt.Sprintf("Skipping clipboard content from excluded app: %s", activeWindow))
+				return
 			}
 
 			textContents := X11GetClipboardText()
@@ -422,12 +432,15 @@ func X11Paste() {
 	return
 }
 
-func X11SetClipboardImage(imageData []byte, mimeType string) error {
+func X11SetClipboardImage(filePath string) {
+	imgData, err := os.ReadFile(filePath)
+	utils.HandleError(err)
 	if len(imageData) == 0 {
-		return fmt.Errorf("empty image data")
+		utils.LogWARN(fmt.Sprintf("empty image data"))
+		return
 	}
 
-	cmime := C.CString(mimeType)
+	cmime := C.CString("image/png")
 	defer C.free(unsafe.Pointer(cmime))
 
 	// Use C.CBytes to properly copy the data
@@ -435,7 +448,6 @@ func X11SetClipboardImage(imageData []byte, mimeType string) error {
 	defer C.free(cdata)
 
 	if C.setClipboardImageX11((*C.uchar)(cdata), C.int(len(imageData)), cmime) == 0 {
-		return fmt.Errorf("failed to set clipboard image")
+		utils.LogERROR(fmt.Sprintf("failed to set clipboard image"))
 	}
-	return nil
 }

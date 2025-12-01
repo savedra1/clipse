@@ -20,6 +20,10 @@ func (wds *WaylandDS) CopyText(text string) {
 	handlers.WaylandCopy(text)
 }
 
+func (wds *WaylandDS) CopyImage(filePath string) {
+	shell.WLCopyImage(filePath)
+}
+
 func (wds *WaylandDS) ReadClipboard() string {
 	wlContent, err := shell.GetWLClipBoard()
 	utils.HandleError(err)
@@ -28,6 +32,10 @@ func (wds *WaylandDS) ReadClipboard() string {
 
 func (wds *WaylandDS) RunListener() {
 	fmt.Println("Wayland systems use the `wl-paste --watch` util. See https://github.com/bugaevc/wl-clipboard")
+}
+
+func (wds *WaylandDS) RunDetachedListener() {
+	shell.RunWaylandListener()
 }
 
 func (wds *WaylandDS) Paste() {

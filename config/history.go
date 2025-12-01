@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
 
@@ -132,7 +131,7 @@ func DeleteItems(timeStamps []string) error {
 			if item.FilePath == "null" {
 				continue
 			}
-			if err := shell.DeleteImage(item.FilePath); err != nil {
+			if err := utils.DeleteImage(item.FilePath); err != nil {
 				utils.LogERROR(fmt.Sprintf("failed to delete image file | %s", item.FilePath))
 			}
 			continue
@@ -153,14 +152,14 @@ func ClearHistory(clearType string) error {
 		data = ClipboardHistory{
 			ClipboardHistory: []ClipboardItem{},
 		}
-		if err := shell.DeleteAllImages(ClipseConfig.TempDirPath); err != nil {
+		if err := utils.DeleteAllImages(ClipseConfig.TempDirPath); err != nil {
 			utils.LogERROR(fmt.Sprintf("could not delete all images: %s", err))
 		}
 	case "images":
 		data = ClipboardHistory{
 			ClipboardHistory: TextItems(),
 		}
-		if err := shell.DeleteAllImages(ClipseConfig.TempDirPath); err != nil {
+		if err := utils.DeleteAllImages(ClipseConfig.TempDirPath); err != nil {
 			utils.LogERROR(fmt.Sprintf("could not read file dir: %s", err))
 		}
 	case "text":
@@ -233,7 +232,7 @@ func AddClipboardItem(text, fp string) error {
 			if !data.ClipboardHistory[i].Pinned {
 				// If this is an image, we need to clean it
 				if data.ClipboardHistory[i].FilePath != "null" {
-					err := shell.DeleteImage(data.ClipboardHistory[i].FilePath)
+					err := utils.DeleteImage(data.ClipboardHistory[i].FilePath)
 					if err != nil {
 						utils.LogERROR(fmt.Sprintf("failed to delete image file: %s", data.ClipboardHistory[i].FilePath))
 					}
@@ -298,7 +297,7 @@ func removeDuplicates(clipboardHistory []ClipboardItem, duplicates []string) []C
 		}
 
 		if item.FilePath != "null" {
-			if err := shell.DeleteImage(item.FilePath); err != nil {
+			if err := utils.DeleteImage(item.FilePath); err != nil {
 				utils.LogERROR(fmt.Sprintf("failed to delete image | %s | %s", item.FilePath, err))
 			}
 		}

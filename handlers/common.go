@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/utils"
@@ -32,4 +33,22 @@ func SaveTextCommon(textData string) error {
 		return err
 	}
 	return nil
+}
+
+func isAppExcluded(appName string, excludedList []string) bool {
+	if appName == "" {
+		return false
+	}
+
+	appNameLower := strings.ToLower(appName)
+
+	for _, excluded := range excludedList {
+		excludedLower := strings.ToLower(excluded)
+
+		if excludedLower != "" && strings.Contains(appNameLower, excludedLower) {
+			return true
+		}
+	}
+
+	return false
 }

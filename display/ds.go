@@ -14,8 +14,10 @@ type DS interface {
 	Runtime() string
 	ReadClipboard() string
 	CopyText(string)
+	CopyImage(string)
 	Paste()
 	RunListener()
+	RunDetachedListener()
 	SendPasteKey(string)
 }
 

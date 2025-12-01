@@ -118,11 +118,3 @@ func ParseDuration(s string) (*time.Duration, error) {
 	}
 	return &duration, nil
 }
-
-/* NOT IN USE - Remove bad chars - can cause issues with fuzzy finder
-func cleanString(s string) string {
-	regex := regexp.MustCompile("[^a-zA-Z0-9 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~]+")
-	sanitized := regex.ReplaceAllString(s, "")
-	sl := strings.ReplaceAll(sanitized, "\n", "\\n")
-	return strings.ReplaceAll(sl, "  ", " ")         // remove trailing space
-}*/

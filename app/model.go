@@ -33,7 +33,6 @@ type Model struct {
 	previewKeys      *previewKeymap      // keybindings for the viewport model
 	lastUpdated      time.Time
 	ExitCode         int
-	displayServer    string
 }
 
 type item struct {

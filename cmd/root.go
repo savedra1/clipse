@@ -186,7 +186,7 @@ func handleListen() {
 		utils.LogERROR(fmt.Sprintf("failed to kill existing listener process: %s", err))
 		os.Exit(1)
 	}
-	shell.RunNohupListener(display.DisplayServer.Runtime())
+	display.DisplayServer.RunDetachedListener()
 }
 
 func handleKill() {

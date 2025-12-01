@@ -12,7 +12,6 @@ import (
 
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/display"
-	"github.com/savedra1/clipse/handlers"
 	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
@@ -160,13 +159,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(selectedItems) < 1 {
 				switch {
 				case fp != "null":
-					if m.displayServer == "x11" {
-						imgData, err := os.ReadFile(fp)
-						utils.HandleError(err)
-						utils.HandleError(handlers.X11SetClipboardImage(imgData, "image/png"))
-					} else {
-						utils.HandleError(shell.CopyImage(fp, m.displayServer))
-					}
+					display.DisplayServer.CopyImage(fp)
 					if keepEnabled() {
 						cmds = append(
 							cmds,
