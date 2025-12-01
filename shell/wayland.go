@@ -41,12 +41,11 @@ func RunWaylandListener() {
 	}
 }
 
-func WLCopyImage(filePath string) error {
+func WLCopyImage(filePath string) {
 	cmdFull := fmt.Sprintf(wlCopyImgCmd, filePath)
 	if err := exec.Command("sh", "-c", cmdFull).Run(); err != nil {
 		utils.LogERROR(fmt.Sprintf("failed to copy image: %s", err))
 	}
-	return nil
 }
 
 func WLSaveImage(imagePath string) error {
