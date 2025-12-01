@@ -39,7 +39,7 @@ func GetDisplayServer() DS {
 			runtime: "darwin",
 		}
 	default:
-		utils.LogERROR(fmt.Sprintf("display server not recognised: %s", osName))
+		utils.LogERROR(fmt.Sprintf("display server not recognized: %s", osName))
 		os.Exit(1)
 	}
 	return nil

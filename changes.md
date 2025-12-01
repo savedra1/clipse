@@ -2,7 +2,7 @@
 
 - bug fix: custom keybinds not registering
 - feat: pause listener
-- feat: automatic deletion after a sepcified amount of time
+- feat: automatic deletion after a specified amount of time
 - feat: realtime UI updates
 - feat: Exclude certain apps
 - feat: wayland exclude sensitive content
@@ -17,7 +17,6 @@
 
 ---
 x11 auto-paste
-
 gcc libc6-dev
 libx11-dev xorg-dev libxtst-dev
 sudo apt install libpng++-dev
