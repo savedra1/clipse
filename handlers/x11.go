@@ -435,7 +435,7 @@ func X11Paste() {
 func X11SetClipboardImage(filePath string) {
 	imgData, err := os.ReadFile(filePath)
 	utils.HandleError(err)
-	if len(imageData) == 0 {
+	if len(imgData) == 0 {
 		utils.LogWARN(fmt.Sprintf("empty image data"))
 		return
 	}
@@ -444,10 +444,10 @@ func X11SetClipboardImage(filePath string) {
 	defer C.free(unsafe.Pointer(cmime))
 
 	// Use C.CBytes to properly copy the data
-	cdata := C.CBytes(imageData)
+	cdata := C.CBytes(imgData)
 	defer C.free(cdata)
 
-	if C.setClipboardImageX11((*C.uchar)(cdata), C.int(len(imageData)), cmime) == 0 {
+	if C.setClipboardImageX11((*C.uchar)(cdata), C.int(len(imgData)), cmime) == 0 {
 		utils.LogERROR(fmt.Sprintf("failed to set clipboard image"))
 	}
 }
