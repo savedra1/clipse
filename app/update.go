@@ -21,6 +21,8 @@ import (
 	the Model state.
 */
 
+var KeepEnabled = keepEnabled()
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
@@ -89,20 +91,35 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(msg, m.keys.up):
 				m.preview.LineUp(1)
 				return m, nil
-
-			default:
-				break
 			}
 		}
 
 		i, ok := m.list.SelectedItem().(item)
-		if !ok {
-
+		if !ok { // no keys in current list; handle available options
 			switch {
 			case key.Matches(msg, m.keys.more):
 				m.list.SetShowHelp(!m.list.ShowHelp())
 				m.updatePaginator()
+
+			case key.Matches(msg, m.keys.quit):
+				if m.togglePinned {
+					statusMsg := m.togglePinView()
+					cmds = append(cmds, m.list.NewStatusMessage(statusMsg))
+					return m, tea.Batch(cmds...)
+				}
+				m.ExitCode = 1
+				return m, tea.Quit
+
+			case key.Matches(msg, m.keys.forceQuit):
+				m.ExitCode = 1
+				return m, tea.Quit
+
+			case key.Matches(msg, m.keys.togglePinned):
+				statusMsg := m.togglePinView()
+				cmds = append(cmds, m.list.NewStatusMessage(statusMsg))
+				return m, tea.Batch(cmds...)
 			}
+
 			break
 		}
 		title := i.Title()
@@ -148,9 +165,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.itemCache = []SelectedItem{}
 
 				if len(m.list.Items()) == 0 {
-					m.keys.remove.SetEnabled(false)
 					m.list.SetShowStatusBar(false)
 				}
+
 				break
 			}
 
@@ -160,7 +177,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch {
 				case fp != "null":
 					display.DisplayServer.CopyImage(fp)
-					if keepEnabled() {
+					if KeepEnabled {
 						cmds = append(
 							cmds,
 							m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+title)),
@@ -173,7 +190,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					shell.KillProcess(os.Args[2])
 					return m, tea.Quit
 
-				case keepEnabled():
+				case KeepEnabled:
 					display.DisplayServer.CopyText(fullValue)
 					cmds = append(
 						cmds,
@@ -201,7 +218,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				shell.KillProcess(os.Args[2])
 				return m, tea.Quit
 
-			case keepEnabled():
+			case KeepEnabled:
 				statusMsg := "Copied to clipboard: *selected items*"
 				display.DisplayServer.CopyText(yank)
 				cmds = append(
@@ -218,7 +235,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.remove):
 			selectedItems := m.selectedItems()
 			var pinnedItemSelected bool
-
 			m.itemCache = append(
 				m.itemCache,
 				SelectedItem{
@@ -274,7 +290,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if len(m.list.Items()) == 0 {
-				m.keys.remove.SetEnabled(false)
 				m.list.SetShowStatusBar(false)
 			}
 
@@ -285,9 +300,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 
 		case key.Matches(msg, m.keys.togglePin):
-			if len(m.list.Items()) == 0 {
-				m.keys.togglePin.SetEnabled(false)
-			}
 			isPinned, err := config.TogglePinClipboardItem(timestamp)
 			utils.HandleError(err)
 			m.togglePinUpdate()
@@ -302,33 +314,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 
 		case key.Matches(msg, m.keys.togglePinned):
-			if len(m.list.Items()) == 0 {
-				m.keys.togglePinned.SetEnabled(false)
-			}
-			m.togglePinned = !m.togglePinned
-			m.list.Title = clipboardTitle
-			if m.togglePinned {
-				m.list.Title = "Pinned " + clipboardTitle
-			}
-
-			clipboardItems := config.GetHistory()
-			filteredItems := filterItems(clipboardItems, m.togglePinned, m.theme)
-
-			if len(filteredItems) == 0 {
-				m.list.Title = clipboardTitle
-				cmds = append(
-					cmds,
-					m.list.NewStatusMessage(statusMessageStyle("No pinned items")),
-				)
-				break
-			}
-
-			for i := len(m.list.Items()) - 1; i >= 0; i-- { // clear all items
-				m.list.RemoveItem(i)
-			}
-			for _, i := range filteredItems { // redraw all required items
-				m.list.InsertItem(len(m.list.Items()), i)
-			}
+			newStatusMsg := m.togglePinView()
+			cmds = append(
+				cmds,
+				m.list.NewStatusMessage(newStatusMsg),
+			)
 
 		case key.Matches(msg, m.keys.selectDown):
 			if m.list.IsFiltered() {
@@ -648,6 +638,36 @@ func (m *Model) enableConfirmationKeys(v bool) {
 
 func (m *Model) setQuitEnabled(v bool) {
 	m.list.KeyMap.Quit.SetEnabled(v)
+}
+
+func (m *Model) togglePinView() string {
+	m.togglePinned = !m.togglePinned
+	m.list.Title = clipboardTitle
+
+	clipboardItems := config.GetHistory()
+	filteredItems := filterItems(clipboardItems, m.togglePinned, m.theme)
+
+	if len(filteredItems) == 0 {
+		if m.togglePinned {
+			m.togglePinned = !m.togglePinned
+			return statusMessageStyle("No pinned items")
+		}
+		return ""
+	}
+
+	if m.togglePinned {
+		m.list.Title = "Pinned " + m.list.Title
+	}
+
+	for i := len(m.list.Items()) - 1; i >= 0; i-- { // clear all items
+		m.list.RemoveItem(i)
+	}
+	for _, i := range filteredItems { // redraw all required items
+		m.list.InsertItem(len(m.list.Items()), i)
+	}
+
+	return ""
+
 }
 
 func keepEnabled() bool {
