@@ -4,7 +4,28 @@
 /* uint lib used to handle automated paste following copy action.
 Lib: https://github.com/bendahl/uinput/
 Requires access to the /dev/uinput device
-E.g. before running: sudo chmod +rwx /dev/uinput
+
+The best way to achieve this is to add your user to the "input" group,
+and make sure that inout group has access to the /dev/input device. This
+will ensure the permissions persist after reboots.
+
+E.g.
+Bash:
+	sudo usermod -aG input $USER
+	echo 'KERNEL=="uinput", MODE="0660", GROUP="input", OPTIONS+="static_node=uinput"' | \
+	sudo tee /etc/udev/rules.d/99-uinput.rules
+
+Nix:
+	users.users.${userConfig.username} = {
+	isNormalUser = true;
+	home = userConfig.homeDirectory;
+	...
+	extraGroups = [ ... "input" ];
+	};
+
+	services.udev.extraRules = ''
+	KERNEL=="uinput", MODE="777", GROUP="input", OPTIONS+="static_node=uinput"
+	'';
 */
 
 package handlers
@@ -20,7 +41,7 @@ import (
 )
 
 var wlKeyboardDevice = "/dev/uinput"
-var wlKeyboardDeviceName = "clipskb"
+var wlKeyboardDeviceName = "clipsekb"
 
 var uinputKeys = map[string]int{
 	"a":          uinput.KeyA,
@@ -132,7 +153,6 @@ func uinputPaste(keybind string) error {
 	return nil
 }
 
-// Wrapper for compatibility with your existing error handling
 func UinputPaste(keybind string) {
 	utils.HandleError(uinputPaste(keybind))
 }
