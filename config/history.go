@@ -39,6 +39,11 @@ func initHistoryFile() error {
 		if err != nil {
 			return err
 		}
+
+		if !utils.DiskspaceAvailable(len(jsonData)) {
+			return fmt.Errorf("not enough disk space to init history file")
+		}
+
 		if err = os.WriteFile(ClipseConfig.HistoryFilePath, jsonData, 0644); err != nil {
 			utils.LogERROR(fmt.Sprintf("Failed to create %s", ClipseConfig.HistoryFilePath))
 			return err
@@ -109,6 +114,11 @@ func WriteUpdate(data ClipboardHistory) error {
 	updatedJSON, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON: %w", err)
+	}
+
+	if !utils.DiskspaceAvailable(len(updatedJSON)) {
+		utils.LogERROR("not enough disk space available to store clipboard content")
+		return nil
 	}
 
 	if err := os.WriteFile(ClipseConfig.HistoryFilePath, updatedJSON, 0644); err != nil {
