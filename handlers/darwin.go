@@ -134,7 +134,7 @@ func RunDarwinListener() {
 					break
 				}
 				prevText = text
-				if err := SaveTextCommon(text); err != nil {
+				if err := SaveText(text); err != nil {
 					utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", text, err))
 				}
 
@@ -144,7 +144,7 @@ func RunDarwinListener() {
 					break
 				}
 				prevImg = img
-				if err := SaveImageCommon(img); err != nil {
+				if err := SaveImage(img); err != nil {
 					utils.LogERROR(fmt.Sprintf("failed to save image | %s", err))
 				}
 

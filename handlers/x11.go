@@ -371,7 +371,7 @@ func RunX11Listener() {
 			}
 
 			if imgContents != nil {
-				utils.HandleError(SaveImageCommon(imgContents))
+				utils.HandleError(SaveImage(imgContents))
 			}
 
 			// Check if the clipboard content should be excluded based on source application
@@ -383,7 +383,7 @@ func RunX11Listener() {
 
 			textContents := X11GetClipboardText()
 			if textContents != "" {
-				utils.HandleError(SaveTextCommon(textContents))
+				utils.HandleError(SaveText(textContents))
 			}
 		}
 		if result == 0 {

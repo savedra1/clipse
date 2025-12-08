@@ -12,7 +12,11 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
-func SaveImageCommon(imgData []byte) error {
+func SaveImage(imgData []byte) error {
+	if !utils.DiskspaceAvailable(len(imgData)) {
+		return fmt.Errorf("no available disk space to store image")
+	}
+
 	byteLength := strconv.Itoa(len(string(imgData)))
 	fileName := fmt.Sprintf("%s-%s.png", byteLength, utils.GetTimeStamp())
 	itemTitle := fmt.Sprintf("%s %s", imgIcon, fileName)
@@ -28,7 +32,7 @@ func SaveImageCommon(imgData []byte) error {
 	return nil
 }
 
-func SaveTextCommon(textData string) error {
+func SaveText(textData string) error {
 	if err := config.AddClipboardItem(textData, "null"); err != nil {
 		return err
 	}
