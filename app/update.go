@@ -187,7 +187,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Quit
 
 				case len(os.Args) > 2 && utils.IsInt(os.Args[2]):
+					display.DisplayServer.CopyText(fullValue)
 					shell.KillProcess(os.Args[2])
+					m.ExitCode = 1
 					return m, tea.Quit
 
 				case KeepEnabled:
@@ -430,6 +432,43 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.forceQuit):
 			m.ExitCode = 1
 			return m, tea.Quit
+		}
+
+	case tea.MouseMsg:
+		i, ok := m.list.SelectedItem().(item)
+		if !ok {
+			break
+		}
+
+		switch msg.Action {
+		case tea.MouseActionMotion:
+			listItemsStart := 5 // first 5 lines take up title and info
+			linesPerItem := 3   // may need to make configurable if desc is disabled
+
+			if msg.Y >= listItemsStart {
+				relativeY := msg.Y - listItemsStart
+				hoveredIndex := relativeY / linesPerItem
+
+				if hoveredIndex < len(m.list.Items()) {
+					m.list.Select(hoveredIndex)
+				}
+			}
+
+		case tea.MouseActionPress:
+			if msg.Button == tea.MouseButtonLeft {
+				if m.showPreview || m.showConfirmation {
+					break
+				}
+				display.DisplayServer.CopyText(i.TitleFull())
+				if keepEnabled() {
+					cmds = append(
+						cmds,
+						m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+i.Title())),
+					)
+					break
+				}
+				return m, tea.Quit
+			}
 		}
 	}
 

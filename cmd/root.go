@@ -152,7 +152,11 @@ func handlePause(s string) {
 func launchTUI() {
 	shell.KillExistingFG()
 	newModel := app.NewModel()
-	p := tea.NewProgram(newModel)
+	p := tea.NewProgram(
+		newModel,
+		tea.WithMouseCellMotion(),
+		tea.WithMouseAllMotion(),
+	)
 	if *realTime {
 		go newModel.ListenRealTime(p)
 	}
