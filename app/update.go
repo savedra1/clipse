@@ -21,6 +21,7 @@ import (
 */
 
 var KeepEnabled = keepEnabled()
+var LinesPerItem = linesPerItem()
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
@@ -355,11 +356,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.showConfirmation {
 				listItemsStart = listItemsStart - 1 // confirmation list starts from line 4
 			}
-			linesPerItem := 3 // may need to make configurable if desc is disabled
 
 			if msg.Y >= listItemsStart {
 				relativeY := msg.Y - listItemsStart
-				hoveredIndex := relativeY / linesPerItem
+				hoveredIndex := relativeY / LinesPerItem
 
 				if hoveredIndex < len(m.list.Items()) {
 					if m.showConfirmation {
@@ -430,7 +430,7 @@ func (m *Model) togglePinUpdate() {
 	}
 	item.description = fmt.Sprintf("Date copied: %s", item.timeStamp)
 	if !item.pinned {
-		item.description = fmt.Sprintf("Date copied: %s %s", item.timeStamp, styledPin(m.theme))
+		item.description = fmt.Sprintf("Date copied: %s %s", item.timeStamp, StyledPin)
 	}
 
 	item.pinned = !item.pinned
@@ -739,4 +739,11 @@ func keepEnabled() bool {
 		return true
 	}
 	return false
+}
+
+func linesPerItem() int {
+	if !config.ClipseConfig.EnableDescription {
+		return 2
+	}
+	return 3
 }

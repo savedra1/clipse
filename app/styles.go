@@ -24,14 +24,16 @@ var (
 	previewTitleStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Right = borderRightChar
-		return style.BorderStyle(b) //.MarginTop(1)
+		return style.BorderStyle(b)
 	}()
 
 	previewInfoStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Left = borderLeftChar
-		return style.BorderStyle(b) //MarginBottom(1)
+		return style.BorderStyle(b)
 	}()
+
+	StyledPin = styledPin(config.GetTheme().PinIndicatorColor)
 )
 
 func (d itemDelegate) itemFilterStyle(i item) string {
@@ -39,6 +41,10 @@ func (d itemDelegate) itemFilterStyle(i item) string {
 		Foreground(lipgloss.Color(d.theme.DimmedTitle)).
 		PaddingLeft(2).
 		Render(i.titleBase)
+
+	if !config.ClipseConfig.EnableDescription {
+		return titleStyle
+	}
 
 	descStyle := style.
 		Foreground(lipgloss.Color(d.theme.DimmedDesc)).
@@ -49,12 +55,23 @@ func (d itemDelegate) itemFilterStyle(i item) string {
 }
 
 func (d itemDelegate) itemChosenStyle(i item) string {
+	var prefix string
+	if i.pinned {
+		prefix = StyledPin + " "
+	}
+
 	titleStyle = style.
 		Foreground(lipgloss.Color(d.theme.SelectedTitle)).
 		PaddingLeft(1).
 		BorderLeft(true).BorderStyle(lipgloss.NormalBorder()).
 		BorderForeground(lipgloss.Color(d.theme.SelectedDescBorder)).
 		Render(i.titleBase)
+
+	titleFinal := prefix + titleStyle
+
+	if !config.ClipseConfig.EnableDescription {
+		return titleFinal
+	}
 
 	descStyle = style.
 		Foreground(lipgloss.Color(d.theme.SelectedDesc)).
@@ -63,46 +80,55 @@ func (d itemDelegate) itemChosenStyle(i item) string {
 		BorderForeground(lipgloss.Color(d.theme.SelectedDescBorder)).
 		Render(i.descriptionBase)
 
-	if i.pinned {
-		descStyle += styledPin(d.theme)
-	}
-
-	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
+	return fmt.Sprintf("%s\n%s", titleFinal, descStyle)
 }
 
 func (d itemDelegate) itemSelectedStyle(i item) string {
+	var prefix string
+	if i.pinned {
+		prefix = StyledPin + " "
+	}
 
 	titleStyle = style.
 		Foreground(lipgloss.Color(d.theme.SelectedTitle)).
 		PaddingLeft(2).
 		Render(i.titleBase)
 
+	titleFinal := prefix + titleStyle
+
+	if !config.ClipseConfig.EnableDescription {
+		return titleFinal
+	}
+
 	descStyle = style.
 		Foreground(lipgloss.Color(d.theme.SelectedDesc)).
 		PaddingLeft(2).
 		Render(i.descriptionBase)
 
-	if i.pinned {
-		descStyle += styledPin(d.theme)
-	}
-
-	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
+	return fmt.Sprintf("%s\n%s", titleFinal, descStyle)
 }
 
 func (d itemDelegate) itemNormalStyle(i item) string {
+	var prefix string
+	if i.pinned {
+		prefix = StyledPin + " "
+	}
+
 	titleStyle = style.
 		Foreground(lipgloss.Color(d.theme.NormalTitle)).
 		PaddingLeft(2).
 		Render(i.titleBase)
 
+	titleFinal := prefix + titleStyle
+
+	if !config.ClipseConfig.EnableDescription {
+		return titleFinal
+	}
+
 	descStyle = style.
 		Foreground(lipgloss.Color(d.theme.NormalDesc)).
 		PaddingLeft(2).
 		Render(i.descriptionBase)
-
-	if i.pinned {
-		descStyle += styledPin(d.theme)
-	}
 
 	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
 }
@@ -180,9 +206,9 @@ func styledStatusMessage(ct config.CustomTheme) func(strs ...string) string {
 		Render
 }
 
-func styledPin(theme config.CustomTheme) string {
+func styledPin(color string) string {
 	return style.
-		Foreground(lipgloss.Color(theme.PinIndicatorColor)).
+		Foreground(lipgloss.Color(color)).
 		Render(pinChar)
 }
 
@@ -204,3 +230,5 @@ func (m *Model) styledPreviewContent(content string) string {
 		Foreground(lipgloss.Color(m.theme.PreviewedText)).
 		Render(content)
 }
+
+//func getStyledEntry() {}

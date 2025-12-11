@@ -148,7 +148,8 @@ func filterItems(clipboardItems []config.ClipboardItem, isPinned bool, theme con
 		}
 
 		if entry.Pinned {
-			item.description = fmt.Sprintf("Date copied: %s %s", entry.Recorded, styledPin(theme))
+			item.title = fmt.Sprintf("%s %s", StyledPin, item.titleBase)
+			// item.description = fmt.Sprintf("Date copied: %s %s", entry.Recorded, styledPin(theme))
 		}
 
 		if !isPinned || entry.Pinned {
