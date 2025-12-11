@@ -1,8 +1,8 @@
 package config
 
 const (
-	configFile              = "config.json"
-	clipseDir               = "clipse"
+	defaultConfigFile       = "config.json"
+	defaultClipseDir        = "clipse"
 	defaultAllowDuplicates  = false
 	defaultHistoryFile      = "clipboard_history.json"
 	defaultMaxHist          = 100
@@ -11,10 +11,10 @@ const (
 	defaultPollInterval     = 50
 	defaultTempDir          = "tmp_files"
 	defaultThemeFile        = "custom_theme.json"
-	maxChar                 = 65
 	defaultEnableAutoPaste  = false
 	defaultAutoPasteKeyBind = "ctrl+v"
 	defaultAutoPasteBuffer  = 10
+	defaultEnableMouse      = true
 )
 
 // Initialize default key bindings
@@ -69,6 +69,7 @@ func defaultConfig() Config {
 		ThemeFilePath:   defaultThemeFile,
 		KeyBindings:     defaultKeyBindings(),
 		ExcludedApps:    defaultExcludedApps(),
+		EnableMouse:     defaultEnableMouse,
 		ImageDisplay: ImageDisplay{
 			Type:      "basic",
 			ScaleX:    9,

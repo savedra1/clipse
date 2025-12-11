@@ -12,7 +12,6 @@ import (
 
 	"github.com/savedra1/clipse/config"
 	"github.com/savedra1/clipse/display"
-	"github.com/savedra1/clipse/shell"
 	"github.com/savedra1/clipse/utils"
 )
 
@@ -122,115 +121,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			break
 		}
-		title := i.Title()
-		fullValue := i.TitleFull()
-		fp := i.FilePath()
-		timestamp := i.TimeStamp()
 
 		switch {
 
 		case key.Matches(msg, m.keys.choose):
-			if m.showConfirmation && m.confirmationList.Index() == 0 { // No
-				m.itemCache = []SelectedItem{}
-				m.showConfirmation = false
-				m.setPreviewKeys(false)
-				m.enableConfirmationKeys(false)
-				m.setConfirmationKeys(false)
-				break
-
-			} else if m.showConfirmation && m.confirmationList.Index() == 1 { // Yes
-				m.showConfirmation = false
-				m.setPreviewKeys(false)
-				m.enableConfirmationKeys(false)
-				m.setConfirmationKeys(false)
-				timeStamps := []string{}
-				for _, item := range m.itemCache {
-					timeStamps = append(timeStamps, item.TimeStamp)
-					m.removeCachedItem(item.TimeStamp)
-				}
-
-				statusMsg := "Deleted: *selected items*"
-				if len(m.itemCache) == 1 {
-					statusMsg += strings.Replace(statusMsg, "*selected items*", m.itemCache[0].Value, 1)
-				}
-
-				if err := config.DeleteItems(timeStamps); err != nil {
-					utils.LogERROR(fmt.Sprintf("could not delete all items from history: %s", err))
-				}
-
-				cmds = append(
-					cmds,
-					m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
-				)
-				m.itemCache = []SelectedItem{}
-
-				if len(m.list.Items()) == 0 {
-					m.list.SetShowStatusBar(false)
-				}
-
+			if m.showConfirmation {
+				cmds = m.handleConfirmationSelection(cmds)
 				break
 			}
 
-			selectedItems := m.selectedItems()
-
-			if len(selectedItems) < 1 {
-				switch {
-				case fp != "null":
-					display.DisplayServer.CopyImage(fp)
-					if KeepEnabled {
-						cmds = append(
-							cmds,
-							m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+title)),
-						)
-						return m, tea.Batch(cmds...)
-					}
-					return m, tea.Quit
-
-				case len(os.Args) > 2 && utils.IsInt(os.Args[2]):
-					shell.KillProcess(os.Args[2])
-					return m, tea.Quit
-
-				case KeepEnabled:
-					display.DisplayServer.CopyText(fullValue)
-					cmds = append(
-						cmds,
-						m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+title)),
-					)
-					return m, tea.Batch(cmds...)
-
-				default:
-					display.DisplayServer.CopyText(fullValue)
-					return m, tea.Quit
-				}
-			}
-
-			yank := ""
-			for _, item := range selectedItems {
-				if fullValue != item.Value {
-					yank += item.Value + "\n"
-				}
-			}
-			yank += fullValue
-			switch {
-
-			case len(os.Args) > 2 && utils.IsInt(os.Args[2]):
-				display.DisplayServer.CopyText(yank)
-				shell.KillProcess(os.Args[2])
-				return m, tea.Quit
-
-			case KeepEnabled:
-				statusMsg := "Copied to clipboard: *selected items*"
-				display.DisplayServer.CopyText(yank)
-				cmds = append(
-					cmds,
-					m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
-				)
+			m, updatedCmds, toQuit := m.handleChooseOperation(i, cmds)
+			if !toQuit {
+				cmds = append(cmds, updatedCmds...)
 				return m, tea.Batch(cmds...)
-
-			default:
-				display.DisplayServer.CopyText(yank)
-				return m, tea.Quit
 			}
+			return m, tea.Quit
 
 		case key.Matches(msg, m.keys.remove):
 			selectedItems := m.selectedItems()
@@ -239,7 +144,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.itemCache,
 				SelectedItem{
 					Index:     m.list.Index(),
-					TimeStamp: timestamp,
+					TimeStamp: i.timeStamp,
 					Value:     i.titleFull,
 					Pinned:    i.pinned,
 				},
@@ -278,15 +183,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					timeStamps = append(timeStamps, item.TimeStamp)
 				}
 
-				timeStamps = append(timeStamps, timestamp)
+				timeStamps = append(timeStamps, i.timeStamp)
 				statusMsg += "*selected items*"
 				if err := config.DeleteItems(timeStamps); err != nil {
 					utils.LogERROR(fmt.Sprintf("failed to delete all items from history file: %s", err))
 				}
 			} else {
 				m.list.RemoveItem(currentIndex)
-				utils.HandleError(config.DeleteItems([]string{timestamp}))
-				statusMsg += title
+				utils.HandleError(config.DeleteItems([]string{i.timeStamp}))
+				statusMsg += i.title
 			}
 
 			if len(m.list.Items()) == 0 {
@@ -300,7 +205,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 
 		case key.Matches(msg, m.keys.togglePin):
-			isPinned, err := config.TogglePinClipboardItem(timestamp)
+			isPinned, err := config.TogglePinClipboardItem(i.timeStamp)
 			utils.HandleError(err)
 			m.togglePinUpdate()
 
@@ -310,7 +215,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			cmds = append(
 				cmds,
-				m.list.NewStatusMessage(statusMessageStyle(fmt.Sprintf("%s: %s", pinEvent, title))),
+				m.list.NewStatusMessage(statusMessageStyle(fmt.Sprintf("%s: %s", pinEvent, i.title))),
 			)
 
 		case key.Matches(msg, m.keys.togglePinned):
@@ -430,6 +335,73 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.forceQuit):
 			m.ExitCode = 1
 			return m, tea.Quit
+		}
+
+	case tea.MouseMsg:
+		if !config.ClipseConfig.EnableMouse {
+			break
+		}
+		if m.showPreview {
+			break
+		}
+		i, ok := m.list.SelectedItem().(item)
+		if !ok {
+			break
+		}
+
+		switch msg.Action {
+		case tea.MouseActionMotion:
+			listItemsStart := 5 // first 5 lines take up title and info
+			if m.showConfirmation {
+				listItemsStart = listItemsStart - 1 // confirmation list starts from line 4
+			}
+			linesPerItem := 3 // may need to make configurable if desc is disabled
+
+			if msg.Y >= listItemsStart {
+				relativeY := msg.Y - listItemsStart
+				hoveredIndex := relativeY / linesPerItem
+
+				if hoveredIndex < len(m.list.Items()) {
+					if m.showConfirmation {
+						m.confirmationList.Select(hoveredIndex)
+						break
+					}
+					m.list.Select(hoveredIndex)
+				}
+			}
+
+		case tea.MouseActionPress:
+			switch msg.Button {
+			case tea.MouseButtonLeft:
+				if m.showConfirmation {
+					cmds = m.handleConfirmationSelection(cmds)
+					break
+				}
+
+				m, updatedCmds, toQuit := m.handleChooseOperation(i, cmds)
+				if !toQuit {
+					cmds = append(cmds, updatedCmds...)
+					return m, tea.Batch(cmds...)
+				}
+				return m, tea.Quit
+
+			case tea.MouseButtonRight:
+				if m.showPreview || m.showConfirmation {
+					break
+				}
+				i.selected = !i.selected
+				m.list.SetItem(m.list.Index(), i)
+
+			case tea.MouseButtonWheelUp:
+				if m.list.Index() > 0 {
+					m.list.Select(m.list.Index() - 1)
+				}
+
+			case tea.MouseButtonWheelDown:
+				if m.list.Index() < len(m.list.Items())-1 {
+					m.list.Select(m.list.Index() + 1)
+				}
+			}
 		}
 	}
 
@@ -578,13 +550,106 @@ func (m *Model) filterMatches() []string {
 	return filteredItems
 }
 
+func (m Model) handleChooseOperation(i item, cmds []tea.Cmd) (Model, []tea.Cmd, bool) {
+	selectedItems := m.selectedItems()
+	if len(selectedItems) < 1 {
+		switch {
+		case i.filePath != "null":
+			display.DisplayServer.CopyImage(i.filePath)
+
+		default:
+			display.DisplayServer.CopyText(i.titleFull)
+		}
+
+		if KeepEnabled {
+			cmds = append(
+				cmds,
+				m.list.NewStatusMessage(statusMessageStyle("Copied to clipboard: "+i.title)),
+			)
+			return m, cmds, false
+		}
+		return m, cmds, true
+	}
+
+	yank := ""
+	for _, item := range selectedItems {
+		if i.titleFull != item.Value {
+			yank += item.Value + "\n"
+		}
+	}
+	yank += i.titleFull
+
+	display.DisplayServer.CopyText(yank)
+
+	if KeepEnabled {
+		statusMsg := "Copied to clipboard: *selected items*"
+		display.DisplayServer.CopyText(yank)
+		cmds = append(
+			cmds,
+			m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
+		)
+		return m, cmds, false
+	}
+	display.DisplayServer.CopyText(yank)
+	return m, cmds, true
+}
+
+func (m *Model) deleteCachedItems(cmds []tea.Cmd) []tea.Cmd {
+	timeStamps := []string{}
+	for _, item := range m.itemCache {
+		timeStamps = append(timeStamps, item.TimeStamp)
+		m.removeCachedItem(item.TimeStamp)
+	}
+
+	statusMsg := "Deleted: *selected items*"
+	if len(m.itemCache) == 1 {
+		statusMsg += strings.Replace(statusMsg, "*selected items*", m.itemCache[0].Value, 1)
+	}
+
+	if err := config.DeleteItems(timeStamps); err != nil {
+		utils.LogERROR(fmt.Sprintf("could not delete all items from history: %s", err))
+	}
+
+	cmds = append(
+		cmds,
+		m.list.NewStatusMessage(statusMessageStyle(statusMsg)),
+	)
+	m.itemCache = []SelectedItem{}
+
+	if len(m.list.Items()) == 0 {
+		m.list.SetShowStatusBar(false)
+	}
+
+	return cmds
+}
+
 func (m *Model) removeCachedItem(ts string) {
+	// helper func for deleteCachedItems
 	items := m.list.Items()
 	for i := len(items) - 1; i >= 0; i-- {
 		if item, ok := items[i].(item); ok && item.timeStamp == ts {
 			m.list.RemoveItem(i)
 		}
 	}
+}
+
+func (m *Model) handleConfirmationSelection(cmds []tea.Cmd) []tea.Cmd {
+	if m.showConfirmation && m.confirmationList.Index() == 0 { // No
+		m.itemCache = []SelectedItem{}
+		m.showConfirmation = false
+		m.setPreviewKeys(false)
+		m.enableConfirmationKeys(false)
+		m.setConfirmationKeys(false)
+		return cmds
+
+	}
+	// yes selected
+	m.showConfirmation = false
+	m.setPreviewKeys(false)
+	m.enableConfirmationKeys(false)
+	m.setConfirmationKeys(false)
+	cmds = m.deleteCachedItems(cmds)
+	return cmds
 }
 
 // enable/disable the main keys relevant to the preview view
@@ -667,7 +732,6 @@ func (m *Model) togglePinView() string {
 	}
 
 	return ""
-
 }
 
 func keepEnabled() bool {

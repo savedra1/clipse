@@ -32,7 +32,6 @@ var (
 	clearAll      = flag.Bool("clear-all", false, "Remove all contents the clipboard history including pinned items.")
 	clearImages   = flag.Bool("clear-images", false, "Removes all images from the clipboard history including pinned images.")
 	clearText     = flag.Bool("clear-text", false, "Removes all text from the clipboard history including pinned text entries.")
-	forceClose    = flag.Bool("fc", false, "Forces the terminal session to quick by taking the $PPID var as an arg. EG `clipse -fc $PPID`")
 	wlStore       = flag.Bool("wl-store", false, "Store data from the stdin directly using the wl-clipboard API.")
 	realTime      = flag.Bool("enable-real-time", false, "Enable real time updates to the TUI")
 	outputAll     = flag.String("output-all", "", "Print clipboard text content to stdout, each entry separated by a newline, possible values: (raw, unescaped)")
@@ -93,9 +92,6 @@ func Main() int {
 	case *clearUnpinned, *clearAll, *clearImages, *clearText:
 		handleClear()
 
-	case *forceClose:
-		handleForceClose()
-
 	case *wlStore:
 		handlers.StoreWLData()
 
@@ -152,7 +148,11 @@ func handlePause(s string) {
 func launchTUI() {
 	shell.KillExistingFG()
 	newModel := app.NewModel()
-	p := tea.NewProgram(newModel)
+	p := tea.NewProgram(
+		newModel,
+		tea.WithMouseCellMotion(),
+		tea.WithMouseAllMotion(),
+	)
 	if *realTime {
 		go newModel.ListenRealTime(p)
 	}
@@ -219,25 +219,6 @@ func handleCopy() {
 		input = os.Args[2]
 	}
 	display.DisplayServer.CopyText(input)
-}
-
-func handleForceClose() {
-	if len(os.Args) < 3 {
-		fmt.Printf("No PPID provided. Usage: %s' -fc $PPID'", os.Args[0])
-		os.Exit(1)
-	}
-
-	if len(os.Args) > 3 {
-		fmt.Printf("Too many args. Usage: %s' -fc $PPID'", os.Args[0])
-		os.Exit(1)
-	}
-
-	if !utils.IsInt(os.Args[2]) {
-		fmt.Printf("Invalid PPID supplied: %s\nPPID must be integer. use var `$PPID` as the arg.", os.Args[2])
-		os.Exit(1)
-	}
-
-	launchTUI()
 }
 
 func handleOutputAll(format string) {

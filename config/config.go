@@ -22,6 +22,7 @@ type Config struct {
 	ImageDisplay    ImageDisplay      `json:"imageDisplay"`
 	ExcludedApps    []string          `json:"excludedApps"`
 	AutoPaste       AutoPaste         `json:"autoPaste"`
+	EnableMouse     bool              `json:"enableMouse"`
 }
 
 type AutoPaste struct {
@@ -52,8 +53,8 @@ func Init() error {
 	}
 
 	// Construct the path to the config directory
-	clipseDir := filepath.Join(userHome, clipseDir)    // the ~/.config/clipse dir
-	configPath := filepath.Join(clipseDir, configFile) // the path to the config.json file
+	clipseDir := filepath.Join(userHome, defaultClipseDir)    // the ~/.config/clipse dir
+	configPath := filepath.Join(clipseDir, defaultConfigFile) // the path to the config.json file
 
 	// Does Config dir exist, if no make it.
 	_, err = os.Stat(clipseDir)
