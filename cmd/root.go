@@ -45,6 +45,8 @@ func Main() int {
 	utils.HandleError(config.Init())
 	utils.SetUpLogger(config.ClipseConfig.LogFilePath)
 
+	app.ClipseTheme = config.GetTheme()
+
 	switch {
 
 	case flag.NFlag() == 0:

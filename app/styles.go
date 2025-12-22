@@ -11,6 +11,8 @@ import (
 )
 
 var (
+	ClipseTheme config.CustomTheme
+
 	style                 = lipgloss.NewStyle()
 	titleStyle, descStyle string
 	appStyle              = style.Padding(1, 2)

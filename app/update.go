@@ -28,7 +28,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case ReRender:
 		clipboardItems := config.GetHistory()
-		entryItems := filterItems(clipboardItems, false, m.theme)
+		entryItems := filterItems(clipboardItems, false)
 		cmds = append(cmds, m.list.SetItems(entryItems))
 		return m, tea.Batch(cmds...)
 	case tea.WindowSizeMsg:
@@ -710,7 +710,7 @@ func (m *Model) togglePinView() string {
 	m.list.Title = clipboardTitle
 
 	clipboardItems := config.GetHistory()
-	filteredItems := filterItems(clipboardItems, m.togglePinned, m.theme)
+	filteredItems := filterItems(clipboardItems, m.togglePinned)
 
 	if len(filteredItems) == 0 {
 		if m.togglePinned {
