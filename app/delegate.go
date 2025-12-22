@@ -21,8 +21,20 @@ type itemDelegate struct {
 	theme config.CustomTheme
 }
 
-func (d itemDelegate) Height() int                             { return 2 }
-func (d itemDelegate) Spacing() int                            { return 1 }
+func (d itemDelegate) Height() int {
+	if !config.ClipseConfig.EnableDescription {
+		return 1
+	}
+	return 2
+}
+
+func (d itemDelegate) Spacing() int {
+	if !config.ClipseConfig.EnableDescription {
+		return 2 // extra space needed when no description to keep mouse in sync
+	}
+	return 1
+}
+
 func (d itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
 
 func (d itemDelegate) Render(
