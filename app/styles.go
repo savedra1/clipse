@@ -26,13 +26,13 @@ var (
 	previewTitleStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Right = borderRightChar
-		return style.BorderStyle(b) //.MarginTop(1)
+		return style.BorderStyle(b)
 	}()
 
 	previewInfoStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Left = borderLeftChar
-		return style.BorderStyle(b) //MarginBottom(1)
+		return style.BorderStyle(b)
 	}()
 )
 
