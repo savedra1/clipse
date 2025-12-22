@@ -11,6 +11,8 @@ import (
 )
 
 var (
+	ClipseTheme config.CustomTheme
+
 	style                 = lipgloss.NewStyle()
 	titleStyle, descStyle string
 	appStyle              = style.Padding(1, 2)
@@ -24,13 +26,13 @@ var (
 	previewTitleStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Right = borderRightChar
-		return style.BorderStyle(b) //.MarginTop(1)
+		return style.BorderStyle(b)
 	}()
 
 	previewInfoStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Left = borderLeftChar
-		return style.BorderStyle(b) //MarginBottom(1)
+		return style.BorderStyle(b)
 	}()
 )
 
@@ -39,6 +41,10 @@ func (d itemDelegate) itemFilterStyle(i item) string {
 		Foreground(lipgloss.Color(d.theme.DimmedTitle)).
 		PaddingLeft(2).
 		Render(i.titleBase)
+
+	if !config.ClipseConfig.EnableDescription {
+		return titleStyle
+	}
 
 	descStyle := style.
 		Foreground(lipgloss.Color(d.theme.DimmedDesc)).
@@ -55,6 +61,13 @@ func (d itemDelegate) itemChosenStyle(i item) string {
 		BorderLeft(true).BorderStyle(lipgloss.NormalBorder()).
 		BorderForeground(lipgloss.Color(d.theme.SelectedDescBorder)).
 		Render(i.titleBase)
+
+	if !config.ClipseConfig.EnableDescription {
+		if i.pinned {
+			titleStyle += styledPin(d.theme)
+		}
+		return titleStyle
+	}
 
 	descStyle = style.
 		Foreground(lipgloss.Color(d.theme.SelectedDesc)).
@@ -77,6 +90,13 @@ func (d itemDelegate) itemSelectedStyle(i item) string {
 		PaddingLeft(2).
 		Render(i.titleBase)
 
+	if !config.ClipseConfig.EnableDescription {
+		if i.pinned {
+			titleStyle += styledPin(d.theme)
+		}
+		return titleStyle
+	}
+
 	descStyle = style.
 		Foreground(lipgloss.Color(d.theme.SelectedDesc)).
 		PaddingLeft(2).
@@ -94,6 +114,13 @@ func (d itemDelegate) itemNormalStyle(i item) string {
 		Foreground(lipgloss.Color(d.theme.NormalTitle)).
 		PaddingLeft(2).
 		Render(i.titleBase)
+
+	if !config.ClipseConfig.EnableDescription {
+		if i.pinned {
+			titleStyle += styledPin(d.theme)
+		}
+		return titleStyle
+	}
 
 	descStyle = style.
 		Foreground(lipgloss.Color(d.theme.NormalDesc)).

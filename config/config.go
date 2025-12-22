@@ -10,19 +10,21 @@ import (
 )
 
 type Config struct {
-	AllowDuplicates bool              `json:"allowDuplicates"`
-	HistoryFilePath string            `json:"historyFile"`
-	MaxHistory      int               `json:"maxHistory"`
-	DeleteAfter     int               `json:"deleteAfter"`
-	LogFilePath     string            `json:"logFile"`
-	PollInterval    int               `json:"pollInterval"`
-	ThemeFilePath   string            `json:"themeFile"`
-	TempDirPath     string            `json:"tempDir"`
-	KeyBindings     map[string]string `json:"keyBindings"`
-	ImageDisplay    ImageDisplay      `json:"imageDisplay"`
-	ExcludedApps    []string          `json:"excludedApps"`
-	AutoPaste       AutoPaste         `json:"autoPaste"`
-	EnableMouse     bool              `json:"enableMouse"`
+	AllowDuplicates   bool              `json:"allowDuplicates"`
+	HistoryFilePath   string            `json:"historyFile"`
+	MaxHistory        int               `json:"maxHistory"`
+	DeleteAfter       int               `json:"deleteAfter"`
+	LogFilePath       string            `json:"logFile"`
+	PollInterval      int               `json:"pollInterval"`
+	MaxEntryLength    int               `json:"maxEntryLength"`
+	ThemeFilePath     string            `json:"themeFile"`
+	TempDirPath       string            `json:"tempDir"`
+	KeyBindings       map[string]string `json:"keyBindings"`
+	ImageDisplay      ImageDisplay      `json:"imageDisplay"`
+	ExcludedApps      []string          `json:"excludedApps"`
+	AutoPaste         AutoPaste         `json:"autoPaste"`
+	EnableMouse       bool              `json:"enableMouse"`
+	EnableDescription bool              `json:"enableDescription"`
 }
 
 type AutoPaste struct {

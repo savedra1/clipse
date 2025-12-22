@@ -75,15 +75,13 @@ func NewModel() Model {
 
 	clipboardItems := config.GetHistory()
 
-	theme := config.GetTheme()
-
 	m := Model{
 		keys:             listKeys,
 		filterKeys:       filterKeys,
 		confirmationKeys: confirmationKeys,
 		help:             help.New(),
 		togglePinned:     false,
-		theme:            theme,
+		theme:            ClipseTheme,
 		prevDirection:    "",
 		showConfirmation: false,
 		preview:          NewPreview(),
@@ -92,7 +90,7 @@ func NewModel() Model {
 		ExitCode:         0,
 	}
 
-	entryItems := filterItems(clipboardItems, false, m.theme)
+	entryItems := filterItems(clipboardItems, false)
 
 	del := m.newItemDelegate()
 
@@ -120,21 +118,21 @@ func NewModel() Model {
 		clipboardList.SetShowStatusBar(false) // remove duplicate "No items"
 	}
 
-	statusMessageStyle = styledStatusMessage(theme)
-	m.help = styledHelp(m.help, theme)
-	m.list = styledList(clipboardList, theme)
-	m.confirmationList = styledList(confirmationList, theme)
+	statusMessageStyle = styledStatusMessage(ClipseTheme)
+	m.help = styledHelp(m.help, ClipseTheme)
+	m.list = styledList(clipboardList, ClipseTheme)
+	m.confirmationList = styledList(confirmationList, ClipseTheme)
 	m.enableConfirmationKeys(false)
 
 	return m
 }
 
 // if isPinned is true, returns only an array of pinned items, otherwise all
-func filterItems(clipboardItems []config.ClipboardItem, isPinned bool, theme config.CustomTheme) []list.Item {
+func filterItems(clipboardItems []config.ClipboardItem, isPinned bool) []list.Item {
 	var filteredItems []list.Item
 
 	for _, entry := range clipboardItems {
-		shortenedVal := utils.Shorten(entry.Value)
+		shortenedVal := utils.Shorten(entry.Value, config.ClipseConfig.MaxEntryLength)
 		item := item{
 			title:           shortenedVal,
 			titleBase:       shortenedVal,
@@ -148,7 +146,7 @@ func filterItems(clipboardItems []config.ClipboardItem, isPinned bool, theme con
 		}
 
 		if entry.Pinned {
-			item.description = fmt.Sprintf("Date copied: %s %s", entry.Recorded, styledPin(theme))
+			item.description = fmt.Sprintf("Date copied: %s %s", entry.Recorded, styledPin(ClipseTheme))
 		}
 
 		if !isPinned || entry.Pinned {
