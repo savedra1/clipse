@@ -29,7 +29,7 @@ func (d itemDelegate) Height() int {
 }
 
 func (d itemDelegate) Spacing() int {
-	if !config.ClipseConfig.EnableDescription {
+	if !config.ClipseConfig.EnableDescription && config.ClipseConfig.EnableMouse {
 		return 2 // extra space needed when no description to keep mouse in sync
 	}
 	return 1
