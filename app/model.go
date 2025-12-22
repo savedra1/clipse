@@ -132,7 +132,7 @@ func filterItems(clipboardItems []config.ClipboardItem, isPinned bool) []list.It
 	var filteredItems []list.Item
 
 	for _, entry := range clipboardItems {
-		shortenedVal := utils.Shorten(entry.Value)
+		shortenedVal := utils.Shorten(entry.Value, config.ClipseConfig.MaxEntryLength)
 		item := item{
 			title:           shortenedVal,
 			titleBase:       shortenedVal,

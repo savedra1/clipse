@@ -16,6 +16,7 @@ type Config struct {
 	DeleteAfter       int               `json:"deleteAfter"`
 	LogFilePath       string            `json:"logFile"`
 	PollInterval      int               `json:"pollInterval"`
+	MaxEntryLength    int               `json:"maxEntryLength"`
 	ThemeFilePath     string            `json:"themeFile"`
 	TempDirPath       string            `json:"tempDir"`
 	KeyBindings       map[string]string `json:"keyBindings"`

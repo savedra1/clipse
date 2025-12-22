@@ -9,6 +9,7 @@ const (
 	defaultDeleteAfter       = 0
 	defaultLogFile           = "clipse.log"
 	defaultPollInterval      = 50
+	defaultMaxEntryLength    = 65
 	defaultTempDir           = "tmp_files"
 	defaultThemeFile         = "custom_theme.json"
 	defaultEnableAutoPaste   = false
@@ -67,6 +68,7 @@ func defaultConfig() Config {
 		TempDirPath:       defaultTempDir,
 		LogFilePath:       defaultLogFile,
 		PollInterval:      defaultPollInterval,
+		MaxEntryLength:    defaultMaxEntryLength,
 		ThemeFilePath:     defaultThemeFile,
 		KeyBindings:       defaultKeyBindings(),
 		ExcludedApps:      defaultExcludedApps(),

@@ -64,7 +64,7 @@ func (d itemDelegate) itemChosenStyle(i item) string {
 
 	if !config.ClipseConfig.EnableDescription {
 		if i.pinned {
-			titleStyle += fmt.Sprintf(" %s", styledPin(d.theme))
+			titleStyle += styledPin(d.theme)
 		}
 		return titleStyle
 	}
@@ -92,7 +92,7 @@ func (d itemDelegate) itemSelectedStyle(i item) string {
 
 	if !config.ClipseConfig.EnableDescription {
 		if i.pinned {
-			titleStyle += fmt.Sprintf(" %s", styledPin(d.theme))
+			titleStyle += styledPin(d.theme)
 		}
 		return titleStyle
 	}
@@ -117,7 +117,7 @@ func (d itemDelegate) itemNormalStyle(i item) string {
 
 	if !config.ClipseConfig.EnableDescription {
 		if i.pinned {
-			titleStyle += fmt.Sprintf(" %s", styledPin(d.theme))
+			titleStyle += styledPin(d.theme)
 		}
 		return titleStyle
 	}

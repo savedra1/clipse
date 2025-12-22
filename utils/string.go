@@ -13,13 +13,14 @@ import (
 /* General purpose functions to be used by other modules
  */
 
-func Shorten(s string) string {
+func Shorten(s string, maxChar int) string {
 	sl := strings.TrimSpace(
 		strings.ReplaceAll(
 			strings.ReplaceAll(s, "\n", "\\n"),
 			"\t", " ",
 		),
 	)
+
 	if len(sl) <= maxChar {
 		return strings.ReplaceAll(sl, "  ", " ")
 	}
