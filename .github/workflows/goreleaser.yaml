@@ -9,14 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  release-linux-amd64:
-    name: Linux amd64
+  release:
     runs-on: ubuntu-latest
-
-    env:
-      GOOS: linux
-      GOARCH: amd64
-
     steps:
       - uses: actions/checkout@v6
         with:
@@ -26,91 +20,23 @@ jobs:
         with:
           go-version: stable
 
-      - name: Install deps (amd64)
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             gcc \
+            gcc-aarch64-linux-gnu \
             pkg-config \
             libx11-dev \
             libxfixes-dev \
-            xcb \
             libxcb-xkb-dev \
-            x11-xkb-utils \
-            libx11-xcb-dev \
             libxkbcommon-x11-dev \
             libxkbcommon-dev \
-            libpng++-dev \
-            xorg-dev \
-            libxtst-dev \
-            libc6-dev
+            libxtst-dev
 
       - name: GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          args: release --clean --id linux-x11,linux-wayland
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  release-linux-arm64:
-    name: Linux arm64
-    runs-on: ubuntu-latest
-    needs: release-linux-amd64
-
-    env:
-      GOOS: linux
-      GOARCH: arm64
-      CGO_ENABLED: 1
-      CC: aarch64-linux-gnu-gcc
-
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-go@v6
-        with:
-          go-version: stable
-
-      - name: Install deps (arm64 cross)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            gcc-aarch64-linux-gnu \
-            pkg-config \
-            libx11-dev:arm64 \
-            libxfixes-dev:arm64
-
-      - name: GoReleaser
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          args: release --clean --id linux-x11,linux-wayland
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  release-macos:
-    name: macOS
-    runs-on: macos-latest
-    needs: release-linux-arm64
-
-    env:
-      GOOS: darwin
-
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-go@v6
-        with:
-          go-version: stable
-
-      - name: Install deps
-        run: brew install pkg-config
-
-      - name: GoReleaser
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          args: release --clean --id darwin
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
