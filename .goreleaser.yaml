@@ -50,7 +50,6 @@ builds:
       - darwin
     env:
       - CGO_ENABLED=1
-      - CC=o64-clang # optional but recommended
 
 archives:
   - id: default

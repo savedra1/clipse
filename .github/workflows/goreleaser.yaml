@@ -33,12 +33,22 @@ jobs:
             gcc \
             pkg-config \
             libx11-dev \
-            libxfixes-dev
+            libxfixes-dev \
+            xcb \
+            libxcb-xkb-dev \
+            x11-xkb-utils \
+            libx11-xcb-dev \
+            libxkbcommon-x11-dev \
+            libxkbcommon-dev \
+            libpng++-dev \
+            xorg-dev \
+            libxtst-dev \
+            libc6-dev
 
       - name: GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          args: release --clean
+          args: release --clean --id linux-x11,linux-wayland
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -74,7 +84,7 @@ jobs:
       - name: GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          args: release --clean
+          args: release --clean --id linux-x11,linux-wayland
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -101,6 +111,6 @@ jobs:
       - name: GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          args: release --clean
+          args: release --clean --id darwin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
