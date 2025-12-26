@@ -238,7 +238,7 @@ clipse -listen
 
   ---
 
-  Without a WM, you can still achieve similar behaviour by creating a listener service manually. E.g:
+  Without a WM, you can still achieve similar behavior by creating a listener service manually. E.g:
 
   Create the file `~/Library/LaunchAgents/clipse.plist` with the following content:
   ```
