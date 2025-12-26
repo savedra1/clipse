@@ -1,6 +1,9 @@
 name: Release
 
 on:
+  push:
+    tags:
+      - "v*.*.*"
   workflow_dispatch:
     inputs:
       tag:
@@ -12,7 +15,7 @@ permissions:
   contents: write
 
 jobs:
-  build-linux:
+  build-linux-amd64:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,14 +32,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             gcc \
-            gcc-aarch64-linux-gnu \
             pkg-config \
             libx11-dev \
             libxfixes-dev \
-            libxcb-xkb-dev \
-            libxkbcommon-x11-dev \
+            libxtst-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxcursor-dev \
             libxkbcommon-dev \
-            libxtst-dev
+            libxkbcommon-x11-dev
 
       - name: Get version
         id: version
@@ -52,25 +56,69 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags wayland -o clipse-linux-wayland-amd64
           tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_wayland_amd64.tar.gz clipse-linux-wayland-amd64
 
-      - name: Build Wayland arm64
-        run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -tags wayland -o clipse-linux-wayland-arm64
-          tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_wayland_arm64.tar.gz clipse-linux-wayland-arm64
-
       - name: Build X11 amd64
         run: |
           CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -tags linux -o clipse-linux-x11-amd64
           tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_x11_amd64.tar.gz clipse-linux-x11-amd64
 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-builds-amd64
+          path: "*.tar.gz"
+          retention-days: 1
+
+  build-linux-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc \
+            pkg-config \
+            x11proto-dev \
+            libx11-dev \
+            libxfixes-dev \
+            libxtst-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxcursor-dev \
+            libxkbcommon-dev \
+            libxkbcommon-x11-dev
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build X11 arm64
         run: |
-          CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc GOOS=linux GOARCH=arm64 go build -tags linux -o clipse-linux-x11-arm64
+          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -tags linux -o clipse-linux-x11-arm64
           tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_x11_arm64.tar.gz clipse-linux-x11-arm64
+
+      - name: Build Wayland arm64
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -tags wayland -o clipse-linux-wayland-arm64
+          tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_wayland_arm64.tar.gz clipse-linux-wayland-arm64
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: linux-builds
+          name: linux-builds-arm64
           path: "*.tar.gz"
           retention-days: 1
 
@@ -113,7 +161,7 @@ jobs:
           retention-days: 1
 
   release:
-    needs: [build-linux, build-macos]
+    needs: [build-linux-amd64, build-linux-arm64, build-macos]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -131,10 +179,16 @@ jobs:
             echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Download Linux artifacts
+      - name: Download Linux AMD artifacts
         uses: actions/download-artifact@v4
         with:
-          name: linux-builds
+          name: linux-builds-amd64
+          path: ./artifacts
+
+      - name: Download Linux ARM artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-builds-arm64
           path: ./artifacts
 
       - name: Download macOS artifacts
