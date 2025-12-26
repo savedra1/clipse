@@ -1,14 +1,15 @@
-# .goreleaser.yaml
-version: 2
+project_name: clipse
 
 before:
   hooks:
     - go mod tidy
 
-builds: # default
+builds:
+  # =========================
+  # Linux – Wayland (no CGO)
+  # =========================
   - id: linux-wayland
-    env:
-      - CGO_ENABLED=0
+    binary: clipse
     goos:
       - linux
     goarch:
@@ -16,46 +17,50 @@ builds: # default
       - arm64
     tags:
       - wayland
-    ldflags:
-      - -s -w
-    # No tags needed - X11 is default
-
-  # Linux Wayland
-  - id: linux-x11
     env:
-      - CGO_ENABLED=1
+      - CGO_ENABLED=0
+
+  # =========================
+  # Linux – X11 (CGO)
+  # =========================
+  - id: linux-x11
+    binary: clipse
     goos:
       - linux
     goarch:
       - amd64
       - arm64
-    ldflags:
-      - -s -w
-    binary: "{{ .ProjectName }}-x11"
-
-  # macOS (native, no X11/Wayland)
-  - id: darwin
+    tags:
+      - linux
     env:
       - CGO_ENABLED=1
+
+  # =========================
+  # macOS (CGO + AppKit)
+  # =========================
+  - id: darwin
+    binary: clipse
     goos:
       - darwin
     goarch:
       - amd64
       - arm64
-    ldflags:
-      - -s -w
+    tags:
+      - darwin
+    env:
+      - CGO_ENABLED=1
+      - CC=o64-clang # optional but recommended
 
 archives:
   - id: default
-    builds:
-      - linux-wayland
-      - darwin
-      - linux-x11
     format: tar.gz
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .BuildID }}_{{ .BuildID }}{{ end }}
 
 checksum:
-  name_template: 'checksums.txt'
+  name_template: checksums.txt
 
-changelog:
-  sort: asc
+release:
+  github:
+    owner: savedra1
+    name: clipse
