@@ -7,9 +7,7 @@ before:
     - go mod tidy
 
 builds:
-  # =========================
-  # Linux – Wayland (no CGO)
-  # =========================
+  # Linux Wayland (no CGO)
   - id: linux-wayland
     binary: clipse
     goos:
@@ -22,10 +20,7 @@ builds:
     env:
       - CGO_ENABLED=0
 
-  # =========================
-  # Linux – X11 (CGO)
-  # =========================
-  - id: linux-x11
+  - id: linux-x11-amd64
     binary: clipse
     goos:
       - linux
@@ -36,9 +31,18 @@ builds:
     env:
       - CGO_ENABLED=1
 
-  # =========================
-  # macOS (CGO + AppKit)
-  # =========================
+  - id: linux-x11-arm64
+    binary: clipse
+    goos:
+      - linux
+    goarch:
+      - arm64
+    tags:
+      - linux
+    env:
+      - CGO_ENABLED=1
+      - CC=aarch64-linux-gnu-gcc
+
   - id: darwin
     binary: clipse
     goos:
@@ -55,7 +59,7 @@ archives:
   - id: default
     format: tar.gz
     name_template: >-
-      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .BuildID }}_{{ .BuildID }}{{ end }}
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}
 
 checksum:
   name_template: checksums.txt
