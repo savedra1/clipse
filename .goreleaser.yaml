@@ -31,7 +31,6 @@ builds:
       - linux
     goarch:
       - amd64
-      - arm64
     tags:
       - linux
     env:
