@@ -1,0 +1,165 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g., v1.0.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc \
+            gcc-aarch64-linux-gnu \
+            pkg-config \
+            libx11-dev \
+            libxfixes-dev \
+            libxcb-xkb-dev \
+            libxkbcommon-x11-dev \
+            libxkbcommon-dev \
+            libxtst-dev
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Wayland amd64
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags wayland -o clipse-linux-wayland-amd64
+          tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_wayland_amd64.tar.gz clipse-linux-wayland-amd64
+
+      - name: Build Wayland arm64
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -tags wayland -o clipse-linux-wayland-arm64
+          tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_wayland_arm64.tar.gz clipse-linux-wayland-arm64
+
+      - name: Build X11 amd64
+        run: |
+          CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -tags linux -o clipse-linux-x11-amd64
+          tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_x11_amd64.tar.gz clipse-linux-x11-amd64
+
+      - name: Build X11 arm64
+        run: |
+          CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc GOOS=linux GOARCH=arm64 go build -tags linux -o clipse-linux-x11-arm64
+          tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_x11_arm64.tar.gz clipse-linux-x11-arm64
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-builds
+          path: "*.tar.gz"
+          retention-days: 1
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build macOS amd64
+        run: |
+          CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -tags darwin -o clipse-darwin-amd64
+          tar -czf clipse_${{ steps.version.outputs.VERSION }}_darwin_amd64.tar.gz clipse-darwin-amd64
+
+      - name: Build macOS arm64
+        run: |
+          CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -tags darwin -o clipse-darwin-arm64
+          tar -czf clipse_${{ steps.version.outputs.VERSION }}_darwin_arm64.tar.gz clipse-darwin-arm64
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-builds
+          path: "*.tar.gz"
+          retention-days: 1
+
+  release:
+    needs: [build-linux, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-builds
+          path: ./artifacts
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-builds
+          path: ./artifacts
+
+      - name: Generate checksums
+        working-directory: ./artifacts
+        run: |
+          sha256sum *.tar.gz > checksums.txt
+          cat checksums.txt
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.TAG }}
+          name: Release ${{ steps.version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          files: |
+            ./artifacts/*.tar.gz
+            ./artifacts/checksums.txt
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
