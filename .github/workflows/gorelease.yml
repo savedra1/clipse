@@ -1,6 +1,9 @@
 name: Release
 
 on:
+  push:
+    tags:
+      - "v*.*.*"
   workflow_dispatch:
     inputs:
       tag:
@@ -26,6 +29,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo dpkg --add-architecture arm64
           sudo apt-get update
           sudo apt-get install -y \
             gcc \
@@ -36,7 +40,13 @@ jobs:
             libxcb-xkb-dev \
             libxkbcommon-x11-dev \
             libxkbcommon-dev \
-            libxtst-dev
+            libxtst-dev \
+            libx11-dev:arm64 \
+            libxfixes-dev:arm64 \
+            libxcb-xkb-dev:arm64 \
+            libxkbcommon-x11-dev:arm64 \
+            libxkbcommon-dev:arm64 \
+            libxtst-dev:arm64
 
       - name: Get version
         id: version
@@ -63,8 +73,15 @@ jobs:
           tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_x11_amd64.tar.gz clipse-linux-x11-amd64
 
       - name: Build X11 arm64
+        env:
+          CGO_ENABLED: 1
+          CC: aarch64-linux-gnu-gcc
+          GOOS: linux
+          GOARCH: arm64
+          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig
+          PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig
         run: |
-          CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc GOOS=linux GOARCH=arm64 go build -tags linux -o clipse-linux-x11-arm64
+          go build -tags linux -o clipse-linux-x11-arm64
           tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_x11_arm64.tar.gz clipse-linux-x11-arm64
 
       - name: Upload artifacts
