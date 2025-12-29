@@ -18,7 +18,7 @@ jobs:
   build-linux-amd64:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.tag || github.ref }}
@@ -125,7 +125,7 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.tag || github.ref }}
@@ -164,7 +164,7 @@ jobs:
     needs: [build-linux-amd64, build-linux-arm64, build-macos]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.inputs.tag || github.ref }}
 
