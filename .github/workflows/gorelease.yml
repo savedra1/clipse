@@ -180,19 +180,19 @@ jobs:
           fi
 
       - name: Download Linux AMD artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: linux-builds-amd64
           path: ./artifacts
 
       - name: Download Linux ARM artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: linux-builds-arm64
           path: ./artifacts
 
       - name: Download macOS artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: macos-builds
           path: ./artifacts
