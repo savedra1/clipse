@@ -32,6 +32,7 @@ var (
 	clearAll      = flag.Bool("clear-all", false, "Remove all contents the clipboard history including pinned items.")
 	clearImages   = flag.Bool("clear-images", false, "Removes all images from the clipboard history including pinned images.")
 	clearText     = flag.Bool("clear-text", false, "Removes all text from the clipboard history including pinned text entries.")
+	clean         = flag.Bool("clean", false, "Sanitizes text values and removes orphaned image entries.")
 	wlStore       = flag.Bool("wl-store", false, "Store data from the stdin directly using the wl-clipboard API.")
 	realTime      = flag.Bool("enable-real-time", false, "Enable real time updates to the TUI")
 	outputAll     = flag.String("output-all", "", "Print clipboard text content to stdout, each entry separated by a newline, possible values: (raw, unescaped)")
@@ -93,6 +94,9 @@ func Main() int {
 
 	case *clearUnpinned, *clearAll, *clearImages, *clearText:
 		handleClear()
+
+	case *clean:
+		handleClean()
 
 	case *wlStore:
 		handlers.StoreWLData()
@@ -210,6 +214,13 @@ func handleClear() {
 	}
 
 	utils.HandleError(config.ClearHistory(clearType))
+}
+
+func handleClean() {
+	if err := config.SanitizeHistory(); err != nil {
+		fmt.Printf("failed to clean history: %s", err)
+		os.Exit(1)
+	}
 }
 
 func handleCopy() {

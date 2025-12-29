@@ -221,7 +221,7 @@ func TextItems() []ClipboardItem {
 func AddClipboardItem(text, fp string) error {
 	data := fileContents()
 	item := ClipboardItem{
-		Value:    text,
+		Value:    utils.SanitizeChars(text),
 		Recorded: utils.GetTime(),
 		FilePath: fp,
 		Pinned:   false,
@@ -333,4 +333,25 @@ func TogglePinClipboardItem(timeStamp string) (bool, error) {
 		return pinned, err
 	}
 	return pinned, nil
+}
+
+func SanitizeHistory() error {
+	data := fileContents()
+	newData := ClipboardHistory{}
+
+	for _, item := range data.ClipboardHistory {
+		if item.FilePath != "null" {
+			_, err := os.Stat(item.FilePath)
+			if os.IsNotExist(err) {
+				continue
+			}
+			newData.ClipboardHistory = append(newData.ClipboardHistory, item)
+			continue
+		}
+
+		item.Value = utils.SanitizeChars(item.Value)
+		newData.ClipboardHistory = append(newData.ClipboardHistory, item)
+	}
+
+	return WriteUpdate(newData)
 }
