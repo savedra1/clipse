@@ -1,3 +1,5 @@
+// General purpose functions to be used by other modules
+
 package utils
 
 import (
@@ -10,8 +12,10 @@ import (
 	"time"
 )
 
-/* General purpose functions to be used by other modules
- */
+// any chars that cause the fuzzy find to crash can be appended here
+var badChars = []string{
+	"\x00", // \u0000
+}
 
 func Shorten(s string, maxChar int) string {
 	sl := strings.TrimSpace(
@@ -118,4 +122,12 @@ func ParseDuration(s string) (*time.Duration, error) {
 		return nil, err
 	}
 	return &duration, nil
+}
+
+func SanitizeChars(s string) string {
+	for _, char := range badChars {
+		s = strings.ReplaceAll(s, char, "")
+	}
+
+	return s
 }

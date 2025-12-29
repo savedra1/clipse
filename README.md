@@ -26,7 +26,7 @@ If moving to a new release of `clipse` please review the [changelog](https://git
 
 # About 📋
 
-`clipse` is a configurable, TUI-based clipboard manager application written in Go with minimal dependency. Though the app is optimized for a Linux OS using a dedicated window manager, `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get your desired clipboard behavior. See the [Installation & Set-up](#Installation-&-Set-up) section for examples of this.
+`clipse` is a configurable clipboard manager application written in Go with minimal dependency. The application is optimized for a Linux OS using a dedicated window manager, but `clipse` can also be used on any Unix-based system. Simply install the package and bind the open command to get your desired clipboard behavior. See the [Installation & Set-up](#Installation-&-Set-up) section for examples of this.
 
 ## Dependencies
 
@@ -51,7 +51,7 @@ There are no known dependencies for Darwin.
 - Fuzzy filtering
 - Multi-select
 - Auto-paste
-- Ignore copies from selected apps
+- Excluded apps/windows
 - Bulk copy/output
 - Portable (runs on any wayland/x11/darwin machine)
 - CLI operations
@@ -534,6 +534,8 @@ clipse -clear-images     # Wipe all images from the history
 clipse -clear-text       # Wipe all text items from the clipboard history
 
 clipse -clear-all        # Wipe entire clipboard history
+
+clipse -clean            # sanitize existing text entries and remove orphaned image entries
 
 clipse keep              # Keep the TUI open after selecting an item to copy (useful for debugging)
 
