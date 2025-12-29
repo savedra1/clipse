@@ -309,6 +309,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.quit):
 			switch {
 			case m.showPreview:
+				if config.ClipseConfig.ImageDisplay.Type == "kitty" {
+					fmt.Print("\x1B_Ga=d\x1B\\")
+				}
 				m.showPreview = !m.showPreview
 				var cmd tea.Cmd
 				m.preview, cmd = m.preview.Update(msg)
