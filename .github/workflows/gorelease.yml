@@ -62,7 +62,7 @@ jobs:
           tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_x11_amd64.tar.gz clipse-linux-x11-amd64
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: linux-builds-amd64
           path: "*.tar.gz"
@@ -116,7 +116,7 @@ jobs:
           tar -czf clipse_${{ steps.version.outputs.VERSION }}_linux_wayland_arm64.tar.gz clipse-linux-wayland-arm64
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: linux-builds-arm64
           path: "*.tar.gz"
@@ -154,7 +154,7 @@ jobs:
           tar -czf clipse_${{ steps.version.outputs.VERSION }}_darwin_arm64.tar.gz clipse-darwin-arm64
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: macos-builds
           path: "*.tar.gz"
