@@ -379,6 +379,18 @@ Absolute paths starting with `/`, paths relative to the user home dir using `~`,
 | `keyBindings.up`            | string | Moves selection up by one entry.            |
 | `keyBindings.yankFilter`    | string | Copies the current filter text.             |
 
+Key bindings can take multiple keys delimited by `,`.
+
+For example:
+
+```json
+{
+    "keyBindings": {
+        "quit": "q,esc"
+    }
+}
+```
+
 
 
 ## Image Display
