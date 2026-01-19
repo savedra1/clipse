@@ -32,7 +32,7 @@ type keyMap struct {
 
 var charSub = map[string]string{
 	"enter":     enterChar,
-	" ":         spaceChar,
+	"space":     spaceChar,
 	"up":        upChar,
 	"down":      downChar,
 	"right":     rightChar,
@@ -50,7 +50,11 @@ func getHelpChar(configChar string) string {
 func parseKeys(input string) []string {
 	keys := strings.Split(input, ",")
 	for i, key := range keys {
-		keys[i] = strings.TrimSpace(key)
+		k := strings.TrimSpace(key)
+		if k == "space" {
+			k = " "
+		}
+		keys[i] = k
 	}
 	return keys
 }

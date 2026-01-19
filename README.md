@@ -291,7 +291,7 @@ Your `configuration.json` file will initially be created with the following defa
         "more": "?",
         "nextPage": "right",
         "prevPage": "left",
-        "preview": " ",
+        "preview": "space",
         "quit": "esc",
         "remove": "backspace",
         "selectDown": "shift+down",
