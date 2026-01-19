@@ -244,7 +244,7 @@ func newPreviewKeyMap(config map[string]string) *previewKeymap {
 			key.WithHelp(getHelpChar(config["prevPage"]), "page up"),
 		),
 		back: key.NewBinding(
-			key.WithKeys(append(parseKeys(config["preview"]), config["quit"])...),
+			key.WithKeys(append(parseKeys(config["preview"]), parseKeys(config["quit"])...)...),
 			key.WithHelp(getHelpChar(config["preview"])+" / "+getHelpChar(config["quit"]), "back"),
 		),
 		choose: key.NewBinding(
