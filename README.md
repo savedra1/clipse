@@ -291,7 +291,7 @@ Your `configuration.json` file will initially be created with the following defa
         "more": "?",
         "nextPage": "right",
         "prevPage": "left",
-        "preview": " ",
+        "preview": "space",
         "quit": "esc",
         "remove": "backspace",
         "selectDown": "shift+down",
@@ -378,6 +378,18 @@ Absolute paths starting with `/`, paths relative to the user home dir using `~`,
 | `keyBindings.togglePinned`  | string | Toggles display of pinned entries.          |
 | `keyBindings.up`            | string | Moves selection up by one entry.            |
 | `keyBindings.yankFilter`    | string | Copies the current filter text.             |
+
+Key bindings can take multiple keys delimited by `,`.
+
+For example:
+
+```json
+{
+    "keyBindings": {
+        "quit": "q,esc"
+    }
+}
+```
 
 
 

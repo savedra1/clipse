@@ -1,6 +1,8 @@
 package app
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 )
@@ -31,7 +33,7 @@ type keyMap struct {
 
 var charSub = map[string]string{
 	"enter":     enterChar,
-	" ":         spaceChar,
+	"space":     spaceChar,
 	"up":        upChar,
 	"down":      downChar,
 	"right":     rightChar,
@@ -46,81 +48,93 @@ func getHelpChar(configChar string) string {
 	return configChar
 }
 
+func parseKeys(input string) []string {
+	keys := strings.Split(input, ",")
+	for i, key := range keys {
+		k := strings.TrimSpace(key)
+		if k == "space" {
+			k = " "
+		}
+		keys[i] = k
+	}
+	return keys
+}
+
 func newKeyMap(config map[string]string) *keyMap {
 	return &keyMap{
 		filter: key.NewBinding(
-			key.WithKeys(config["filter"]),
+			key.WithKeys(parseKeys(config["filter"])...),
 			key.WithHelp(getHelpChar(config["filter"]), "filter"),
 		),
 		quit: key.NewBinding(
-			key.WithKeys(config["quit"]),
+			key.WithKeys(parseKeys(config["quit"])...),
 			key.WithHelp(getHelpChar(config["quit"]), "quit"),
 		),
 		forceQuit: key.NewBinding(
-			key.WithKeys(config["forceQuit"]),
+			key.WithKeys(parseKeys(config["forceQuit"])...),
 			key.WithHelp(getHelpChar(config["forceQuit"]), "force quit"),
 		),
 		more: key.NewBinding(
-			key.WithKeys(config["more"]),
+			key.WithKeys(parseKeys(config["more"])...),
 			key.WithHelp(getHelpChar(config["more"]), "more"),
 		),
 		choose: key.NewBinding(
-			key.WithKeys(config["choose"]),
+			key.WithKeys(parseKeys(config["choose"])...),
 			key.WithHelp(getHelpChar(config["choose"]), "copy"),
 		),
 		remove: key.NewBinding(
-			key.WithKeys(config["remove"]),
+			key.WithKeys(parseKeys(config["remove"])...),
 			key.WithHelp(getHelpChar(config["remove"]), "delete"),
 		),
 		togglePin: key.NewBinding(
-			key.WithKeys(config["togglePin"]),
+			key.WithKeys(parseKeys(config["togglePin"])...),
 			key.WithHelp(getHelpChar(config["togglePin"]), "pin/unpin"),
 		),
 		togglePinned: key.NewBinding(
-			key.WithKeys(config["togglePinned"]),
+			key.WithKeys(parseKeys(config["togglePinned"])...),
 			key.WithHelp(getHelpChar(config["togglePinned"]), "show pinned"),
 		),
 		preview: key.NewBinding(
-			key.WithKeys(config["preview"]),
+			key.WithKeys(parseKeys(config["preview"])...),
 			key.WithHelp(getHelpChar(config["preview"]), "preview"),
 		),
 		selectDown: key.NewBinding(
-			key.WithKeys(config["selectDown"]),
+			key.WithKeys(parseKeys(config["selectDown"])...),
 			key.WithHelp(getHelpChar(config["selectDown"]), "select down"),
 		),
 		selectUp: key.NewBinding(
-			key.WithKeys(config["selectUp"]),
+			key.WithKeys(parseKeys(config["selectUp"])...),
 			key.WithHelp(getHelpChar(config["selectUp"]), "select up"),
 		),
 		selectSingle: key.NewBinding(
-			key.WithKeys(config["selectSingle"]),
+			key.WithKeys(parseKeys(config["selectSingle"])...),
 			key.WithHelp(getHelpChar(config["selectSingle"]), "select single"),
 		),
 		clearSelected: key.NewBinding(
-			key.WithKeys(config["clearSelected"]),
+			key.WithKeys(parseKeys(config["clearSelected"])...),
 			key.WithHelp(getHelpChar(config["clearSelected"]), "clear selected"),
 		),
 		yankFilter: key.NewBinding(
-			key.WithKeys(config["yankFilter"]),
+			key.WithKeys(parseKeys(config["yankFilter"])...),
 			key.WithHelp(getHelpChar(config["yankFilter"]), "yank filter results"),
 		),
 		up: key.NewBinding(
-			key.WithKeys(config["up"]),
+			key.WithKeys(parseKeys(config["up"])...),
 		),
 		down: key.NewBinding(
-			key.WithKeys(config["down"]),
+			key.WithKeys(parseKeys(config["down"])...),
 		),
 		nextPage: key.NewBinding(
-			key.WithKeys(config["nextPage"]),
+			key.WithKeys(parseKeys(config["nextPage"])...),
 		),
 		prevPage: key.NewBinding(
-			key.WithKeys(config["prevPage"]),
+			key.WithKeys(parseKeys(config["prevPage"])...),
 		),
 		home: key.NewBinding(
-			key.WithKeys(config["home"]),
+			key.WithKeys(parseKeys(config["home"])...),
 		),
 		end: key.NewBinding(
-			key.WithKeys(config["end"]),
+			key.WithKeys(parseKeys(config["end"])...),
 		),
 	}
 }
@@ -161,7 +175,7 @@ func newFilterKeymap(config map[string]string) *filterKeyMap {
 			key.WithHelp(getHelpChar("esc"), "cancel"),
 		),
 		yankMatches: key.NewBinding(
-			key.WithKeys(config["yankFilter"]),
+			key.WithKeys(parseKeys(config["yankFilter"])...),
 			key.WithHelp(getHelpChar(config["yankFilter"]), "yank matched"),
 		),
 	}
@@ -183,19 +197,19 @@ type confirmationKeyMap struct {
 func newConfirmationKeymap(config map[string]string) *confirmationKeyMap {
 	return &confirmationKeyMap{
 		up: key.NewBinding(
-			key.WithKeys(config["up"]),
+			key.WithKeys(parseKeys(config["up"])...),
 			key.WithHelp(getHelpChar(config["up"]), "up"),
 		),
 		down: key.NewBinding(
-			key.WithKeys(config["down"]),
+			key.WithKeys(parseKeys(config["down"])...),
 			key.WithHelp(getHelpChar(config["down"]), "down"),
 		),
 		choose: key.NewBinding(
-			key.WithKeys(config["choose"]),
+			key.WithKeys(parseKeys(config["choose"])...),
 			key.WithHelp(getHelpChar(config["choose"]), "choose"),
 		),
 		back: key.NewBinding(
-			key.WithKeys(config["quit"]),
+			key.WithKeys(parseKeys(config["quit"])...),
 			key.WithHelp(getHelpChar(config["quit"]), "back"),
 		),
 	}
@@ -219,27 +233,27 @@ type previewKeymap struct {
 func newPreviewKeyMap(config map[string]string) *previewKeymap {
 	return &previewKeymap{
 		up: key.NewBinding(
-			key.WithKeys(config["up"]),
+			key.WithKeys(parseKeys(config["up"])...),
 			key.WithHelp(getHelpChar(config["up"]), "up"),
 		),
 		down: key.NewBinding(
-			key.WithKeys(config["down"]),
+			key.WithKeys(parseKeys(config["down"])...),
 			key.WithHelp(getHelpChar(config["down"]), "down"),
 		),
 		pageDown: key.NewBinding(
-			key.WithKeys(config["nextPage"]),
+			key.WithKeys(parseKeys(config["nextPage"])...),
 			key.WithHelp(getHelpChar(config["nextPage"]), "page down"),
 		),
 		pageUp: key.NewBinding(
-			key.WithKeys(config["prevPage"]),
+			key.WithKeys(parseKeys(config["prevPage"])...),
 			key.WithHelp(getHelpChar(config["prevPage"]), "page up"),
 		),
 		back: key.NewBinding(
-			key.WithKeys(config["preview"], config["quit"]),
+			key.WithKeys(append(parseKeys(config["preview"]), parseKeys(config["quit"])...)...),
 			key.WithHelp(getHelpChar(config["preview"])+" / "+getHelpChar(config["quit"]), "back"),
 		),
 		choose: key.NewBinding(
-			key.WithKeys(config["choose"]),
+			key.WithKeys(parseKeys(config["choose"])...),
 			key.WithHelp(getHelpChar(config["choose"]), "copy"),
 		),
 	}
@@ -257,31 +271,31 @@ func (pk previewKeymap) PreviewHelp() []key.Binding {
 func defaultOverrides(config map[string]string) list.KeyMap {
 	return list.KeyMap{
 		CursorUp: key.NewBinding(
-			key.WithKeys(config["up"]),
+			key.WithKeys(parseKeys(config["up"])...),
 			key.WithHelp(getHelpChar(config["up"]), "up"),
 		),
 		CursorDown: key.NewBinding(
-			key.WithKeys(config["down"]),
+			key.WithKeys(parseKeys(config["down"])...),
 			key.WithHelp(getHelpChar(config["down"]), "down"),
 		),
 		NextPage: key.NewBinding(
-			key.WithKeys(config["nextPage"]),
+			key.WithKeys(parseKeys(config["nextPage"])...),
 			key.WithHelp(getHelpChar(config["nextPage"]), "page down"),
 		),
 		PrevPage: key.NewBinding(
-			key.WithKeys(config["prevPage"]),
+			key.WithKeys(parseKeys(config["prevPage"])...),
 			key.WithHelp(getHelpChar(config["prevPage"]), "page up"),
 		),
 		GoToStart: key.NewBinding(
-			key.WithKeys(config["home"]),
+			key.WithKeys(parseKeys(config["home"])...),
 			key.WithHelp(getHelpChar(config["home"]), "start"),
 		),
 		GoToEnd: key.NewBinding(
-			key.WithKeys(config["end"]),
+			key.WithKeys(parseKeys(config["end"])...),
 			key.WithHelp(getHelpChar(config["end"]), "end"),
 		),
 		Filter: key.NewBinding(
-			key.WithKeys(config["filter"]),
+			key.WithKeys(parseKeys(config["filter"])...),
 			key.WithHelp(getHelpChar(config["filter"]), "filter"),
 		),
 		Quit: key.NewBinding(
@@ -293,11 +307,11 @@ func defaultOverrides(config map[string]string) list.KeyMap {
 			key.WithHelp("ctrl+c / "+getHelpChar(config["forceQuit"]), "force quit"),
 		),
 		ShowFullHelp: key.NewBinding(
-			key.WithKeys(config["more"]),
+			key.WithKeys(parseKeys(config["more"])...),
 			key.WithHelp(getHelpChar(config["more"]), "more"),
 		),
 		CloseFullHelp: key.NewBinding(
-			key.WithKeys(config["more"]),
+			key.WithKeys(parseKeys(config["more"])...),
 			key.WithHelp(getHelpChar(config["more"]), "less"),
 		),
 		AcceptWhileFiltering: key.NewBinding(
@@ -309,7 +323,7 @@ func defaultOverrides(config map[string]string) list.KeyMap {
 			key.WithDisabled(),
 		),
 		ClearFilter: key.NewBinding(
-			key.WithKeys(config["quit"]),
+			key.WithKeys(parseKeys(config["quit"])...),
 			key.WithDisabled(),
 		),
 	}

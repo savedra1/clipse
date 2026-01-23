@@ -30,7 +30,7 @@ func defaultKeyBindings() map[string]string {
 		"remove":        "backspace",
 		"togglePin":     "p",
 		"togglePinned":  "tab",
-		"preview":       " ",
+		"preview":       "space",
 		"selectDown":    "shift+down",
 		"selectUp":      "shift+up",
 		"selectSingle":  "s",
