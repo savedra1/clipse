@@ -26,7 +26,7 @@ func IsListenerRunning() (bool, error) {
 	}
 
 	for _, p := range psList {
-		if strings.Contains(os.Args[0], p.Executable()) || strings.Contains(wlPasteHandler, p.Executable()) {
+		if isClipseExe(p.Executable()) {
 			return true, nil
 		}
 	}
@@ -44,10 +44,12 @@ func KillExisting() error {
 	}
 
 	for _, p := range psList {
-		if strings.Contains(os.Args[0], p.Executable()) || strings.Contains(wlPasteHandler, p.Executable()) {
-			if p.Pid() != currentPS {
-				KillProcess(strconv.Itoa(p.Pid()))
-			}
+		if !isClipseExe(p.Executable()) {
+			continue
+		}
+
+		if p.Pid() != currentPS {
+			KillProcess(strconv.Itoa(p.Pid()))
 		}
 	}
 	return nil
@@ -157,4 +159,8 @@ func execOutput(name string, args ...string) string {
 	}
 
 	return strings.TrimSpace(string(output))
+}
+
+func isClipseExe(exe string) bool {
+	return strings.Contains(wlPasteHandler, exe) || ExeName == exe
 }
