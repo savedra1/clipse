@@ -69,3 +69,9 @@
 - feat: optional mouse actions
 - chore: remove `attoto clipboard` dependency
 - bc: remove `-fc` option
+
+## v1.2.0 -> v1.2.1
+- bug fix: Image preview persists when viewport closed with quit key
+- bug fix: Correctly handle paste operations for entries with prefix '-' on Wayland
+- bug fix: Shell processes being killed when exe is symlinked to a path containing substring 'sh'
+- feat: Allow keybinds to take multiple values
