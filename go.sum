@@ -33,8 +33,8 @@ github.com/gen2brain/shm v0.1.1/go.mod h1:UgIcVtvmOu+aCJpqJX7GOtiN7X2ct+TKLg4RTx
 github.com/go-ole/go-ole v1.2.6/go.mod h1:pprOEPIfldk/42T2oK7lQ4v4JSDwmV0As9GaiUsvbm0=
 github.com/go-ole/go-ole v1.3.0 h1:Dt6ye7+vXGIKZ7Xtk4s6/xVdGDQynvom7xCFEdWr6uE=
 github.com/go-ole/go-ole v1.3.0/go.mod h1:5LS6F96DhAwUc7C+1HLexzMXY1xGRSryjyPPKW6zv78=
-github.com/go-vgo/robotgo v1.0.0 h1:LTzPB8cQsP0E/iMMrh3sPhH9LgywyuuJHGPHk70UA74=
-github.com/go-vgo/robotgo v1.0.0/go.mod h1:NcSL/tqNqkpWJ3rmT6YSDUVhQKZwyRsaanDMO4qkT5I=
+github.com/go-vgo/robotgo v1.0.1 h1:4dS+dXSMPRt+VmvG4QZPlH9BNG9Jfywq4q0YjSiFN0A=
+github.com/go-vgo/robotgo v1.0.1/go.mod h1:NcSL/tqNqkpWJ3rmT6YSDUVhQKZwyRsaanDMO4qkT5I=
 github.com/godbus/dbus/v5 v5.2.0 h1:3WexO+U+yg9T70v9FdHr9kCxYlazaAXUhx2VMkbfax8=
 github.com/godbus/dbus/v5 v5.2.0/go.mod h1:3AAv2+hPq5rdnr5txxxRwiGjPXamgoIHgz9FPBfOp3c=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=

@@ -9,7 +9,7 @@ require (
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
-	github.com/go-vgo/robotgo v1.0.0
+	github.com/go-vgo/robotgo v1.0.1
 	github.com/mitchellh/go-ps v1.0.0
 	gopkg.in/bendahl/uinput.v1 v1.2.0
 )
