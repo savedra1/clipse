@@ -1,6 +1,8 @@
 name: Update AUR Package
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -10,23 +12,16 @@ jobs:
       image: archlinux:latest
 
     steps:
-      - name: Install dependencies
-        run: pacman -Sy --noconfirm git openssh base-devel
-
-      - name: Set up SSH for AUR
+      - name: Initialise pacman and update system
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > ~/.ssh/aur
-          chmod 600 ~/.ssh/aur
-          ssh-keyscan aur.archlinux.org >> ~/.ssh/known_hosts
-          cat >> ~/.ssh/config <<EOF
-          Host aur.archlinux.org
-            IdentityFile ~/.ssh/aur
-            User aur
-          EOF
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Sy --noconfirm archlinux-keyring
+          pacman -Su --noconfirm
+          pacman -S --noconfirm git openssh base-devel curl ca-certificates pacman-contrib
 
       - name: Clone AUR package
-        run: git clone ssh://aur@aur.archlinux.org/clipse.git
+        run: git clone https://aur.archlinux.org/clipse.git
 
       - name: Get latest upstream version
         id: version
@@ -40,16 +35,26 @@ jobs:
           NEW_VER="${{ steps.version.outputs.version }}"
           sed -i "s/^pkgver=.*/pkgver=$NEW_VER/" PKGBUILD
           sed -i "s/^pkgrel=.*/pkgrel=1/" PKGBUILD
-          # Update checksums
-          updpkgsums
+          useradd -m builder
+          chown -R builder:builder .
+          su builder -c "updpkgsums"
 
       - name: Regenerate .SRCINFO
         working-directory: clipse
-        run: makepkg --printsrcinfo > .SRCINFO
+        run: |
+          chown -R builder:builder .
+          su builder -c "makepkg --printsrcinfo > .SRCINFO"
 
       - name: Commit and push to AUR
         working-directory: clipse
+        env:
+          GIT_SSH_COMMAND: "ssh -i ~/.ssh/aur -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
         run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          git config --global --add safe.directory /__w/clipse/clipse/clipse
+          git remote set-url origin ssh://aur@aur.archlinux.org:22/clipse.git
           git config user.name "GitHub Actions"
           git config user.email "${{ secrets.AUR_EMAIL }}"
           git add PKGBUILD .SRCINFO
