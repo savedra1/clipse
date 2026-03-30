@@ -2,7 +2,9 @@ package app
 
 import (
 	"fmt"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -95,6 +97,7 @@ func NewModel() Model {
 	del := m.newItemDelegate()
 
 	clipboardList := list.New(entryItems, del, 0, 0)
+	clipboardList.Filter = sanitizedFilter
 	clipboardList.KeyMap = defaultOverrides(config.ClipseConfig.KeyBindings)   // override default list keys with custom values
 	clipboardList.Title = clipboardTitle                                       // set hardcoded title
 	clipboardList.SetShowHelp(false)                                           // override with custom
@@ -125,6 +128,23 @@ func NewModel() Model {
 	m.enableConfirmationKeys(false)
 
 	return m
+}
+
+func sanitizedFilter(term string, targets []string) []list.Rank {
+	sanitized := make([]string, len(targets))
+	for i, t := range targets {
+		sanitized[i] = stripNonPrintable(t)
+	}
+	return list.DefaultFilter(term, sanitized)
+}
+
+func stripNonPrintable(s string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsPrint(r) {
+			return r
+		}
+		return -1
+	}, s)
 }
 
 // if isPinned is true, returns only an array of pinned items, otherwise all
