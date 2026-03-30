@@ -1,0 +1,57 @@
+name: Update AUR Package
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+
+    steps:
+      - name: Install dependencies
+        run: pacman -Sy --noconfirm git openssh base-devel
+
+      - name: Set up SSH for AUR
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          ssh-keyscan aur.archlinux.org >> ~/.ssh/known_hosts
+          cat >> ~/.ssh/config <<EOF
+          Host aur.archlinux.org
+            IdentityFile ~/.ssh/aur
+            User aur
+          EOF
+
+      - name: Clone AUR package
+        run: git clone ssh://aur@aur.archlinux.org/clipse.git
+
+      - name: Get latest upstream version
+        id: version
+        run: |
+          LATEST=$(curl -s https://api.github.com/repos/savedra1/clipse/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
+          echo "version=$LATEST" >> $GITHUB_OUTPUT
+
+      - name: Update PKGBUILD
+        working-directory: clipse
+        run: |
+          NEW_VER="${{ steps.version.outputs.version }}"
+          sed -i "s/^pkgver=.*/pkgver=$NEW_VER/" PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=1/" PKGBUILD
+          # Update checksums
+          updpkgsums
+
+      - name: Regenerate .SRCINFO
+        working-directory: clipse
+        run: makepkg --printsrcinfo > .SRCINFO
+
+      - name: Commit and push to AUR
+        working-directory: clipse
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "${{ secrets.AUR_EMAIL }}"
+          git add PKGBUILD .SRCINFO
+          git diff --cached --quiet || git commit -m "Update to v${{ steps.version.outputs.version }}"
+          git push
