@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -31,7 +30,6 @@ type Model struct {
 	previewReady     bool                // viewport needs to wait for the initial window size message
 	showPreview      bool                // whether the viewport preview should be displayed
 	previewKeys      *previewKeymap      // keybindings for the viewport model
-	lastUpdated      time.Time
 	ExitCode         int
 }
 
