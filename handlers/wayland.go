@@ -56,6 +56,10 @@ func StoreWLData() {
 		if inputStr == "" {
 			return
 		}
+		if !utils.DiskspaceAvailable(len(inputStr), config.ClipseConfig.HistoryFilePath) {
+			utils.LogERROR("no available disk space to store text")
+			return
+		}
 		if err := config.AddClipboardItem(inputStr, "null"); err != nil {
 			utils.LogERROR(fmt.Sprintf("failed to add new item `( %s )` | %s", input, err))
 		}
