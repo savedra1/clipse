@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -12,6 +13,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/savedra1/clipse/config"
+	"github.com/savedra1/clipse/search"
 	"github.com/savedra1/clipse/utils"
 )
 
@@ -95,7 +97,7 @@ func NewModel() Model {
 	del := m.newItemDelegate()
 
 	clipboardList := list.New(entryItems, del, 0, 0)
-	clipboardList.Filter = sanitizedFilter
+	clipboardList.Filter = buildFilter(clipboardItems)
 	clipboardList.KeyMap = defaultOverrides(config.ClipseConfig.KeyBindings)   // override default list keys with custom values
 	clipboardList.Title = clipboardTitle                                       // set hardcoded title
 	clipboardList.SetShowHelp(false)                                           // override with custom
@@ -128,12 +130,31 @@ func NewModel() Model {
 	return m
 }
 
-func sanitizedFilter(term string, targets []string) []list.Rank {
-	sanitized := make([]string, len(targets))
-	for i, t := range targets {
-		sanitized[i] = stripNonPrintable(t)
+func buildFilter(items []config.ClipboardItem) func(string, []string) []list.Rank {
+	meta := make(map[string]search.ItemMeta, len(items))
+	for _, it := range items {
+		lastUsed, _ := time.Parse(utils.DateLayout, it.LastUsed)
+		key := stripNonPrintable(utils.Shorten(it.Value, config.ClipseConfig.MaxEntryLength))
+		meta[key] = search.ItemMeta{UseCount: it.UseCount, LastUsed: lastUsed}
 	}
-	return list.DefaultFilter(term, sanitized)
+	lookup := func(target string) search.ItemMeta {
+		return meta[target]
+	}
+	sc := config.ClipseConfig.Search
+	inner := search.Filter(search.Config{
+		Engine:          sc.Engine,
+		Algo:            sc.Algo,
+		CaseSensitivity: sc.CaseSensitivity,
+		Normalize:       sc.Normalize,
+		Tiebreak:        sc.Tiebreak,
+	}, lookup)
+	return func(term string, targets []string) []list.Rank {
+		sanitized := make([]string, len(targets))
+		for i, t := range targets {
+			sanitized[i] = stripNonPrintable(t)
+		}
+		return inner(term, sanitized)
+	}
 }
 
 func stripNonPrintable(s string) string {

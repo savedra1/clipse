@@ -25,6 +25,15 @@ type Config struct {
 	AutoPaste         AutoPaste         `json:"autoPaste"`
 	EnableMouse       bool              `json:"enableMouse"`
 	EnableDescription bool              `json:"enableDescription"`
+	Search            SearchConfig      `json:"search"`
+}
+
+type SearchConfig struct {
+	Engine          string   `json:"engine"`
+	Algo            string   `json:"algo"`
+	CaseSensitivity string   `json:"caseSensitivity"`
+	Normalize       bool     `json:"normalize"`
+	Tiebreak        []string `json:"tiebreak"`
 }
 
 type AutoPaste struct {

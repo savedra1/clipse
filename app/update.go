@@ -552,6 +552,15 @@ func (m *Model) filterMatches() []string {
 	return filteredItems
 }
 
+func recordUse(timeStamp string) {
+	if timeStamp == "" {
+		return
+	}
+	if err := config.RecordUse(timeStamp); err != nil {
+		utils.LogERROR(fmt.Sprintf("failed to record frecency use: %s", err))
+	}
+}
+
 func (m Model) handleChooseOperation(i item, cmds []tea.Cmd) (Model, []tea.Cmd, bool) {
 	selectedItems := m.selectedItems()
 	if len(selectedItems) < 1 {
@@ -562,6 +571,8 @@ func (m Model) handleChooseOperation(i item, cmds []tea.Cmd) (Model, []tea.Cmd, 
 		default:
 			display.DisplayServer.CopyText(i.titleFull)
 		}
+
+		recordUse(i.timeStamp)
 
 		if KeepEnabled {
 			cmds = append(
@@ -582,6 +593,11 @@ func (m Model) handleChooseOperation(i item, cmds []tea.Cmd) (Model, []tea.Cmd, 
 	yank += i.titleFull
 
 	display.DisplayServer.CopyText(yank)
+
+	recordUse(i.timeStamp)
+	for _, item := range selectedItems {
+		recordUse(item.TimeStamp)
+	}
 
 	if KeepEnabled {
 		statusMsg := "Copied to clipboard: *selected items*"
