@@ -2,7 +2,6 @@ package search
 
 import (
 	"math"
-	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -24,6 +23,9 @@ const (
 	AlgoV1 = "v1"
 	AlgoV2 = "v2"
 
+	MatchModeFuzzy = "fuzzy"
+	MatchModeExact = "exact"
+
 	CaseSmart   = "smart"
 	CaseRespect = "respect"
 	CaseIgnore  = "ignore"
@@ -32,6 +34,8 @@ const (
 	TiebreakLength   = "length"
 	TiebreakIndex    = "index"
 	TiebreakFrecency = "frecency"
+	TiebreakBegin    = "begin"
+	TiebreakEnd      = "end"
 
 	frecencyHalflife = 24 * time.Hour
 	slab16Size       = 100 * 1024
@@ -39,11 +43,17 @@ const (
 )
 
 type Config struct {
-	Engine          string   `json:"engine"`
-	Algo            string   `json:"algo"`
-	CaseSensitivity string   `json:"caseSensitivity"`
-	Normalize       bool     `json:"normalize"`
-	Tiebreak        []string `json:"tiebreak"`
+	Engine          string          `json:"engine"`
+	Algo            string          `json:"algo"`
+	MatchMode       string          `json:"matchMode"`
+	CaseSensitivity string          `json:"caseSensitivity"`
+	Normalize       bool            `json:"normalize"`
+	Tiebreak        []TiebreakEntry `json:"tiebreak"`
+}
+
+type TiebreakEntry struct {
+	Key    string
+	Bucket string
 }
 
 type ItemMeta struct {
@@ -65,21 +75,26 @@ type rankWithScore struct {
 	score    int
 	length   int
 	frecency float64
+	begin    int
+	end      int
 }
 
 func fzfFilter(cfg Config, metaLookup MetaLookup) func(string, []string) []list.Rank {
-	useFrecency := metaLookup != nil && containsStr(cfg.Tiebreak, TiebreakFrecency)
 	tiebreak := cfg.Tiebreak
 	if len(tiebreak) == 0 {
-		tiebreak = []string{TiebreakScore, TiebreakLength, TiebreakIndex}
+		tiebreak = []TiebreakEntry{{Key: TiebreakScore}, {Key: TiebreakLength}, {Key: TiebreakIndex}}
 	}
+	useFrecency := metaLookup != nil && hasKey(tiebreak, TiebreakFrecency)
 	matchFn := algo.FuzzyMatchV2
 	if cfg.Algo == AlgoV1 {
 		matchFn = algo.FuzzyMatchV1
 	}
-	slab := util.MakeSlab(slab16Size, slab32Size)
+	if cfg.MatchMode == MatchModeExact {
+		matchFn = algo.ExactMatchNaive
+	}
 
 	return func(term string, targets []string) []list.Rank {
+		slab := util.MakeSlab(slab16Size, slab32Size)
 		term = strings.TrimSpace(term)
 		if term == "" {
 			out := make([]list.Rank, len(targets))
@@ -96,6 +111,7 @@ func fzfFilter(cfg Config, metaLookup MetaLookup) func(string, []string) []list.
 		for idx, target := range targets {
 			totalScore := 0
 			var matchedPositions []int
+			begin, end := math.MaxInt, -1
 			matched := true
 			for _, tok := range tokens {
 				caseSensitive := isCaseSensitive(cfg.CaseSensitivity, tok)
@@ -116,9 +132,23 @@ func fzfFilter(cfg Config, metaLookup MetaLookup) func(string, []string) []list.
 				totalScore += res.Score
 				if pos != nil {
 					matchedPositions = append(matchedPositions, *pos...)
+					for _, p := range *pos {
+						if p < begin {
+							begin = p
+						}
+						if p > end {
+							end = p
+						}
+					}
 				} else {
 					for p := res.Start; p < res.End; p++ {
 						matchedPositions = append(matchedPositions, p)
+					}
+					if res.Start < begin {
+						begin = res.Start
+					}
+					if res.End-1 > end {
+						end = res.End - 1
 					}
 				}
 			}
@@ -135,6 +165,8 @@ func fzfFilter(cfg Config, metaLookup MetaLookup) func(string, []string) []list.
 				score:    totalScore,
 				length:   len(target),
 				frecency: fr,
+				begin:    begin,
+				end:      end,
 			})
 		}
 
@@ -150,25 +182,59 @@ func fzfFilter(cfg Config, metaLookup MetaLookup) func(string, []string) []list.
 	}
 }
 
-func lessByTiebreak(a, b rankWithScore, tiebreak []string) bool {
+func lessByTiebreak(a, b rankWithScore, tiebreak []TiebreakEntry) bool {
 	for _, tb := range tiebreak {
-		switch tb {
+		switch tb.Key {
 		case TiebreakScore:
-			if a.score != b.score {
-				return a.score > b.score
+			av, bv := bucketize(float64(a.score), tb.Bucket), bucketize(float64(b.score), tb.Bucket)
+			if av != bv {
+				return av > bv
 			}
 		case TiebreakLength:
-			if a.length != b.length {
-				return a.length < b.length
+			av, bv := bucketize(float64(a.length), tb.Bucket), bucketize(float64(b.length), tb.Bucket)
+			if av != bv {
+				return av < bv
 			}
 		case TiebreakIndex:
 			if a.rank.Index != b.rank.Index {
 				return a.rank.Index < b.rank.Index
 			}
 		case TiebreakFrecency:
-			if a.frecency != b.frecency {
-				return a.frecency > b.frecency
+			av, bv := bucketize(a.frecency, tb.Bucket), bucketize(b.frecency, tb.Bucket)
+			if av != bv {
+				return av > bv
 			}
+		case TiebreakBegin:
+			av, bv := bucketize(float64(a.begin), tb.Bucket), bucketize(float64(b.begin), tb.Bucket)
+			if av != bv {
+				return av < bv
+			}
+		case TiebreakEnd:
+			av, bv := bucketize(float64(a.end), tb.Bucket), bucketize(float64(b.end), tb.Bucket)
+			if av != bv {
+				return av > bv
+			}
+		}
+	}
+	return false
+}
+
+func bucketize(val float64, strategy string) float64 {
+	switch strategy {
+	case "log2":
+		if val <= 1 {
+			return 0
+		}
+		return math.Floor(math.Log2(val))
+	default:
+		return val
+	}
+}
+
+func hasKey(entries []TiebreakEntry, key string) bool {
+	for _, e := range entries {
+		if e.Key == key {
+			return true
 		}
 	}
 	return false
@@ -199,8 +265,4 @@ func isCaseSensitive(mode, pattern string) bool {
 		}
 		return false
 	}
-}
-
-func containsStr(ss []string, s string) bool {
-	return slices.Contains(ss, s)
 }

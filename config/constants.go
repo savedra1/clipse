@@ -93,8 +93,14 @@ func defaultSearchConfig() SearchConfig {
 	return SearchConfig{
 		Engine:          "default",
 		Algo:            "v2",
+		MatchMode:       "fuzzy",
 		CaseSensitivity: "smart",
 		Normalize:       true,
-		Tiebreak:        []string{"score", "frecency", "index"},
+		Tiebreak: TiebreakList{
+			{Key: "score"},
+			{Key: "length"},
+			{Key: "frecency", Bucket: "log2"},
+			{Key: "index"},
+		},
 	}
 }

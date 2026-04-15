@@ -40,7 +40,7 @@ func TestFzfRanksWordBoundaryAbove(t *testing.T) {
 		Engine:    search.EngineFzf,
 		Algo:      search.AlgoV2,
 		Normalize: true,
-		Tiebreak:  []string{search.TiebreakScore, search.TiebreakLength, search.TiebreakIndex},
+		Tiebreak:  []search.TiebreakEntry{{Key: search.TiebreakScore}, {Key: search.TiebreakLength}, {Key: search.TiebreakIndex}},
 	}
 	filter := search.Filter(cfg, nil)
 
@@ -112,7 +112,7 @@ func TestFrecencyTiebreak(t *testing.T) {
 		Engine:    search.EngineFzf,
 		Algo:      search.AlgoV2,
 		Normalize: true,
-		Tiebreak:  []string{search.TiebreakFrecency, search.TiebreakIndex},
+		Tiebreak:  []search.TiebreakEntry{{Key: search.TiebreakFrecency}, {Key: search.TiebreakIndex}},
 	}
 	filter := search.Filter(cfg, lookup)
 
@@ -131,7 +131,7 @@ func TestFrecencyDisabledWhenLookupNil(t *testing.T) {
 		Engine:    search.EngineFzf,
 		Algo:      search.AlgoV2,
 		Normalize: true,
-		Tiebreak:  []string{search.TiebreakFrecency, search.TiebreakIndex},
+		Tiebreak:  []search.TiebreakEntry{{Key: search.TiebreakFrecency}, {Key: search.TiebreakIndex}},
 	}
 	filter := search.Filter(cfg, nil)
 	ranks := filter("foo", targets)
@@ -140,6 +140,101 @@ func TestFrecencyDisabledWhenLookupNil(t *testing.T) {
 	}
 	if ranks[0].Index != 0 {
 		t.Errorf("nil lookup: expected index 0 first, got %d", ranks[0].Index)
+	}
+}
+
+func TestFrecencyBucketLog2LetsLaterTiebreakDecide(t *testing.T) {
+	targets := []string{"foo bar", "foo baz"}
+	now := time.Now()
+	meta := map[string]search.ItemMeta{
+		"foo bar": {UseCount: 100, LastUsed: now},
+		"foo baz": {UseCount: 105, LastUsed: now},
+	}
+	lookup := func(t string) search.ItemMeta { return meta[t] }
+
+	cfg := search.Config{
+		Engine:    search.EngineFzf,
+		Algo:      search.AlgoV2,
+		Normalize: true,
+		Tiebreak: []search.TiebreakEntry{
+			{Key: search.TiebreakScore},
+			{Key: search.TiebreakFrecency, Bucket: "log2"},
+			{Key: search.TiebreakIndex},
+		},
+	}
+	ranks := search.Filter(cfg, lookup)("foo", targets)
+	if len(ranks) != 2 {
+		t.Fatalf("expected 2 matches, got %d", len(ranks))
+	}
+	if targets[ranks[0].Index] != "foo bar" {
+		t.Errorf("log2 bucket should tie frecencies 100 vs 105, letting index decide (foo bar first); got %q", targets[ranks[0].Index])
+	}
+
+	cfg.Tiebreak[1].Bucket = ""
+	ranks = search.Filter(cfg, lookup)("foo", targets)
+	if targets[ranks[0].Index] != "foo baz" {
+		t.Errorf("unbucketed: expected 'foo baz' to win on frecency, got %q", targets[ranks[0].Index])
+	}
+}
+
+func TestBeginTiebreak(t *testing.T) {
+	targets := []string{"world hello", "hello world"}
+	cfg := search.Config{
+		Engine:    search.EngineFzf,
+		Algo:      search.AlgoV2,
+		Normalize: true,
+		Tiebreak:  []search.TiebreakEntry{{Key: search.TiebreakBegin}, {Key: search.TiebreakIndex}},
+	}
+	ranks := search.Filter(cfg, nil)("hello", targets)
+	if len(ranks) != 2 {
+		t.Fatalf("expected 2 matches, got %d", len(ranks))
+	}
+	if targets[ranks[0].Index] != "hello world" {
+		t.Errorf("begin tiebreak: expected 'hello world' first (match at position 0), got %q", targets[ranks[0].Index])
+	}
+}
+
+func TestEndTiebreak(t *testing.T) {
+	targets := []string{"hello world", "world hello"}
+	cfg := search.Config{
+		Engine:    search.EngineFzf,
+		Algo:      search.AlgoV2,
+		Normalize: true,
+		Tiebreak:  []search.TiebreakEntry{{Key: search.TiebreakEnd}, {Key: search.TiebreakIndex}},
+	}
+	ranks := search.Filter(cfg, nil)("hello", targets)
+	if len(ranks) != 2 {
+		t.Fatalf("expected 2 matches, got %d", len(ranks))
+	}
+	if targets[ranks[0].Index] != "world hello" {
+		t.Errorf("end tiebreak: expected 'world hello' first (match closer to tail), got %q", targets[ranks[0].Index])
+	}
+}
+
+func TestBeginBucketLog2LetsLaterTiebreakDecide(t *testing.T) {
+	// 'x' is at byte 2 in "aax" and byte 3 in "aaax" — both log2-bucket to 1.
+	targets := []string{"aaax", "aax"}
+	cfg := search.Config{
+		Engine:    search.EngineFzf,
+		Algo:      search.AlgoV2,
+		Normalize: true,
+		Tiebreak: []search.TiebreakEntry{
+			{Key: search.TiebreakBegin, Bucket: "log2"},
+			{Key: search.TiebreakIndex},
+		},
+	}
+	ranks := search.Filter(cfg, nil)("x", targets)
+	if len(ranks) != 2 {
+		t.Fatalf("expected 2 matches, got %d", len(ranks))
+	}
+	if targets[ranks[0].Index] != "aaax" {
+		t.Errorf("log2 bucket should tie begins 2 vs 3; index should decide (aaax first), got %q", targets[ranks[0].Index])
+	}
+
+	cfg.Tiebreak[0].Bucket = ""
+	ranks = search.Filter(cfg, nil)("x", targets)
+	if targets[ranks[0].Index] != "aax" {
+		t.Errorf("unbucketed: expected 'aax' (begin 2 < 3) first, got %q", targets[ranks[0].Index])
 	}
 }
 

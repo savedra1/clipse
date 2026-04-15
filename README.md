@@ -391,7 +391,8 @@ The `search` object configures how filter matches are scored and ordered.
 | `search.algo`             | string   | `"v1"` or `"v2"` — fzf scoring algorithm. Default `"v2"`. Ignored when `engine` is `"default"`.                                                     |
 | `search.caseSensitivity`  | string   | `"smart"`, `"respect"`, or `"ignore"`. `smart` is case-insensitive unless the query contains uppercase. Default `"smart"`. Fzf engine only.         |
 | `search.normalize`        | bool     | Strip diacritics so `cafe` matches `café`. Default `true`. Fzf engine only.                                                                         |
-| `search.tiebreak`         | string[] | Ordering applied when fzf scores tie. Any of `"score"`, `"length"`, `"index"`, `"frecency"`. Default `["score","frecency","index"]`. Fzf engine only. |
+| `search.matchMode`        | string   | `"fuzzy"` (characters can be non-contiguous) or `"exact"` (contiguous substring, still scored). Default `"fuzzy"`. Fzf engine only.                    |
+| `search.tiebreak`         | array    | Ordering applied when fzf scores tie. Any of `"score"`, `"length"`, `"index"`, `"frecency"`, `"begin"` (prefer matches closer to the start of the entry), `"end"` (prefer matches closer to the end). Entries may be plain strings or `{"key": "...", "bucket": "log2"}` to quantize numeric values so later tiebreaks still decide close calls. Default `["score","length",{"key":"frecency","bucket":"log2"},"index"]`. Fzf engine only. |
 
 Opting into fzf scoring with frecency:
 
@@ -400,9 +401,14 @@ Opting into fzf scoring with frecency:
     "search": {
         "engine": "fzf",
         "algo": "v2",
+        "matchMode": "fuzzy",
         "caseSensitivity": "smart",
         "normalize": true,
-        "tiebreak": ["score", "frecency", "index"]
+        "tiebreak": [
+          { "key": "score", "bucket": "log2" },
+          { "key": "frecency", "bucket": "log2" },
+          "index"
+        ]
     }
 }
 ```

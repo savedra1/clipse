@@ -17,6 +17,8 @@ import (
 	"github.com/savedra1/clipse/utils"
 )
 
+const searchTargetCap = 4096
+
 type Model struct {
 	list             list.Model          // list items
 	keys             *keyMap             // keybindings
@@ -61,7 +63,7 @@ func (i item) TitleFull() string   { return i.titleFull }
 func (i item) TimeStamp() string   { return i.timeStamp }
 func (i item) Description() string { return i.description }
 func (i item) FilePath() string    { return i.filePath }
-func (i item) FilterValue() string { return i.title }
+func (i item) FilterValue() string { return i.titleFull }
 
 func (m Model) Init() tea.Cmd {
 	return tea.EnterAltScreen
@@ -134,24 +136,36 @@ func buildFilter(items []config.ClipboardItem) func(string, []string) []list.Ran
 	meta := make(map[string]search.ItemMeta, len(items))
 	for _, it := range items {
 		lastUsed, _ := time.Parse(utils.DateLayout, it.LastUsed)
-		key := stripNonPrintable(utils.Shorten(it.Value, config.ClipseConfig.MaxEntryLength))
-		meta[key] = search.ItemMeta{UseCount: it.UseCount, LastUsed: lastUsed}
+		k := stripNonPrintable(it.Value)
+		if len(k) > searchTargetCap {
+			k = k[:searchTargetCap]
+		}
+		meta[k] = search.ItemMeta{UseCount: it.UseCount, LastUsed: lastUsed}
 	}
 	lookup := func(target string) search.ItemMeta {
 		return meta[target]
 	}
 	sc := config.ClipseConfig.Search
+	tb := make([]search.TiebreakEntry, len(sc.Tiebreak))
+	for i, e := range sc.Tiebreak {
+		tb[i] = search.TiebreakEntry{Key: e.Key, Bucket: e.Bucket}
+	}
 	inner := search.Filter(search.Config{
 		Engine:          sc.Engine,
 		Algo:            sc.Algo,
+		MatchMode:       sc.MatchMode,
 		CaseSensitivity: sc.CaseSensitivity,
 		Normalize:       sc.Normalize,
-		Tiebreak:        sc.Tiebreak,
+		Tiebreak:        tb,
 	}, lookup)
 	return func(term string, targets []string) []list.Rank {
 		sanitized := make([]string, len(targets))
 		for i, t := range targets {
-			sanitized[i] = stripNonPrintable(t)
+			s := stripNonPrintable(t)
+			if len(s) > searchTargetCap {
+				s = s[:searchTargetCap]
+			}
+			sanitized[i] = s
 		}
 		return inner(term, sanitized)
 	}

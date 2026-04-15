@@ -29,11 +29,57 @@ type Config struct {
 }
 
 type SearchConfig struct {
-	Engine          string   `json:"engine"`
-	Algo            string   `json:"algo"`
-	CaseSensitivity string   `json:"caseSensitivity"`
-	Normalize       bool     `json:"normalize"`
-	Tiebreak        []string `json:"tiebreak"`
+	Engine          string       `json:"engine"`
+	Algo            string       `json:"algo"`
+	MatchMode       string       `json:"matchMode"`
+	CaseSensitivity string       `json:"caseSensitivity"`
+	Normalize       bool         `json:"normalize"`
+	Tiebreak        TiebreakList `json:"tiebreak"`
+}
+
+type TiebreakEntry struct {
+	Key    string `json:"key"`
+	Bucket string `json:"bucket,omitempty"`
+}
+
+type TiebreakList []TiebreakEntry
+
+func (t *TiebreakList) UnmarshalJSON(data []byte) error {
+	var raw []json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	out := make(TiebreakList, 0, len(raw))
+	for _, r := range raw {
+		trimmed := len(r) > 0 && r[0] == '"'
+		if trimmed {
+			var s string
+			if err := json.Unmarshal(r, &s); err != nil {
+				return err
+			}
+			out = append(out, TiebreakEntry{Key: s})
+			continue
+		}
+		var e TiebreakEntry
+		if err := json.Unmarshal(r, &e); err != nil {
+			return err
+		}
+		out = append(out, e)
+	}
+	*t = out
+	return nil
+}
+
+func (t TiebreakList) MarshalJSON() ([]byte, error) {
+	raw := make([]interface{}, len(t))
+	for i, e := range t {
+		if e.Bucket == "" {
+			raw[i] = e.Key
+		} else {
+			raw[i] = e
+		}
+	}
+	return json.Marshal(raw)
 }
 
 type AutoPaste struct {
