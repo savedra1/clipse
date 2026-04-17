@@ -85,5 +85,22 @@ func defaultConfig() Config {
 			Keybind: defaultAutoPasteKeyBind,
 			Buffer:  defaultAutoPasteBuffer,
 		},
+		Search: defaultSearchConfig(),
+	}
+}
+
+func defaultSearchConfig() SearchConfig {
+	return SearchConfig{
+		Engine:          "default",
+		Algo:            "v2",
+		MatchMode:       "fuzzy",
+		CaseSensitivity: "smart",
+		Normalize:       true,
+		Tiebreak: TiebreakList{
+			{Key: "score"},
+			{Key: "length"},
+			{Key: "frecency", Bucket: "log2"},
+			{Key: "index"},
+		},
 	}
 }
