@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 
@@ -22,6 +23,25 @@ func X11ActiveWindowTitle() string {
 	}
 	utils.LogWARN("Failed to get active window on X11: no suitable tool found (Xdotool, Xprop)")
 	return ""
+}
+
+func X11CopyText(text string) error {
+	cmd := exec.Command(x11CopyHandler, "-selection", "clipboard")
+	cmd.Stdin = strings.NewReader(text)
+	err := cmd.Run()
+	if err != nil {
+		utils.LogERROR(fmt.Sprintf("failed to copy text via xclip: %v", err))
+	}
+	return err
+}
+
+func X11CopyImage(filePath string) error {
+	cmd := exec.Command(x11CopyHandler, "-selection", "clipboard", "-t", "image/png", "-i", filePath)
+	err := cmd.Run()
+	if err != nil {
+		utils.LogERROR(fmt.Sprintf("failed to copy image via xclip: %v", err))
+	}
+	return err
 }
 
 // tryXprop tries getting the window title for X11 systems using xprop - property displayer for X
