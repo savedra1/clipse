@@ -141,65 +141,73 @@ char* getClipboardTextX11() {
 unsigned char* getClipboardImageX11(int *out_len) {
     init_x11();
     if (!dpy) return NULL;
-
     *out_len = 0;
 
     Atom sel = XA_CLIPBOARD;
+    Atom TARGETS = XInternAtom(dpy, "TARGETS", False);
 
     // preferred MIME targets (BMP removed)
     Atom PNG  = XInternAtom(dpy, "image/png", False);
     Atom JPEG = XInternAtom(dpy, "image/jpeg", False);
 
-    Atom targets[] = { PNG, JPEG };
-    const int ntargets = sizeof(targets) / sizeof(targets[0]);
+    // First ask what formats are available
+    XConvertSelection(dpy, sel, TARGETS, TARGETS, win, CurrentTime);
+    XFlush(dpy);
 
-    for (int i = 0; i < ntargets; i++) {
-        Atom target = targets[i];
+    XEvent ev;
+    XNextEvent(dpy, &ev);
 
-        // Ask clipboard owner to convert to requested type
-        XConvertSelection(dpy, sel, target, target, win, CurrentTime);
-        XFlush(dpy);
+    if (ev.type != SelectionNotify || ev.xselection.property == None)
+        return NULL;
 
-        // Wait for the SelectionNotify event
-        XEvent ev;
-        XNextEvent(dpy, &ev);
+    Atom type;
+    int format;
+    unsigned long len, bytes_left;
+    unsigned char *data = NULL;
 
-        if (ev.type != SelectionNotify)
-            continue;
+    XGetWindowProperty(dpy, win, TARGETS, 0, ~0, False,
+                       AnyPropertyType, &type, &format,
+                       &len, &bytes_left, &data);
 
-        if (ev.xselection.property == None)
-            continue;
+    if (!data) return NULL;
 
-        Atom type;
-        int format;
-        unsigned long len, bytes_left;
-        unsigned char *data = NULL;
+    // Check if PNG or JPEG is in the supported targets
+    Atom *atoms = (Atom*)data;
+    Atom target = None;
+    for (unsigned long i = 0; i < len; i++) {
+        if (atoms[i] == PNG)  { target = PNG;  break; }
+        if (atoms[i] == JPEG) { target = JPEG; break; }
+    }
+    XFree(data);
 
-        if (XGetWindowProperty(dpy, win, target, 0, ~0, False,
-                               AnyPropertyType, &type, &format,
-                               &len, &bytes_left, &data) != Success) {
-            continue;
-        }
+    if (target == None) return NULL; // no image format available
 
-        if (!data || len == 0) {
-            if (data) XFree(data);
-            continue;
-        }
+    // Now request the actual image data
+    XConvertSelection(dpy, sel, target, target, win, CurrentTime);
+    XFlush(dpy);
 
-        // XGetWindowProperty returns len in terms of format units, not bytes
-        // format is in bits (8, 16, or 32), so calculate actual byte length
-        int actual_len = len * (format / 8);
+    XNextEvent(dpy, &ev);
+    if (ev.type != SelectionNotify || ev.xselection.property == None)
+        return NULL;
 
-        // Copy result to malloc'd buffer (Go will free this)
-        unsigned char *copy = malloc(actual_len);
-        memcpy(copy, data, actual_len);
-        XFree(data);
+    data = NULL;
+    if (XGetWindowProperty(dpy, win, target, 0, ~0, False,
+                           AnyPropertyType, &type, &format,
+                           &len, &bytes_left, &data) != Success)
+        return NULL;
 
-        *out_len = actual_len;
-        return copy;
+    if (!data || len == 0) {
+        if (data) XFree(data);
+        return NULL;
     }
 
-    return NULL; // neither PNG nor JPEG available
+    int actual_len = len * (format / 8);
+    unsigned char *copy = malloc(actual_len);
+    memcpy(copy, data, actual_len);
+    XFree(data);
+
+    *out_len = actual_len;
+    return copy;
 }
 
 // Clipboard data holder
@@ -333,6 +341,7 @@ int setClipboardImageX11(unsigned char *data, int len, const char *mime_type) {
 }
 */
 import "C"
+
 import (
 	"fmt"
 	"os"
@@ -372,6 +381,7 @@ func RunX11Listener() {
 
 			if imgContents != nil {
 				utils.HandleError(SaveImage(imgContents))
+				continue
 			}
 
 			// Check if the clipboard content should be excluded based on source application
