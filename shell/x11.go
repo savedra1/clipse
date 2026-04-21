@@ -1,9 +1,9 @@
 package shell
 
 import (
-	"fmt"
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/savedra1/clipse/utils"
 )
@@ -25,23 +25,20 @@ func X11ActiveWindowTitle() string {
 	return ""
 }
 
-func X11CopyText(text string) error {
+func X11CopyText(text string) {
 	cmd := exec.Command(x11CopyHandler, "-selection", "clipboard")
-	cmd.Stdin = strings.NewReader(text)
-	err := cmd.Run()
-	if err != nil {
-		utils.LogERROR(fmt.Sprintf("failed to copy text via xclip: %v", err))
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+		Pgid:    0,
 	}
-	return err
+
+	cmd.Stdin = strings.NewReader(text)
+	utils.HandleError(cmd.Start())
 }
 
-func X11CopyImage(filePath string) error {
+func X11CopyImage(filePath string) {
 	cmd := exec.Command(x11CopyHandler, "-selection", "clipboard", "-t", "image/png", "-i", filePath)
-	err := cmd.Run()
-	if err != nil {
-		utils.LogERROR(fmt.Sprintf("failed to copy image via xclip: %v", err))
-	}
-	return err
+	runDetachedCmd(cmd)
 }
 
 // tryXprop tries getting the window title for X11 systems using xprop - property displayer for X

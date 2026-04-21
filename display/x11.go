@@ -14,15 +14,11 @@ func (xds *XDS) Runtime() string {
 }
 
 func (xds *XDS) CopyText(text string) {
-	if err := shell.X11CopyText(text); err != nil {
-		handlers.X11SetClipboardText(text)
-	}
+	shell.X11CopyText(text)
 }
 
 func (xds *XDS) CopyImage(filePath string) {
-	if err := shell.X11CopyImage(filePath); err != nil {
-		handlers.X11SetClipboardImage(filePath)
-	}
+	shell.X11CopyImage(filePath)
 }
 
 func (xds *XDS) ReadClipboard() string {
