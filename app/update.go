@@ -365,7 +365,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			if msg.Y >= listItemsStart {
 				relativeY := msg.Y - listItemsStart
-				hoveredIndex := relativeY / linesPerItem
+				indexOnPage := relativeY / linesPerItem
+
+				page := m.list.Paginator.Page
+				perPage := m.list.Paginator.PerPage
+				hoveredIndex := page*perPage + indexOnPage
 
 				if hoveredIndex < len(m.list.Items()) {
 					if m.showConfirmation {
