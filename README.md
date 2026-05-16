@@ -444,7 +444,7 @@ When enabling the auto-paste feature, you may need to allow `clipse` the require
   ```shell
   sudo groupadd input
   sudo usermod -aG input <username>
-  sudo vi /etc/udev/rules.d/99-uinput.rules --> add 'KERNEL=="uinput", GROUP="input", MODE="0660"'
+  sudo vi /etc/udev/rules.d/99-uinput.rules --> add 'KERNEL=="uinput", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"'
   sudo udevadm control --reload-rules
   sudo udevadm trigger
   ```
