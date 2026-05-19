@@ -19,7 +19,8 @@ func GetWLClipBoard() (string, error) {
 }
 
 func UpdateWLClipboard(s string) error {
-	cmd := exec.Command(wlCopyHandler, "--", s)
+	cmd := exec.Command(wlCopyHandler, "--")
+	cmd.Stdin = strings.NewReader(s)
 	if err := cmd.Run(); err != nil {
 		return err
 	}
