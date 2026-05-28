@@ -247,3 +247,58 @@ func TestFzfEmptyTerm(t *testing.T) {
 		t.Errorf("empty term should pass all items, got %d", len(ranks))
 	}
 }
+
+// TestScoreBucketAbsorbsBoundaryNoiseSoLengthDecides guards against a fine score
+// bucket letting fzf's boundary-bonus noise override length. fzf scores a match
+// preceded by whitespace higher than the same match preceded by '[', so with a
+// narrow bucket a long log line that merely contains "git" can outrank a short,
+// focused "[git]" entry — and length, a later tiebreak, cannot rescue it across
+// buckets. A width-32 score bucket collapses that boundary-bonus spread into one
+// bucket so length sorts clean matches short-first, while genuinely scattered
+// matches still fall into a lower bucket.
+func TestScoreBucketAbsorbsBoundaryNoiseSoLengthDecides(t *testing.T) {
+	longLog := "deploy notes: cut a release candidate\n  remember to checkout main before tagging\n" +
+		"  then run the pipeline ............................................"
+	targets := []string{
+		longLog,                // clean " main" but long -> max score (whitespace boundary)
+		"[main] release notes", // clean but '[' boundary -> slightly lower score, short
+		"main branch",          // clean prefix, shortest
+		"magician",             // scattered m..a..i..n, shortest overall -> lower score bucket
+	}
+	cfg := search.Config{
+		Engine:    search.EngineFzf,
+		Algo:      search.AlgoV2,
+		Normalize: true,
+		Tiebreak: []search.TiebreakEntry{
+			{Key: search.TiebreakScore, Bucket: "32"},
+			{Key: search.TiebreakLength},
+			{Key: search.TiebreakIndex},
+		},
+	}
+	ranks := search.Filter(cfg, nil)("main", targets)
+	order := make([]string, len(ranks))
+	for i, r := range ranks {
+		order[i] = targets[r.Index]
+	}
+	// Short clean matches must come before the long clean match, even though the
+	// long one has a higher raw fzf score (whitespace boundary beats '[').
+	posLong, posBracket, posPrefix := indexOf(order, longLog), indexOf(order, "[main] release notes"), indexOf(order, "main branch")
+	if posPrefix >= posBracket || posBracket >= posLong {
+		t.Errorf("expected short clean matches before long log; got order:\n  %q", order)
+	}
+	// "magician" is the shortest target but a scattered match: a coarse bucket
+	// (e.g. log2) would float it to the top, but width-32 keeps it below the
+	// clean matches.
+	if posScatter := indexOf(order, "magician"); posScatter < posLong {
+		t.Errorf("scattered match should rank below clean matches; got order:\n  %q", order)
+	}
+}
+
+func indexOf(s []string, v string) int {
+	for i, x := range s {
+		if x == v {
+			return i
+		}
+	}
+	return -1
+}

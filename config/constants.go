@@ -97,9 +97,9 @@ func defaultSearchConfig() SearchConfig {
 		CaseSensitivity: "smart",
 		Normalize:       true,
 		Tiebreak: TiebreakList{
-			{Key: "score", Bucket: "16"},
-			{Key: "frecency"},
+			{Key: "score", Bucket: "32"},
 			{Key: "length"},
+			{Key: "frecency"},
 			{Key: "index"},
 		},
 	}
