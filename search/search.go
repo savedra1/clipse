@@ -3,6 +3,7 @@ package search
 import (
 	"math"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -221,12 +222,22 @@ func lessByTiebreak(a, b rankWithScore, tiebreak []TiebreakEntry) bool {
 
 func bucketize(val float64, strategy string) float64 {
 	switch strategy {
+	case "", "raw":
+		return val
 	case "log2":
 		if val <= 1 {
 			return 0
 		}
 		return math.Floor(math.Log2(val))
 	default:
+		// A numeric strategy is a linear quantization width: values are
+		// collapsed into floor(val/width) buckets, so anything within one
+		// width ties and a later tiebreak (e.g. frecency) decides. fzf's
+		// per-character score unit is 16, so a width of ~16 gives "gentle"
+		// near-tie breaking. Unparsable / non-positive widths fall back to raw.
+		if w, err := strconv.Atoi(strategy); err == nil && w > 0 {
+			return math.Floor(val / float64(w))
+		}
 		return val
 	}
 }
