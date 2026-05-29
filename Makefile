@@ -1,5 +1,5 @@
 BINARY_NAME=clipse
-INSTALL_DIR?=$(HOME)/.local/bin
+INSTALL_DIR?=/usr/local/bin/
 
 wayland:
 	CGO_ENABLED=0 go build -tags wayland -o $(BINARY_NAME)
@@ -10,10 +10,10 @@ x11:
 darwin:
 	go build -tags darwin -o $(BINARY_NAME)
 
-run: wayland
+run: build
 	./$(BINARY_NAME)
 
-install: wayland
+install: build
 	install -m 755 $(BINARY_NAME) $(INSTALL_DIR)
 
 clean:
@@ -23,5 +23,3 @@ clean:
 test:
 	go test -v ./...
 	
-
-

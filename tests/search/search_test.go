@@ -2,6 +2,7 @@ package search_test
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -291,6 +292,119 @@ func TestScoreBucketAbsorbsBoundaryNoiseSoLengthDecides(t *testing.T) {
 	// clean matches.
 	if posScatter := indexOf(order, "magician"); posScatter < posLong {
 		t.Errorf("scattered match should rank below clean matches; got order:\n  %q", order)
+	}
+}
+
+func TestFrecencyRewardsRecencyWithoutUseCount(t *testing.T) {
+	targets := []string{"chimr old", "chimr new"}
+	now := time.Now()
+	meta := map[string]search.ItemMeta{
+		"chimr old": {Recorded: now.Add(-72 * time.Hour)},
+		"chimr new": {Recorded: now.Add(-1 * time.Minute)},
+	}
+	lookup := func(t string) search.ItemMeta { return meta[t] }
+	cfg := search.Config{
+		Engine:    search.EngineFzf,
+		Algo:      search.AlgoV2,
+		Normalize: true,
+		Tiebreak:  []search.TiebreakEntry{{Key: search.TiebreakFrecency}, {Key: search.TiebreakIndex}},
+	}
+	ranks := search.Filter(cfg, lookup)("chimr", targets)
+	if len(ranks) != 2 {
+		t.Fatalf("expected 2 matches, got %d", len(ranks))
+	}
+	if targets[ranks[0].Index] != "chimr new" {
+		t.Errorf("recency: a freshly recorded item (useCount 0) should win, got %q", targets[ranks[0].Index])
+	}
+}
+
+func TestRecentLongMatchBeatsOlderShortMatch(t *testing.T) {
+	short := "chimr"
+	long := "https://chimr.coelhorocha.com/d8c952vfm9u94tr4"
+	targets := []string{short, long}
+	now := time.Now()
+	meta := map[string]search.ItemMeta{
+		short: {Recorded: now.Add(-240 * time.Hour)},
+		long:  {Recorded: now.Add(-1 * time.Minute)},
+	}
+	lookup := func(t string) search.ItemMeta { return meta[t] }
+	cfg := search.Config{
+		Engine:    search.EngineFzf,
+		Algo:      search.AlgoV2,
+		Normalize: true,
+		Tiebreak: []search.TiebreakEntry{
+			{Key: search.TiebreakScore, Bucket: "32"},
+			{Key: search.TiebreakFrecency},
+			{Key: search.TiebreakLength},
+			{Key: search.TiebreakIndex},
+		},
+	}
+	ranks := search.Filter(cfg, lookup)("chimr", targets)
+	if targets[ranks[0].Index] != long {
+		t.Errorf("recency above length: recent long match should win over old short match, got %q", targets[ranks[0].Index])
+	}
+}
+
+func TestTypoToleranceMatchesTransposition(t *testing.T) {
+	hit := "chimr.coelhorocha.com"
+	noise := "the quick brown fox jumps over a chair in march"
+	targets := []string{noise, hit}
+	cfg := search.Config{
+		Engine:        search.EngineFzf,
+		Algo:          search.AlgoV2,
+		Normalize:     true,
+		TypoTolerance: true,
+		Tiebreak: []search.TiebreakEntry{
+			{Key: search.TiebreakScore, Bucket: "32"},
+			{Key: search.TiebreakLength},
+			{Key: search.TiebreakIndex},
+		},
+	}
+	for _, term := range []string{"chirm", "chmir", "chrmi"} {
+		ranks := search.Filter(cfg, nil)(term, targets)
+		if len(ranks) == 0 {
+			t.Fatalf("%q: expected a typo match, got none", term)
+		}
+		if targets[ranks[0].Index] != hit {
+			t.Errorf("%q: edit-distance match should rank the near-spelling above scattered noise, got %q", term, targets[ranks[0].Index])
+		}
+	}
+}
+
+func TestTypoToleranceSkipsLargeTargets(t *testing.T) {
+	hit := "chimr"
+	blob := "module github.com/charmbracelet/bubbletea\n" + strings.Repeat("x", 300)
+	targets := []string{blob, hit}
+	cfg := search.Config{
+		Engine:        search.EngineFzf,
+		Algo:          search.AlgoV2,
+		Normalize:     true,
+		TypoTolerance: true,
+		MaxScatter:    24,
+		Tiebreak:      []search.TiebreakEntry{{Key: search.TiebreakScore, Bucket: "32"}, {Key: search.TiebreakLength}},
+	}
+	ranks := search.Filter(cfg, nil)("chimr", targets)
+	if len(ranks) == 0 || targets[ranks[0].Index] != hit {
+		t.Fatalf("clean 'chimr' should win; got %v", ranks)
+	}
+	for _, r := range ranks {
+		if targets[r.Index] == blob {
+			t.Errorf("large target should not typo-match 'charm'->'chimr'; blob leaked into results")
+		}
+	}
+}
+
+func TestTypoToleranceDisabled(t *testing.T) {
+	targets := []string{"chimr.coelhorocha.com"}
+	cfg := search.Config{
+		Engine:        search.EngineFzf,
+		Algo:          search.AlgoV2,
+		Normalize:     true,
+		TypoTolerance: false,
+		Tiebreak:      []search.TiebreakEntry{{Key: search.TiebreakScore}},
+	}
+	if ranks := search.Filter(cfg, nil)("chrmi", targets); len(ranks) != 0 {
+		t.Errorf("with typo tolerance off, a transposition should not match, got %d results", len(ranks))
 	}
 }
 

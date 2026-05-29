@@ -34,6 +34,8 @@ type SearchConfig struct {
 	MatchMode       string       `json:"matchMode"`
 	CaseSensitivity string       `json:"caseSensitivity"`
 	Normalize       bool         `json:"normalize"`
+	TypoTolerance   bool         `json:"typoTolerance"`
+	MaxScatter      int          `json:"maxScatter"`
 	Tiebreak        TiebreakList `json:"tiebreak"`
 }
 

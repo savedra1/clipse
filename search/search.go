@@ -41,6 +41,11 @@ const (
 	frecencyHalflife = 24 * time.Hour
 	slab16Size       = 100 * 1024
 	slab32Size       = 2048
+
+	typoEditPenalty  = 4
+	typoMaxTargetLen = 256
+
+	scoreContiguousBonus = 1 << 13
 )
 
 type Config struct {
@@ -49,6 +54,8 @@ type Config struct {
 	MatchMode       string          `json:"matchMode"`
 	CaseSensitivity string          `json:"caseSensitivity"`
 	Normalize       bool            `json:"normalize"`
+	TypoTolerance   bool            `json:"typoTolerance"`
+	MaxScatter      int             `json:"maxScatter"`
 	Tiebreak        []TiebreakEntry `json:"tiebreak"`
 }
 
@@ -60,6 +67,7 @@ type TiebreakEntry struct {
 type ItemMeta struct {
 	UseCount int
 	LastUsed time.Time
+	Recorded time.Time
 }
 
 type MetaLookup func(target string) ItemMeta
@@ -83,7 +91,7 @@ type rankWithScore struct {
 func fzfFilter(cfg Config, metaLookup MetaLookup) func(string, []string) []list.Rank {
 	tiebreak := cfg.Tiebreak
 	if len(tiebreak) == 0 {
-		tiebreak = []TiebreakEntry{{Key: TiebreakScore}, {Key: TiebreakLength}, {Key: TiebreakIndex}}
+		tiebreak = []TiebreakEntry{{Key: TiebreakScore, Bucket: "32"}, {Key: TiebreakFrecency}, {Key: TiebreakLength}, {Key: TiebreakIndex}}
 	}
 	useFrecency := metaLookup != nil && hasKey(tiebreak, TiebreakFrecency)
 	matchFn := algo.FuzzyMatchV2
@@ -93,6 +101,7 @@ func fzfFilter(cfg Config, metaLookup MetaLookup) func(string, []string) []list.
 	if cfg.MatchMode == MatchModeExact {
 		matchFn = algo.ExactMatchNaive
 	}
+	typo := cfg.TypoTolerance && cfg.MatchMode != MatchModeExact
 
 	return func(term string, targets []string) []list.Rank {
 		slab := util.MakeSlab(slab16Size, slab32Size)
@@ -125,32 +134,64 @@ func fzfFilter(cfg Config, metaLookup MetaLookup) func(string, []string) []list.
 				if cfg.Normalize {
 					pattern = algo.NormalizeRunes(pattern)
 				}
+
+				tokScore := math.MinInt
+				var tokPositions []int
+				tokBegin, tokEnd := math.MaxInt, -1
+
+				ptext := util.ToChars([]byte(string(pattern)))
+				perfect, _ := matchFn(caseSensitive, cfg.Normalize, true, &ptext, pattern, true, slab)
+
 				res, pos := matchFn(caseSensitive, cfg.Normalize, true, &text, pattern, true, slab)
-				if res.Start < 0 {
+				if res.Start >= 0 {
+					tokScore = res.Score
+					if pos != nil {
+						tokPositions = append(tokPositions, *pos...)
+						for _, p := range *pos {
+							if p < tokBegin {
+								tokBegin = p
+							}
+							if p > tokEnd {
+								tokEnd = p
+							}
+						}
+					} else {
+						for p := res.Start; p < res.End; p++ {
+							tokPositions = append(tokPositions, p)
+						}
+						tokBegin, tokEnd = res.Start, res.End-1
+					}
+					if cfg.MaxScatter > 0 && tokEnd-tokBegin+1-len(pattern) > cfg.MaxScatter {
+						tokScore, tokBegin, tokEnd, tokPositions = math.MinInt, math.MaxInt, -1, nil
+					}
+				}
+
+				if typo {
+					if ts, tb, te, tp, ok := typoTokenMatch(pattern, target, cfg.Normalize, perfect.Score); ok && ts > tokScore {
+						tokScore, tokBegin, tokEnd, tokPositions = ts, tb, te, tp
+					}
+				}
+
+				if cb, ce, ok := contiguousMatch(pattern, target, cfg.Normalize, caseSensitive); ok {
+					tokScore = scoreContiguousBonus
+					tokBegin, tokEnd = cb, ce
+					tokPositions = tokPositions[:0]
+					for p := cb; p <= ce; p++ {
+						tokPositions = append(tokPositions, p)
+					}
+				}
+
+				if tokScore == math.MinInt {
 					matched = false
 					break
 				}
-				totalScore += res.Score
-				if pos != nil {
-					matchedPositions = append(matchedPositions, *pos...)
-					for _, p := range *pos {
-						if p < begin {
-							begin = p
-						}
-						if p > end {
-							end = p
-						}
-					}
-				} else {
-					for p := res.Start; p < res.End; p++ {
-						matchedPositions = append(matchedPositions, p)
-					}
-					if res.Start < begin {
-						begin = res.Start
-					}
-					if res.End-1 > end {
-						end = res.End - 1
-					}
+				totalScore += tokScore
+				matchedPositions = append(matchedPositions, tokPositions...)
+				if tokBegin < begin {
+					begin = tokBegin
+				}
+				if tokEnd > end {
+					end = tokEnd
 				}
 			}
 			if !matched {
@@ -252,14 +293,152 @@ func hasKey(entries []TiebreakEntry, key string) bool {
 }
 
 func frecencyScore(m ItemMeta, now time.Time) float64 {
-	if m.UseCount == 0 {
+	last := m.Recorded
+	if m.LastUsed.After(last) {
+		last = m.LastUsed
+	}
+	if last.IsZero() {
 		return 0
 	}
-	if m.LastUsed.IsZero() {
-		return float64(m.UseCount)
+	age := max(now.Sub(last), 0)
+	return float64(1+m.UseCount) * math.Exp(-float64(age)/float64(frecencyHalflife))
+}
+
+func typoMaxEdits(n int) int {
+	switch {
+	case n < 3:
+		return 0
+	case n <= 4:
+		return 1
+	default:
+		return 2
 	}
-	age := max(now.Sub(m.LastUsed), 0)
-	return float64(m.UseCount) * math.Exp(-float64(age)/float64(frecencyHalflife))
+}
+
+func typoTokenMatch(pattern []rune, target string, normalize bool, perfectScore int) (score, begin, end int, positions []int, ok bool) {
+	maxEd := typoMaxEdits(len(pattern))
+	if maxEd == 0 || len(target) > typoMaxTargetLen {
+		return 0, 0, 0, nil, false
+	}
+	runes := []rune(target)
+	bestD := maxEd + 1
+	bestStart, bestLen := -1, 0
+	for i := 0; i < len(runes); {
+		if !isWordRune(runes[i]) {
+			i++
+			continue
+		}
+		j := i
+		for j < len(runes) && isWordRune(runes[j]) {
+			j++
+		}
+		word := make([]rune, 0, j-i)
+		for k := i; k < j; k++ {
+			word = append(word, unicode.ToLower(runes[k]))
+		}
+		if normalize {
+			word = algo.NormalizeRunes(word)
+		}
+		if absInt(len(word)-len(pattern)) <= maxEd {
+			if d := damerauLevenshtein(pattern, word, maxEd); d < bestD {
+				bestD, bestStart, bestLen = d, i, j-i
+			}
+		}
+		if len(word) > len(pattern) {
+			if d := damerauLevenshtein(pattern, word[:len(pattern)], maxEd); d < bestD {
+				bestD, bestStart, bestLen = d, i, len(pattern)
+			}
+		}
+		i = j
+	}
+	if bestStart < 0 || bestD > maxEd {
+		return 0, 0, 0, nil, false
+	}
+	positions = make([]int, bestLen)
+	for k := range positions {
+		positions[k] = bestStart + k
+	}
+	score = perfectScore - typoEditPenalty*bestD
+	return score, bestStart, bestStart + bestLen - 1, positions, true
+}
+
+func damerauLevenshtein(a, b []rune, maxD int) int {
+	la, lb := len(a), len(b)
+	if absInt(la-lb) > maxD {
+		return maxD + 1
+	}
+	prev2 := make([]int, lb+1)
+	prev := make([]int, lb+1)
+	curr := make([]int, lb+1)
+	for j := 0; j <= lb; j++ {
+		prev[j] = j
+	}
+	for i := 1; i <= la; i++ {
+		curr[0] = i
+		rowMin := curr[0]
+		for j := 1; j <= lb; j++ {
+			cost := 1
+			if a[i-1] == b[j-1] {
+				cost = 0
+			}
+			m := min(prev[j]+1, curr[j-1]+1)
+			m = min(m, prev[j-1]+cost)
+			if i > 1 && j > 1 && a[i-1] == b[j-2] && a[i-2] == b[j-1] {
+				m = min(m, prev2[j-2]+1)
+			}
+			curr[j] = m
+			if m < rowMin {
+				rowMin = m
+			}
+		}
+		if rowMin > maxD {
+			return maxD + 1
+		}
+		prev2, prev, curr = prev, curr, prev2
+	}
+	return prev[lb]
+}
+
+func contiguousMatch(pattern []rune, target string, normalize, caseSensitive bool) (begin, end int, ok bool) {
+	if len(pattern) == 0 {
+		return 0, 0, false
+	}
+	hay := []rune(target)
+	if len(hay) < len(pattern) {
+		return 0, 0, false
+	}
+	for i := range hay {
+		if !caseSensitive {
+			hay[i] = unicode.ToLower(hay[i])
+		}
+	}
+	if normalize {
+		hay = algo.NormalizeRunes(hay)
+	}
+	for i := 0; i+len(pattern) <= len(hay); i++ {
+		match := true
+		for j := range pattern {
+			if hay[i+j] != pattern[j] {
+				match = false
+				break
+			}
+		}
+		if match {
+			return i, i + len(pattern) - 1, true
+		}
+	}
+	return 0, 0, false
+}
+
+func isWordRune(r rune) bool {
+	return unicode.IsLetter(r) || unicode.IsDigit(r)
+}
+
+func absInt(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
 }
 
 func isCaseSensitive(mode, pattern string) bool {

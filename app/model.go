@@ -136,11 +136,12 @@ func buildFilter(items []config.ClipboardItem) func(string, []string) []list.Ran
 	meta := make(map[string]search.ItemMeta, len(items))
 	for _, it := range items {
 		lastUsed, _ := time.Parse(utils.DateLayout, it.LastUsed)
+		recorded, _ := time.Parse(utils.DateLayout, it.Recorded)
 		k := stripNonPrintable(it.Value)
 		if len(k) > searchTargetCap {
 			k = k[:searchTargetCap]
 		}
-		meta[k] = search.ItemMeta{UseCount: it.UseCount, LastUsed: lastUsed}
+		meta[k] = search.ItemMeta{UseCount: it.UseCount, LastUsed: lastUsed, Recorded: recorded}
 	}
 	lookup := func(target string) search.ItemMeta {
 		return meta[target]
@@ -156,6 +157,8 @@ func buildFilter(items []config.ClipboardItem) func(string, []string) []list.Ran
 		MatchMode:       sc.MatchMode,
 		CaseSensitivity: sc.CaseSensitivity,
 		Normalize:       sc.Normalize,
+		TypoTolerance:   sc.TypoTolerance,
+		MaxScatter:      sc.MaxScatter,
 		Tiebreak:        tb,
 	}, lookup)
 	return func(term string, targets []string) []list.Rank {

@@ -96,10 +96,12 @@ func defaultSearchConfig() SearchConfig {
 		MatchMode:       "fuzzy",
 		CaseSensitivity: "smart",
 		Normalize:       true,
+		TypoTolerance:   true,
+		MaxScatter:      24,
 		Tiebreak: TiebreakList{
 			{Key: "score", Bucket: "32"},
-			{Key: "length"},
 			{Key: "frecency"},
+			{Key: "length"},
 			{Key: "index"},
 		},
 	}
