@@ -3,7 +3,6 @@ package app
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -53,11 +52,8 @@ func (d itemDelegate) Render(
 	switch {
 
 	case m.SettingFilter():
-		if strings.Contains(
-			strings.ToLower(i.titleFull),
-			strings.ToLower(m.FilterValue()),
-		) && m.FilterValue() != "" {
-			renderStr = d.itemSelectedStyle(i)
+		if m.FilterValue() != "" && len(m.MatchesForItem(index)) > 0 {
+			renderStr = d.itemFilterMatchStyle(i)
 		} else {
 			renderStr = d.itemFilterStyle(i)
 		}

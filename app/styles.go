@@ -54,6 +54,31 @@ func (d itemDelegate) itemFilterStyle(i item) string {
 	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
 }
 
+func (d itemDelegate) itemFilterMatchStyle(i item) string {
+	titleStyle := style.
+		Foreground(lipgloss.Color(d.theme.SelectedTitle)).
+		PaddingLeft(2).
+		Render(i.titleBase)
+
+	if !config.ClipseConfig.EnableDescription {
+		if i.pinned {
+			titleStyle += styledPin(d.theme)
+		}
+		return titleStyle
+	}
+
+	descStyle := style.
+		Foreground(lipgloss.Color(d.theme.DimmedDesc)).
+		PaddingLeft(2).
+		Render(i.descriptionBase)
+
+	if i.pinned {
+		descStyle += styledPin(d.theme)
+	}
+
+	return fmt.Sprintf("%s\n%s", titleStyle, descStyle)
+}
+
 func (d itemDelegate) itemChosenStyle(i item) string {
 	titleStyle = style.
 		Foreground(lipgloss.Color(d.theme.SelectedTitle)).
