@@ -345,6 +345,7 @@ __If any values from this file are removed, they will not be readded when the pr
 | `tempDir`           | string | Directory used for image files.                                                              |
 | `enableMouse`       | bool   | Enables mouse interaction in the UI.                                                         |
 | `enableDescription` | bool   | Shows additional descriptive text for clipboard entries.                                     |
+| `search`            | map    | Fuzzy search engine and ranking options. See [Search](#search).                              |
 | `keyBindings`       | map    | Custom keybind definitions.                                                                  |
 | `autoPaste`         | map    | Auto-paste options.                                                                          |
 | `imageDisplay`      | map    | Image display options (basic/kitty/sixel).                                                   |
@@ -379,6 +380,40 @@ Absolute paths starting with `/`, paths relative to the user home dir using `~`,
 | `keyBindings.togglePinned`  | string | Toggles display of pinned entries.          |
 | `keyBindings.up`            | string | Moves selection up by one entry.            |
 | `keyBindings.yankFilter`    | string | Copies the current filter text.             |
+
+## Search
+
+The `search` object configures how filter matches are scored and ordered.
+
+| Option                    | Type     | Description                                                                                                                                         |
+| ------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `search.engine`           | string   | `"default"` (existing behavior, backed by `sahilm/fuzzy`) or `"fzf"` (fzf v2 scoring from `github.com/junegunn/fzf`). Default `"default"`.           |
+| `search.algo`             | string   | `"v1"` or `"v2"` — fzf scoring algorithm. Default `"v2"`. Ignored when `engine` is `"default"`.                                                     |
+| `search.caseSensitivity`  | string   | `"smart"`, `"respect"`, or `"ignore"`. `smart` is case-insensitive unless the query contains uppercase. Default `"smart"`. Fzf engine only.         |
+| `search.normalize`        | bool     | Strip diacritics so `cafe` matches `café`. Default `true`. Fzf engine only.                                                                         |
+| `search.matchMode`        | string   | `"fuzzy"` (characters can be non-contiguous) or `"exact"` (contiguous substring, still scored). Default `"fuzzy"`. Fzf engine only.                    |
+| `search.tiebreak`         | array    | Ordering applied when fzf scores tie. Any of `"score"`, `"length"`, `"index"`, `"frecency"`, `"begin"` (prefer matches closer to the start of the entry), `"end"` (prefer matches closer to the end). Entries may be plain strings or `{"key": "...", "bucket": "log2"}` to quantize numeric values so later tiebreaks still decide close calls. Default `["score","length",{"key":"frecency","bucket":"log2"},"index"]`. Fzf engine only. |
+
+Opting into fzf scoring with frecency:
+
+```json
+{
+    "search": {
+        "engine": "fzf",
+        "algo": "v2",
+        "matchMode": "fuzzy",
+        "caseSensitivity": "smart",
+        "normalize": true,
+        "tiebreak": [
+          { "key": "score", "bucket": "log2" },
+          { "key": "frecency", "bucket": "log2" },
+          "index"
+        ]
+    }
+}
+```
+
+Adding `"frecency"` to `tiebreak` makes clipse track how often and how recently each entry was selected (written as `useCount` and `lastUsed` into `clipboard_history.json`) and surface frequently used entries first when fzf scores tie.
 
 Key bindings can take multiple keys delimited by `,`.
 

@@ -19,6 +19,8 @@ type ClipboardItem struct {
 	Recorded string `json:"recorded"`
 	FilePath string `json:"filePath"`
 	Pinned   bool   `json:"pinned"`
+	UseCount int    `json:"useCount,omitempty"`
+	LastUsed string `json:"lastUsed,omitempty"`
 }
 
 type ClipboardHistory struct {
@@ -333,6 +335,18 @@ func TogglePinClipboardItem(timeStamp string) (bool, error) {
 		return pinned, err
 	}
 	return pinned, nil
+}
+
+func RecordUse(timeStamp string) error {
+	data := fileContents()
+	for i, item := range data.ClipboardHistory {
+		if item.Recorded == timeStamp {
+			data.ClipboardHistory[i].UseCount = item.UseCount + 1
+			data.ClipboardHistory[i].LastUsed = utils.GetTime()
+			return WriteUpdate(data)
+		}
+	}
+	return nil
 }
 
 func SanitizeHistory() error {

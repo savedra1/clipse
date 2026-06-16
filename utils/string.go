@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
 )
 
 // any chars that cause the fuzzy find to crash can be appended here
@@ -18,12 +19,17 @@ var badChars = []string{
 }
 
 func Shorten(s string, maxChar int) string {
-	sl := strings.TrimSpace(
-		strings.ReplaceAll(
-			strings.ReplaceAll(s, "\n", "\\n"),
-			"\t", " ",
-		),
+	escaped := strings.ReplaceAll(
+		strings.ReplaceAll(s, "\n", "\\n"),
+		"\t", " ",
 	)
+	escaped = strings.Map(func(r rune) rune {
+		if unicode.IsPrint(r) {
+			return r
+		}
+		return -1
+	}, escaped)
+	sl := strings.TrimSpace(escaped)
 
 	if len(sl) <= maxChar {
 		return strings.ReplaceAll(sl, "  ", " ")
