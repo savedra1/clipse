@@ -165,8 +165,24 @@ clipse -listen
 
   Add the following lines to your Hyprland config file:
 
-  ```shell
+  If you are using a Lua config:
+  
+  ```lua
+  
+  -- add the following line to your Hyprland startup function
+  hl.exec_cmd("clipse -listen") -- run listener on startup
 
+  -- add the keybind
+  hl.bind(
+	  "SUPER + V",
+	  hl.dsp.exec_cmd(" <terminal name> --class clipse -e clipse", { float = true, size = { 622, 652 }, stay_focused = true })
+  )
+  -- Example: hl.bind("SUPER + V", hl.dsp.exec_cmd("kitty --class clipse -e clipse", { float = true, size = {622, 652}, stay_focused = true }))
+
+  ```
+  If you are using a Hyprlang config:
+  
+  ```shell
   exec-once = clipse -listen # run listener on startup
 
   windowrule = match:class clipse, float true # ensure you have a floating window class set if you want this behavior
@@ -177,7 +193,10 @@ clipse -listen
   # Example: bind = SUPER, V, exec, alacritty --class clipse -e 'clipse'
   ```
 
-  [Hyprland reference](https://wiki.hypr.land/Configuring/Window-Rules/)
+  [Hyprland Lua reference](https://wiki.hypr.land/Useful-Utilities/Clipboard-Managers/)
+  
+  [Hyprland Hyprlang reference](https://wiki.hypr.land/0.54.0/Configuring/Window-Rules/)
+  
 
 </details>
 
