@@ -328,7 +328,7 @@ Your `configuration.json` file will initially be created with the following defa
 }
 ```
 
-__If any values from this file are removed, they will not be readded when the program runs, but the default values will be used.__
+__If any values from this file are removed, they will not be re-added when the program runs, but the default values will be used.__
 
 ## General Configuration
 
