@@ -6,10 +6,10 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func DiskspaceAvailable(bytes int) bool {
+func DiskspaceAvailable(path string, bytes int) bool {
 	var stat unix.Statfs_t
-	if err := unix.Statfs("/", &stat); err != nil {
-		LogERROR(fmt.Sprintf("failed to check disk space: %s", err))
+	if err := unix.Statfs(path, &stat); err != nil {
+		LogERROR(fmt.Sprintf("failed to check disk space at '%s': %s", path, err))
 		return true
 	}
 
