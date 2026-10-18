@@ -10,21 +10,23 @@ import (
 )
 
 type Config struct {
-	AllowDuplicates   bool              `json:"allowDuplicates"`
-	HistoryFilePath   string            `json:"historyFile"`
-	MaxHistory        int               `json:"maxHistory"`
-	DeleteAfter       int               `json:"deleteAfter"`
-	LogFilePath       string            `json:"logFile"`
-	PollInterval      int               `json:"pollInterval"`
-	MaxEntryLength    int               `json:"maxEntryLength"`
-	ThemeFilePath     string            `json:"themeFile"`
-	TempDirPath       string            `json:"tempDir"`
-	KeyBindings       map[string]string `json:"keyBindings"`
-	ImageDisplay      ImageDisplay      `json:"imageDisplay"`
-	ExcludedApps      []string          `json:"excludedApps"`
-	AutoPaste         AutoPaste         `json:"autoPaste"`
-	EnableMouse       bool              `json:"enableMouse"`
-	EnableDescription bool              `json:"enableDescription"`
+	AllowDuplicates bool `json:"allowDuplicates"`
+	// AllowImageDuplicates overrides AllowDuplicates for images; nil inherits it.
+	AllowImageDuplicates *bool             `json:"allowImageDuplicates,omitempty"`
+	HistoryFilePath      string            `json:"historyFile"`
+	MaxHistory           int               `json:"maxHistory"`
+	DeleteAfter          int               `json:"deleteAfter"`
+	LogFilePath          string            `json:"logFile"`
+	PollInterval         int               `json:"pollInterval"`
+	MaxEntryLength       int               `json:"maxEntryLength"`
+	ThemeFilePath        string            `json:"themeFile"`
+	TempDirPath          string            `json:"tempDir"`
+	KeyBindings          map[string]string `json:"keyBindings"`
+	ImageDisplay         ImageDisplay      `json:"imageDisplay"`
+	ExcludedApps         []string          `json:"excludedApps"`
+	AutoPaste            AutoPaste         `json:"autoPaste"`
+	EnableMouse          bool              `json:"enableMouse"`
+	EnableDescription    bool              `json:"enableDescription"`
 }
 
 type AutoPaste struct {
@@ -38,6 +40,14 @@ type ImageDisplay struct {
 	ScaleX    int    `json:"scaleX"`
 	ScaleY    int    `json:"scaleY"`
 	HeightCut int    `json:"heightCut"`
+}
+
+// DuplicatesAllowed reports whether a new entry may duplicate an existing one.
+func (c Config) DuplicatesAllowed(isImage bool) bool {
+	if isImage && c.AllowImageDuplicates != nil {
+		return *c.AllowImageDuplicates
+	}
+	return c.AllowDuplicates
 }
 
 // Global config object, accessed and used when any configuration is needed.
