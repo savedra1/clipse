@@ -96,6 +96,7 @@ func DarwinGetClipboardText() string {
 	if cstr == nil {
 		return ""
 	}
+	defer C.free(unsafe.Pointer(cstr))
 	return C.GoString(cstr)
 }
 
