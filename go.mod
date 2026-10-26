@@ -1,14 +1,13 @@
 module github.com/savedra1/clipse
 
-go 1.24.0
-
-toolchain go1.24.7
+go 1.25.0
 
 require (
 	github.com/BourgeoisBear/rasterm v1.1.2
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/go-vgo/robotgo v1.0.0
 	github.com/mitchellh/go-ps v1.0.0
 	gopkg.in/bendahl/uinput.v1 v1.2.0
@@ -20,7 +19,6 @@ require (
 	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
 	github.com/dblohm7/wingoes v0.0.0-20250822163801-6d8e6105c62d // indirect
 	github.com/ebitengine/purego v0.9.1 // indirect
-	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gen2brain/shm v0.1.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.2.0 // indirect
@@ -61,6 +59,6 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // direct
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sahilm/fuzzy v0.1.1 // indirect
-	golang.org/x/sys v0.40.0
+	golang.org/x/sys v0.43.0
 	golang.org/x/text v0.31.0 // indirect
 )
