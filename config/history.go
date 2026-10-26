@@ -227,7 +227,7 @@ func AddClipboardItem(text, fp string) error {
 		Pinned:   false,
 	}
 
-	if !ClipseConfig.AllowDuplicates {
+	if !ClipseConfig.DuplicatesAllowed(fp != "null") {
 		duplicates, isPinned := duplicateItems(data.ClipboardHistory, item)
 		data.ClipboardHistory = removeDuplicates(data.ClipboardHistory, duplicates)
 		item.Pinned = isPinned

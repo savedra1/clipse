@@ -335,6 +335,7 @@ __If any values from this file are removed, they will not be readded when the pr
 | Option              | Type   | Description                                                                                  |
 | ------------------- | ------ | -------------------------------------------------------------------------------------------- |
 | `allowDuplicates`   | bool   | Whether identical clipboard entries are allowed to appear more than once in history.         |
+| `allowImageDuplicates` | bool | Optional. Overrides `allowDuplicates` for images, e.g. keep text duplicates but dedupe images. Unset inherits `allowDuplicates`. |
 | `historyFile`       | string | File path used to persist clipboard history.                                                 |
 | `maxHistory`        | int    | Maximum number of clipboard entries stored in history.                                       |
 | `deleteAfter`       | int    | Time (in seconds) after which entries are automatically deleted; `0` disables auto-deletion. |
