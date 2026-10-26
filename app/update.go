@@ -318,6 +318,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmds = append(cmds, cmd)
 				m.preview.GotoTop()
 				m.setPreviewKeys(false)
+				if i.filePath != "null" && config.ClipseConfig.ImageDisplay.Type != "basic" {
+					m.preview.Height = m.originalHeight
+				}
 				return m, tea.Batch(cmds...)
 
 			case m.list.IsFiltered():
