@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/savedra1/clipse/utils"
 )
@@ -20,7 +21,8 @@ func GetWLClipBoard() (string, error) {
 
 func UpdateWLClipboard(s string) error {
 	cmd := exec.Command(wlCopyHandler, "--", s)
-	if err := cmd.Run(); err != nil {
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	if err := cmd.Start(); err != nil {
 		return err
 	}
 	return nil
