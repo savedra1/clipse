@@ -77,18 +77,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.showPreview {
 			switch {
 			case key.Matches(msg, m.keys.nextPage):
-				m.preview.ViewDown()
+				m.preview.PageDown()
 				return m, nil
 			case key.Matches(msg, m.keys.prevPage):
-				m.preview.ViewUp()
+				m.preview.PageUp()
 				return m, nil
 
 			case key.Matches(msg, m.keys.down):
-				m.preview.LineDown(1)
+				m.preview.ScrollDown(1)
 				return m, nil
 
 			case key.Matches(msg, m.keys.up):
-				m.preview.LineUp(1)
+				m.preview.ScrollUp(1)
 				return m, nil
 			}
 		}

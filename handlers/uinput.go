@@ -143,7 +143,7 @@ func uinputPaste(keybind string) error {
 		return fmt.Errorf("failed to press key %s: %w", mainKey, err)
 	}
 
-	// Release modefiers
+	// Release modifiers
 	for _, code := range modCodes {
 		if err := keyboard.KeyUp(code); err != nil {
 			return fmt.Errorf("failed to release modifier: %w", err)
