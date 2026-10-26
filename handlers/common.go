@@ -13,7 +13,7 @@ import (
 )
 
 func SaveImage(imgData []byte) error {
-	if !utils.DiskspaceAvailable(len(imgData)) {
+	if !utils.DiskspaceAvailable(len(imgData), config.ClipseConfig.TempDirPath) {
 		return fmt.Errorf("no available disk space to store image")
 	}
 
@@ -33,6 +33,9 @@ func SaveImage(imgData []byte) error {
 }
 
 func SaveText(textData string) error {
+	if !utils.DiskspaceAvailable(len(textData), config.ClipseConfig.HistoryFilePath) {
+		return fmt.Errorf("no available disk space to store text")
+	}
 	if err := config.AddClipboardItem(textData, "null"); err != nil {
 		return err
 	}
