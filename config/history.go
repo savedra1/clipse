@@ -40,7 +40,7 @@ func initHistoryFile() error {
 			return err
 		}
 
-		if !utils.DiskspaceAvailable(len(jsonData)) {
+		if !utils.DiskspaceAvailable(ClipseConfig.HistoryFilePath, len(jsonData)) {
 			return fmt.Errorf("not enough disk space to init history file")
 		}
 
@@ -116,7 +116,7 @@ func WriteUpdate(data ClipboardHistory) error {
 		return fmt.Errorf("failed to marshal JSON: %w", err)
 	}
 
-	if !utils.DiskspaceAvailable(len(updatedJSON)) {
+	if !utils.DiskspaceAvailable(ClipseConfig.HistoryFilePath, len(updatedJSON)) {
 		utils.LogERROR("not enough disk space available to store clipboard content")
 		return nil
 	}

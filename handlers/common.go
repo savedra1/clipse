@@ -13,7 +13,7 @@ import (
 )
 
 func SaveImage(imgData []byte) error {
-	if !utils.DiskspaceAvailable(len(imgData)) {
+	if !utils.DiskspaceAvailable(config.ClipseConfig.TempDirPath, len(imgData)) {
 		return fmt.Errorf("no available disk space to store image")
 	}
 
