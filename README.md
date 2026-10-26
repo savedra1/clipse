@@ -587,7 +587,7 @@ Please see the following for what contribution suggestions. If you have an idea 
   - [x] ~~dnf~~
   - [ ] brew
   - [ ] other
-- [ ] Your custom theme for the [library](https://github.com/savedra1/clipse/blob/main/resources/library.md)
+- [ ] Your custom theme for the [library](https://github.com/savedra1/clipse/blob/main/.github/.resources/library.md)
 - [x] TUI / theming enhancements:
   - [x] ~~Menu theme~~
   - [x] ~~Filter theme~~
