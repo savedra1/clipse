@@ -180,19 +180,19 @@ jobs:
           fi
 
       - name: Download Linux AMD artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 #v8.0.2
         with:
           name: linux-builds-amd64
           path: ./artifacts
 
       - name: Download Linux ARM artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 #v8.0.2
         with:
           name: linux-builds-arm64
           path: ./artifacts
 
       - name: Download macOS artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 #v8.0.2
         with:
           name: macos-builds
           path: ./artifacts
