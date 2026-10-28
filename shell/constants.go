@@ -5,6 +5,7 @@ const (
 	listenShellCmd     = "--listen-shell"
 	pgrepCmd           = "pgrep 'clipse'"
 	psCmd              = "ps -o command"
+	x11CopyHandler     = "xclip"
 	wlCopyHandler      = "wl-copy"
 	wlPasteHandler     = "wl-paste"
 	wlPasteWatcher     = "--watch"
