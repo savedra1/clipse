@@ -25,10 +25,11 @@ func Shorten(s string, maxChar int) string {
 		),
 	)
 
-	if len(sl) <= maxChar {
+	r := []rune(sl)
+	if len(r) <= maxChar {
 		return strings.ReplaceAll(sl, "  ", " ")
 	}
-	return strings.ReplaceAll(sl[:maxChar-3], "  ", " ") + "..."
+	return strings.ReplaceAll(string(r[:maxChar-3]), "  ", " ") + "..."
 }
 
 func GetStdin() string {
