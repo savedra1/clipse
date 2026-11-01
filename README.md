@@ -348,7 +348,7 @@ __If any values from this file are removed, they will not be readded when the pr
 | `keyBindings`       | map    | Custom keybind definitions.                                                                  |
 | `autoPaste`         | map    | Auto-paste options.                                                                          |
 | `imageDisplay`      | map    | Image display options (basic/kitty/sixel).                                                   |
-| `excludedApps`      | list   | List of App/Window names form which to exclude any copied data                               |
+| `excludedApps`      | list   | List of App/Window names from which to exclude any copied data                               |
 
 All the paths provided (the theme, `historyFile`, and `tempDir`) are all relative paths. They are relative to the location of the config file that holds them. E.g, a file `config.json` at location `$HOME/.config/clipse/config.json` will have all relative paths defined in it relative to its directory of `$HOME/.config/clipse`.
 
