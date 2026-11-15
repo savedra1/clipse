@@ -25,3 +25,21 @@ func DeleteAllImages(imgDir string) error {
 	}
 	return nil
 }
+
+func UserStateDir() (string, error) {
+	if dir := os.Getenv("XDG_STATE_HOME"); filepath.IsAbs(dir) {
+		return dir, nil
+	}
+
+	home, err := os.UserHomeDir()
+	HandleError(err)
+
+	return filepath.Join(home, ".local", "state"), nil
+}
+
+func UserRuntimeDir() (string, error) {
+	if dir := os.Getenv("XDG_RUNTIME_DIR"); filepath.IsAbs(dir) {
+		return dir, nil
+	}
+	return "", fmt.Errorf("XDG_RUNTIME_DIR is not set or is not absolute")
+}
