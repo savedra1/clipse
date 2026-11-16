@@ -2,13 +2,15 @@ package utils
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"golang.org/x/sys/unix"
 )
 
 func DiskspaceAvailable(path string, bytes int) bool {
+	dir := filepath.Dir(path)
 	var stat unix.Statfs_t
-	if err := unix.Statfs(path, &stat); err != nil {
+	if err := unix.Statfs(dir, &stat); err != nil {
 		LogERROR(fmt.Sprintf("failed to check disk space at '%s': %s", path, err))
 		return true
 	}

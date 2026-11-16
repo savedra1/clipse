@@ -49,19 +49,18 @@ func Init() error {
 	*/
 
 	// returns $HOME/.config || $XDG_CONFIG_HOME
-	userHome, err := os.UserConfigDir()
+	userConfig, err := os.UserConfigDir()
 	if err != nil {
-		return fmt.Errorf("failed to read home dir.\nerror: %s", err)
+		return fmt.Errorf("failed to read config dir.\nerror: %s", err)
 	}
 
 	// Construct the path to the config directory
-	clipseDir := filepath.Join(userHome, defaultClipseDir)    // the ~/.config/clipse dir
-	configPath := filepath.Join(clipseDir, defaultConfigFile) // the path to the config.json file
+	clipseConfigDir := filepath.Join(userConfig, defaultClipseDir)  // the ~/.config/clipse dir
+	configPath := filepath.Join(clipseConfigDir, defaultConfigFile) // the path to the config.json file
 
 	// Does Config dir exist, if no make it.
-	_, err = os.Stat(clipseDir)
-	if os.IsNotExist(err) {
-		utils.HandleError(os.MkdirAll(clipseDir, 0755))
+	if err := os.MkdirAll(clipseConfigDir, 0755); err != nil {
+		return fmt.Errorf("failed to create directory %q: %w", clipseConfigDir, err)
 	}
 
 	// load the config from file into ClipseConfig struct
@@ -98,9 +97,30 @@ func loadConfig(configPath string) {
 		utils.LogERROR(fmt.Sprintf("failed to read config. Skipping.\nsrr: %s", err))
 	}
 
+	runtimeDir, err := utils.UserRuntimeDir()
+	utils.HandleError(err)
+
+	stateDir, err := utils.UserStateDir()
+	utils.HandleError(err)
+
+	clipseRuntimeDir := filepath.Join(runtimeDir, defaultClipseDir)
+	clipseStateDir := filepath.Join(stateDir, defaultClipseDir)
+
 	// Expand HistoryFile, ThemeFile, LogFile and TempDir paths
-	ClipseConfig.HistoryFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.HistoryFilePath), configDir)
-	ClipseConfig.TempDirPath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), configDir)
+	ClipseConfig.HistoryFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.HistoryFilePath), clipseStateDir)
+	ClipseConfig.TempDirPath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.TempDirPath), clipseRuntimeDir)
 	ClipseConfig.ThemeFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.ThemeFilePath), configDir)
-	ClipseConfig.LogFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.LogFilePath), configDir)
+	ClipseConfig.LogFilePath = utils.ExpandRel(utils.ExpandHome(ClipseConfig.LogFilePath), clipseStateDir)
+
+	// Does dir exist? if not make it
+	for _, dir := range []string{
+		filepath.Dir(ClipseConfig.HistoryFilePath),
+		filepath.Dir(ClipseConfig.LogFilePath),
+		filepath.Dir(ClipseConfig.ThemeFilePath),
+		filepath.Dir(ClipseConfig.TempDirPath),
+	} {
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			utils.HandleError(fmt.Errorf("failed to create directory %q: %w", dir, err))
+		}
+	}
 }

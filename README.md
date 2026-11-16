@@ -623,7 +623,10 @@ See issue [#148](https://github.com/savedra1/clipse/issues/148). This is caused 
 <details>
   <summary><b>How it works (TLDR)</b></summary>
 
-  When the app is run for the first time it creates a `$XDG_CONFIG_HOME/clipse` directory containing `config.json`, `clipboard_history.json`, custom_theme.json, and a tmp_files directory for storing image data.
+  When the app is run for the first time it creates:
+  - `$XDG_CONFIG_HOME/clipse` directory containing `config.json`, `custom_theme.json`
+  - `$XDG_STATE_HOME/clipse` directory containing `clipboard_history.json`, `clipse.log`
+  - `$XDG_RUNTIME_DIR/clipse` directory containing `tmp_files` directory for storing image data
 
   After `clipse -listen` is executed, a background process watches for clipboard activity and records changes in `clipboard_history.json` unless a different path is specified in `config.json`.
 
