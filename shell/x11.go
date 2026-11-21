@@ -3,6 +3,7 @@ package shell
 import (
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/savedra1/clipse/utils"
 )
@@ -22,6 +23,22 @@ func X11ActiveWindowTitle() string {
 	}
 	utils.LogWARN("Failed to get active window on X11: no suitable tool found (Xdotool, Xprop)")
 	return ""
+}
+
+func X11CopyText(text string) {
+	cmd := exec.Command(x11CopyHandler, "-selection", "clipboard")
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+		Pgid:    0,
+	}
+
+	cmd.Stdin = strings.NewReader(text)
+	utils.HandleError(cmd.Start())
+}
+
+func X11CopyImage(filePath string) {
+	cmd := exec.Command(x11CopyHandler, "-selection", "clipboard", "-t", "image/png", "-i", filePath)
+	runDetachedCmd(cmd)
 }
 
 // tryXprop tries getting the window title for X11 systems using xprop - property displayer for X
