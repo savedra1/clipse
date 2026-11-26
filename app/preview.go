@@ -100,7 +100,12 @@ func smartResize(img image.Image, windowWidth int, windowHeight int) image.Image
 	maxHeight := windowHeight * config.ClipseConfig.ImageDisplay.ScaleY
 	imageWidth := img.Bounds().Dx()
 	imageHeight := img.Bounds().Dy()
-	if imageWidth/imageHeight > maxWidth/maxHeight {
+	if maxWidth <= 0 || maxHeight <= 0 || imageHeight <= 0 {
+		return img
+	}
+	// Compare the aspect ratios by cross multiplying, so that integer division
+	// cannot truncate them or divide by zero.
+	if imageWidth*maxHeight > maxWidth*imageHeight {
 		return resize.Resize(uint(maxWidth), 0, img, resize.Lanczos3)
 	}
 	return resize.Resize(0, uint(maxHeight), img, resize.Lanczos3)
